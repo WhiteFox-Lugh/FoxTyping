@@ -3,13 +3,9 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TitleSelect : MonoBehaviour {
-	private Button UISP;
-	private Button UIREC;
-
 	// Use this for initialization
 	void Start () {
-		UISP = transform.Find("ButtonPlay").GetComponent<Button>();
-		UIREC = transform.Find("ButtonRecord").GetComponent<Button>();
+
 	}
 	
 	// Update is called once per frame
@@ -37,11 +33,11 @@ public class TitleSelect : MonoBehaviour {
 	}
 
 	void LoadRecordScene(){
-		// SceneManager.LoadScene("RecordScene");
+		SceneManager.LoadScene("RecordScene");
 	}
 
 	void LoadLoginScene(){
-		// SceneManager.LoadScene("LoginScene");
+		SceneManager.LoadScene("Login");
 	}
 
 	// キーが入力されるたびに発生する
@@ -59,5 +55,9 @@ public class TitleSelect : MonoBehaviour {
 
 	public void OnClickRecordButton(){
 		LoadRecordScene();
+	}
+
+	public void OnClickRegistButton(){
+		LoadLoginScene();
 	}
 }
