@@ -1,7 +1,6 @@
-﻿using System;
-using System.Net.Mail;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Text.RegularExpressions;
 using NCMB;
@@ -9,86 +8,95 @@ using System.Collections.Generic;
 
 
 public class UserAuth : MonoBehaviour {
-    private UserAuth instance = null;
-    public Text errMessage;
-    private static string currentPlayerName {
+    private static UserAuth instance = null;
+    public Text registErrMessage;
+    public Text loginErrMessage;
+    public Text logoutMessage;
+    public static string currentPlayerName {
         get;
-        set;
+        private set;
     }
 
     void Start () {
-        errMessage = GameObject.Find("CanvasRegister/TextRegister/ErrMessage").GetComponent<Text>();
+
+    }
+
+    void Update () {
+        if(currentPlayerName != null){
+            logoutMessage.text = "現在 " + currentPlayerName + " \n でログインしています";
+        }
+    }
+
+    private string generateLoginErrMessage (string errCode){
+        string ret = "";
+        if(errCode.Equals(NCMBException.DUPPLICATION_ERROR)){
+            ret = "既に使用されているIDです。他のIDをご利用ください。\n";
+        }
+        else if(errCode.Equals(NCMBException.INCORRECT_PASSWORD)){
+            ret = "ID または パスワードが異なります。\n";
+        }
+        else if(errCode.Equals(NCMBException.REQUIRED)){
+            ret = "未入力の項目があります。\n";
+        }
+        return ret;
+    }
+
+    private void returnTitle(){
+        SceneManager.LoadScene("TitleScene");
     }
 
     // mobile backendに接続してログイン ------------------------
     public void logIn( string id, string pw ) {
+        loginErrMessage.text = "";
         NCMBUser.LogInAsync (id, pw, (NCMBException e) => {
             // 接続成功したら
             if( e == null ){
                 currentPlayerName = id;
+                returnTitle();
+            }
+            else {
+                loginErrMessage.text = generateLoginErrMessage(e.ErrorCode);
             }
         });
     }
 
     // mobile backendに接続して新規会員登録 ------------------------
-    public void signUp( string id, string mail, string pw ) {
+    public void signUp( string id, string mail, string pw) {
         NCMBUser user = new NCMBUser();
-        bool isValidPass = true;
-        bool isValidMail = true;
-        bool isValidID = true;
-        errMessage.text = "";
-        // ID をセット
-        if(Regex.IsMatch(id, @"[0-9a-zA-Z]([0-9a-zA-Z_-]{1,29})")){
-            isValidID = true;
-            user.UserName = id;
-        }
-        else {
-            isValidID = false;
-        }
-        // パスワードのチェック
-        if(Regex.IsMatch(pw, @"[0-9a-zA-Z_-]{8,100}")){
-            isValidPass = true;
-            user.Password = pw;
-        }
-        else {
-            isValidPass = false;
-        }
-        // Mail のチェック
-        if(mail != null){
-            if(Regex.IsMatch(mail, @"\A\P{Cc}+@\P{Cc}+\z",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase)){
-                user.Email    = mail;
-                isValidMail = true;
-            }
-            else {
-                isValidMail = false;
-            }
-        }
-        else {
-            isValidMail = true;
-            user.Email = "";
-        }
+        registErrMessage.text = "";
+        bool isValidID = Regex.IsMatch(id, @"[0-9a-zA-Z]([0-9a-zA-Z_-]{1,29})");
+        bool isValidPass = Regex.IsMatch(pw, @"[0-9a-zA-Z_-]{8,100}");
+        bool isValidMail = mail.Equals("") ||
+            Regex.IsMatch(mail, @"\A\P{Cc}+@\P{Cc}+\z",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        // Sign up
         if(isValidMail && isValidPass && isValidID){
             Debug.Log("Good koyaya");
-            /* user.SignUpAsync((NCMBException e) => { 
+            user.UserName = id;
+            user.Password = pw;
+            user.Email = mail;
+            user.SignUpAsync((NCMBException e) => { 
                 if( e == null ){
                     currentPlayerName = id;
+                    returnTitle();
+                }
+                else {
+
                 }
             });
-            */
         }
         else {
             if(!isValidID){
                 Debug.Log("Bad ID");
-                errMessage.text += "IDのフォーマットが正しくありません";
+                registErrMessage.text += "IDのフォーマットが正しくありません\n";
             }
             if(!isValidPass){
                 Debug.Log("Bad Password");
-                errMessage.text += "パスワードのフォーマットが正しくありません\n";
+                registErrMessage.text += "パスワードのフォーマットが正しくありません\n";
             }
             if(!isValidMail){
                 Debug.Log("Bad mail address");
-                errMessage.text += "メールアドレスが正しくありません\n";
+                registErrMessage.text += "メールアドレスが正しくありません\n";
             }
         }
     }
@@ -102,15 +110,9 @@ public class UserAuth : MonoBehaviour {
         });
     }
 
-    // 現在のプレイヤー名を返す --------------------
-    public string currentPlayer() {
-        return currentPlayerName;
-    }
-
     void Awake () {
         if (instance == null) {
             instance = this;
-            DontDestroyOnLoad (gameObject);
             string name = gameObject.name;
             gameObject.name = name + "(Singleton)";
             GameObject duplicater = GameObject.Find (name);

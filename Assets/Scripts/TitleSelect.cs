@@ -3,14 +3,22 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TitleSelect : MonoBehaviour {
+	private Text userName;
+
 	// Use this for initialization
 	void Start () {
-
+		
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+		userName = GameObject.Find("ModeSelect/UserName").GetComponent<Text>();
+		if(UserAuth.currentPlayerName == null){
+			userName.text = "Typer ID: Guest";
+		}
+		else {
+			userName.text = "Typer ID: " + UserAuth.currentPlayerName.ToString();
+		}
 	}
 
 	void KeyCheck(KeyCode k){
