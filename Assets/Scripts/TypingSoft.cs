@@ -9,7 +9,7 @@ public class TypingSoft : MonoBehaviour {
 	private const int gameModeNormal = ConfigScript.gameModeNormal;
 	private const int gameModeEasy = ConfigScript.gameModeEasy;
 	private const int gameModeLunatic = ConfigScript.gameModeLunatic;
-	private const double INTERVAL = 0.75F;
+	private const double INTERVAL = 2.0F;
 	private const int KPMDIFF = 20;
 	private const int INITKPM = 300;
 	private const int SAFETY = 100;
