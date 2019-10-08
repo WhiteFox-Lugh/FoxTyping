@@ -60,10 +60,10 @@ public class ConfigScript : MonoBehaviour {
 		else if(KeyCode.L == k){
 			UIGameMode.value = gameModeLunatic;
 		}
-		else if(KeyCode.F == k && UIGameMode.value != gameModeLunatic){
+		else if(KeyCode.J == k && UIGameMode.value != gameModeLunatic){
 			UISentenceNum.value++;
 		}
-		else if(KeyCode.J == k && UIGameMode.value != gameModeLunatic){
+		else if(KeyCode.F == k && UIGameMode.value != gameModeLunatic){
 			UISentenceNum.value--;
 		}
 	}

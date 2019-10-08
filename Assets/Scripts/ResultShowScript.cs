@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -10,24 +11,56 @@ public class ResultShowScript : MonoBehaviour {
 	private const int gameModeNormal = ConfigScript.gameModeNormal;
 	private const int gameModeEasy = ConfigScript.gameModeEasy;
 	private const int gameModeLunatic = ConfigScript.gameModeLunatic;
-	// UI
-	private Text UIScore;
-	private Text UITypeNum;
-	private Text UIMisType;
-	private Text UIAccuracy;
-	private Text UIMistypeKey;
-	private Text UIKpm;
+	private const int ratingDiffMin = 1;
+	private List<Color> ratingColor = new List<Color> {
+		new Color(128f / 255f, 128f / 255f, 128f / 255f, 1f),
+		new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f),
+		new Color(139f / 255f, 69f / 255f, 19f / 255f, 1f),
+		new Color(30f / 255f, 30f / 255f, 255f / 255f, 1f),
+		new Color(0f / 255f, 191f / 255f, 255f / 255f, 1f),
+		new Color(60f / 255f, 179f / 255f, 113f / 255f, 1f),
+		new Color(241f / 255f, 211f / 255f, 5f / 255f, 1f),
+		new Color(255f / 255f, 140f / 255f, 0f / 255f, 1f),
+		new Color(213f / 255f, 30f / 255f, 30f / 255f, 1f),
+		new Color(188f / 255f, 87f / 255f, 242f / 255f, 1f)
+	};
+	private int[] ratingPartition = {
+		1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000,
+		5500, 6500, 7500, 8500, 10000000
+		};
+	private bool isLogin;
+	private bool isNewRecord;
 	private int typeNum;
 	private int mistypeNum;
 	private double kpm;
 	private double accuracy;
+	private int tasks;
+	private int oldRating;
+	private int newRating;
+	private int ratingDiff;
 	private int gameMode;
 	private Dictionary<string, int> mistypeKey;
+	private int score;
+	public Material ratingRainbow;
+	public Material ratingGold;
+	public Material ratingSilver;
+	public Material ratingCopper;
+	// UI
+	public Text UIScore;
+	public Text UITypeNum;
+	public Text UIMisType;
+	public Text UIAccuracy;
+	public Text UIMistypeKey;
+	public Text UIKpm;
+	public TextMeshProUGUI UIRating;
+	public Text UIRatingDelta;
 	
 	// Use this for initialization
 	void Start () {
 		GetData();
 		SetUI();
+		CalculateScore();
+		UpdateHiscore();
 		ShowResult();
 	}
 	
@@ -44,25 +77,78 @@ public class ResultShowScript : MonoBehaviour {
 		kpm = TypingSoft.Kpm;
 		mistypeKey = TypingSoft.MisTypeDictionary;
 		gameMode = TypingSoft.GameMode;
+		tasks = TypingSoft.Tasks;
+	}
+
+	
+	void UpdateHiscore(){
+		isNewRecord = false;
+		if(UserAuth.Instance == null || UserAuth.currentPlayerName == null){
+			isLogin = false;
+			return;
+		}
+		isLogin = true;
+		// Rating の 計算 
+		if(gameMode == gameModeNormal || gameMode == gameModeEasy){
+			// Fetch
+			oldRating = 0;
+			newRating = 0;
+			ratingDiff = 0;
+			var oldarr = UserData.scoreNormal;
+			int itr = -1;
+			// 旧レートの計算
+			foreach (int topScore in UserData.scoreNormal){
+				oldRating += topScore;
+			}
+			// レート変動があるかチェック
+			for (int i = 0; i < UserData.scoreNormal.Length; ++i){
+				if(score - UserData.scoreNormal[i] >= ratingDiffMin){
+					itr = i;
+					break;
+				}
+			}
+			// あれば書き換え
+			if(itr != -1){
+				for (int i = UserData.scoreNormal.Length - 1; i > itr ; --i){
+					UserData.scoreNormal[i] = UserData.scoreNormal[i - 1];
+				}
+				UserData.scoreNormal[itr] = score;
+				isNewRecord = true;
+			}
+			// 新レートの計算
+			foreach (int topScore in UserData.scoreNormal){
+				newRating += topScore;
+			}
+			ratingDiff = newRating - oldRating;
+			var newarr = UserData.scoreNormal;
+			Debug.Log(oldarr);
+			Debug.Log(newarr);
+		}
+		// Lunatic の場合の計算
+		else if(gameMode == gameModeLunatic){
+			if(score > UserData.scoreLunatic){
+				isNewRecord = true;
+				UserData.scoreLunatic = (int)(score);
+			}
+		}
+		if(isNewRecord){
+			UserData.save();
+		}
 	}
 
 	void SetUI(){
-		UIScore = transform.Find("ResultText/Score").GetComponent<Text>();
-		UITypeNum = transform.Find("ResultText/NumOfType").GetComponent<Text>();
-		UIMisType = transform.Find("ResultText/NumOfMistype").GetComponent<Text>();
-		UIAccuracy = transform.Find("ResultText/Accuracy").GetComponent<Text>();
-		UIMistypeKey = transform.Find("ResultText/MistypeKey").GetComponent<Text>();
-		UIKpm = transform.Find("ResultText/Kpm").GetComponent<Text>();
+
 		UIScore.text = "";
 		UITypeNum.text = "";
 		UIMisType.text = "";
 		UIAccuracy.text = "";
 		UIMistypeKey.text = "";
 		UIKpm.text = "";
+		UIRating.text = "---";
+		UIRatingDelta.text = "+0";
 	}
 
-	void ShowResult() {
-		double score;
+	void CalculateScore(){
 		if (gameMode == gameModeEasy){
 			score = GetEasyModeScore();
 		}
@@ -72,7 +158,12 @@ public class ResultShowScript : MonoBehaviour {
 		else {
 			score = GetNormalModeScore();
 		}
-		UIScore.text = (gameMode == gameModeLunatic) ? score.ToString("0") : score.ToString("0.00");
+	}
+
+	void ShowResult() {
+		int colorNum = 0;
+		int nextRank = 0;
+		UIScore.text = score.ToString();
 		UITypeNum.text = typeNum.ToString();
 		UIMisType.text = mistypeNum.ToString();
 		UIAccuracy.text = accuracy.ToString("0.00") + "%";
@@ -83,17 +174,53 @@ public class ResultShowScript : MonoBehaviour {
 		else {
 			UIKpm.text = kpm.ToString("0.00") + " key / min";
 		}
+		UIRating.text = (!isLogin) ? "---" : newRating.ToString();
+		for (int i = 0; i < ratingPartition.Length; ++i){
+			if(newRating < ratingPartition[i]){
+				colorNum = i;
+				nextRank = ratingPartition[i];
+				break;
+			}
+		}
+		if(colorNum <= 9){
+			UIRating.color = ratingColor[colorNum];
+		}
+		else if(colorNum == 10){
+			UIRating.fontMaterial = ratingCopper;
+		}
+		else if(colorNum == 11){
+			UIRating.fontMaterial = ratingSilver;
+		}
+		else if(colorNum == 12){
+			UIRating.fontMaterial = ratingGold;
+		}
+		else if(colorNum <= 13){
+			UIRating.fontMaterial = ratingRainbow;
+		}
+		UIRatingDelta.text = (!isLogin) ? "--" : 
+			("(+" + ratingDiff.ToString() + ") : Next Rank : " +
+			((nextRank <= 10000) ? nextRank.ToString() : " --- "));
 	}
 
 	double GetAccuracy (){
 		return 1.0 * typeNum / (typeNum + mistypeNum);
 	}
-	double GetNormalModeScore(){
-		return kpm * (1.1 + Math.Max(-1.0, Weight * Math.Log(GetAccuracy())));
+
+	double tasksNumPenalty(){
+		if(tasks >= 20){
+			return 1.0;
+		}
+		return (-15.0 / (tasks + 10.0) + 1.5);
 	}
 
-	double GetEasyModeScore(){
-		return 0.6 * GetNormalModeScore();
+	int GetNormalModeScore(){
+		return (int)(tasksNumPenalty() * kpm * (1.05 + Math.Max(-1.0, Weight * Math.Log(GetAccuracy()))));
+	}
+
+	int GetEasyModeScore(){
+		var x = GetNormalModeScore();
+		const int c = 1200;
+		return (int)(-1.0 * c * c / (x + c) + c);
 	}
 
 	void ShowMistypeKey(){

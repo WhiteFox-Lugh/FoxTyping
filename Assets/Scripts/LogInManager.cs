@@ -11,42 +11,54 @@ public class LogInManager : MonoBehaviour {
     private string pw;
     private string mail;
     private string nickname;
+    private int screenMode;
+    private bool showErr;
     public InputField loginID;
     public InputField loginPW;
     public InputField registID;
     public InputField registPW;
     public InputField registMail;
+    public Text registErrMessage;
+    public Text loginErrMessage;
 
-    void Awake () {
+    void Start () {
         // ゲームオブジェクトを検索し取得する
         canvasLogin = GameObject.Find ("CanvasLogin");
         canvasRegister = GameObject.Find ("CanvasRegister");  
         canvasLogout = GameObject.Find ("CanvasLogout");
-        if(UserAuth.currentPlayerName != null){
+        showErr = false;
+        if(UserAuth.Instance != null && UserAuth.currentPlayerName != null){
             canvasRegister.SetActive (false);
             canvasLogin.SetActive (false);
             canvasLogout.SetActive(true);
+            screenMode = 1;
         }
         else {
             canvasRegister.SetActive (false);
             canvasLogin.SetActive (true);
             canvasLogout.SetActive(false);
+            screenMode = 2;
         }
     }
 
     void OnGUI () {
-        // currentPlayerを毎フレーム監視し、ログインが完了したら
-        /*
-        if( FindObjectOfType<UserAuth>().currentPlayer() != null ){
-            LoadTitleScene();
+        if (screenMode == 2 && showErr){
+            loginErrMessage.text = UserAuth.ErrMessage;
         }
-        */
+        else if(screenMode == 3 && showErr){
+            registErrMessage.text = UserAuth.ErrMessage;
+        }
+        else if(!showErr){
+            loginErrMessage.text = "";
+            registErrMessage.text = "";
+        }
     }
 
     public void OnClickLoginButton(){
         id = loginID.text;
         pw = loginPW.text;
         FindObjectOfType<UserAuth>().logIn( id, pw );
+        showErr = true;
     }
 
     public void OnClickRegisterButton(){
@@ -54,6 +66,7 @@ public class LogInManager : MonoBehaviour {
         pw = registPW.text;
         mail = registMail.text;
         FindObjectOfType<UserAuth>().signUp( id, mail, pw );
+        showErr = true;
     }
 
     public void OnClickLogoutButton () {
@@ -73,11 +86,15 @@ public class LogInManager : MonoBehaviour {
         // テキスト切り替え
         canvasRegister.SetActive (false);
         canvasLogin.SetActive (true);
+        screenMode = 2;
+        showErr = false;
     }
 
     public void drawSignUpMenu(){
         // テキスト切り替え
         canvasLogin.SetActive (false);
         canvasRegister.SetActive (true);
+        screenMode = 3;
+        showErr = false;
     }
 }

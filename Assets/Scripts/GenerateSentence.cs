@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEngine;
 public class GenerateSentence {
 
+	private const int minLength = 10;
+	private const int maxLength = 25;
 	// ひらがな -> ローマ字マッピング
 	private Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
 		{"あ", new string[1] {"a"}},
@@ -467,7 +470,16 @@ public class GenerateSentence {
 				qHStr = ((gameModeEasy == g) ? "" : qJP1[r1].h) + qJP2[r2].h;
 				hiraganaSeparated = ParseHiraganaSentence(qHStr);
 				typing = ConstructTypeSentence(hiraganaSeparated);
-				isOK = true;
+				if(gameModeEasy == g){
+					isOK = true;
+				}
+				else if(gameModeEasy != g && minLength <= qHStr.Length && qHStr.Length <= maxLength){
+					isOK = true;
+					Debug.Log("Hiragana len -> " + qHStr.Length.ToString());
+				}
+				else {
+					isOK = false;
+				}
 			}
 			catch {
 				isOK = false;
