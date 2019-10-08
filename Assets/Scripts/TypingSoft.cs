@@ -57,7 +57,6 @@ public class TypingSoft : MonoBehaviour {
 	private double firstCharInputTime;
 	private double lastJudgeTime;
 	// 問題数関連
-	private int tasks;
 	private int tasksCompleted;
 	// 色
 	private Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
@@ -103,6 +102,11 @@ public class TypingSoft : MonoBehaviour {
 	// ミスタイプの記録
 	public static Dictionary<string, int> MisTypeDictionary {
 		private set;
+		get;
+	}
+	// 文章数
+	public static int Tasks {
+		set;
 		get;
 	}
 	// Lunatic 用
@@ -186,7 +190,7 @@ public class TypingSoft : MonoBehaviour {
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
 		GameMode = ConfigScript.GameMode;
-		tasks = (GameMode == gameModeLunatic) ? 1000 : ConfigScript.Tasks;
+		Tasks = (GameMode == gameModeLunatic) ? 1000 : ConfigScript.Tasks;
 		life = 3;
 		lowerBoundKPM = INITKPM;
 		isInputValid = true;
@@ -213,7 +217,7 @@ public class TypingSoft : MonoBehaviour {
 			UIcorrectA.text = "Life : " + life.ToString();
 		}
 		else {
-			UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + tasks.ToString();
+			UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
 		}
 		// 時刻を取得
 		lastUpdateTime = Time.realtimeSinceStartup;
@@ -429,7 +433,7 @@ public class TypingSoft : MonoBehaviour {
 		}
 		queue.Clear();
 		// 終了
-		if(tasksCompleted >= tasks){
+		if(tasksCompleted >= Tasks){
 			finished();
 		}
 		else {
