@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,6 +55,8 @@ public class ResultShowScript : MonoBehaviour {
 	public Text UIKpm;
 	public TextMeshProUGUI UIRating;
 	public Text UIRatingDelta;
+	public Button ShareTwitterText;
+	public Button ShareTwitterImg;
 	
 	// Use this for initialization
 	void Start () {
@@ -62,6 +65,7 @@ public class ResultShowScript : MonoBehaviour {
 		CalculateScore();
 		UpdateHiscore();
 		ShowResult();
+		GetTweetText();
 	}
 	
 	// Update is called once per frame
@@ -250,4 +254,32 @@ public class ResultShowScript : MonoBehaviour {
 			KeyCheck(e.keyCode);
 		}
     }
+
+	public void OnClickTweetButton(){
+		string tweetText = GetTweetText();
+		string url = "https://unityroom.com/games/cheetahtyping";
+		string hashTag = "CheetahTyping";
+		OpenTweetWindow(tweetText, hashTag, url);
+	}
+
+	string GetTweetText(){
+		string ret = "";
+		const string template = "CheetahTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";
+		ret = template;
+		ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + "が") : ("")));
+		if(gameMode == gameModeEasy){
+			ret = ret.Replace("_Difficulty_", "Easy");
+		}
+		else if(gameMode == gameModeNormal){
+			ret = ret.Replace("_Difficulty_", "Normal");
+		}
+		else if(gameMode == gameModeLunatic){
+			ret = ret.Replace("_Difficulty_", "Lunatic");
+		}
+		ret = ret.Replace("_Score_", score.ToString());
+		return ret;
+	}
+
+	[DllImport("__Internal")]
+    private static extern void OpenTweetWindow(string text, string hashtags, string url);
 }
