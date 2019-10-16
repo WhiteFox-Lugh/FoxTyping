@@ -26,10 +26,6 @@ public class UserAuth : MonoBehaviour {
         private set;
     }
 
-    void Update () {
-        
-    }
-
     void Awake () {
         if (instance == null) {
             instance = this;
@@ -98,7 +94,6 @@ public class UserAuth : MonoBehaviour {
             Debug.Log("Good koyaya");
             user.UserName = id;
             user.Password = pw;
-            user.Email = mail;
             user.SignUpAsync((NCMBException e) => { 
                 if( e == null ){
                     currentPlayerName = id;
