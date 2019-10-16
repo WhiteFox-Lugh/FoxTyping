@@ -243,7 +243,7 @@ public class ResultShowScript : MonoBehaviour {
 	}
 
 	void KeyCheck(KeyCode k){
-		if(KeyCode.Space == k || KeyCode.Return == k || KeyCode.KeypadEnter == k){
+		if(KeyCode.Return == k){
 			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
 	}
@@ -266,7 +266,7 @@ public class ResultShowScript : MonoBehaviour {
 		string ret = "";
 		const string template = "CheetahTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";
 		ret = template;
-		ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + "が") : ("")));
+		ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + " が") : ("")));
 		if(gameMode == gameModeEasy){
 			ret = ret.Replace("_Difficulty_", "Easy");
 		}

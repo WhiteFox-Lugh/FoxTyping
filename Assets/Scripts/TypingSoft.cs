@@ -211,6 +211,7 @@ public class TypingSoft : MonoBehaviour {
 		acceptSingleN = false;
 		index = 0;
 		sectionLength = 0;
+		life = 3;
 		//　問題文生成
 		ChangeSentence();
 		if(GameMode == gameModeLunatic){
@@ -269,7 +270,7 @@ public class TypingSoft : MonoBehaviour {
         if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			var kc = e.keyCode;
-			if (KeyCode.Return != kc && KeyCode.KeypadEnter != kc && isFirstInput){
+			if (isFirstInput){
 				firstCharInputTime = Time.realtimeSinceStartup;
 				isFirstInput = false;
 			}

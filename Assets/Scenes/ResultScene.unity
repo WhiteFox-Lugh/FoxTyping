@@ -537,7 +537,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1167021952}
+      - m_Target: {fileID: 897127787}
         m_MethodName: OnClickTweetButton
         m_Mode: 1
         m_Arguments:
@@ -844,7 +844,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Space / Enter \u30AD\u30FC: \u8A2D\u5B9A\u753B\u9762\u3078"
+  m_Text: "Enter \u30AD\u30FC: \u8A2D\u5B9A\u753B\u9762\u3078"
 --- !u!222 &687188044
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1181,50 +1181,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1002507522}
   m_CullTransparentMesh: 0
---- !u!1 &1167021951
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1167021953}
-  - component: {fileID: 1167021952}
-  m_Layer: 0
-  m_Name: Tweet
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1167021952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1167021951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 697c15a517c9940089c3d09fb004645d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tweetButton: {fileID: 543872987}
---- !u!4 &1167021953
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1167021951}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 225.91647, y: 48.623062, z: -0.05176101}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1176375275
 GameObject:
   m_ObjectHideFlags: 0

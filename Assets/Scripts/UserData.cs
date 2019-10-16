@@ -15,13 +15,21 @@ public class UserData : MonoBehaviour{
         }
     }
 
-    public static int[] scoreNormal { get; set; }
+    public static int[] scoreNormal { get; set; } = new int[] {};
 
-    public static int scoreLunatic { get; set; }
+    public static int scoreLunatic { get; set; } = 0;
+
+    public static ulong typedCount { get; set; } = 0;
     public static string userMame {
         get {
             return UserAuth.currentPlayerName;
         }
+    }
+
+    public static void userLogOut(){
+        scoreLunatic = 0;
+        scoreNormal = new int[] {};
+        typedCount = 0;
     }
 
     // サーバーにハイスコアを保存 -------------------------
@@ -34,6 +42,7 @@ public class UserData : MonoBehaviour{
             if (e == null) {
                 objList[0]["scoreNormal"] = scoreNormal;
                 objList[0]["scoreLunatic"] = scoreLunatic;
+                objList[0]["typedCount"] = typedCount;
                 objList[0].SaveAsync();
             }
         });
@@ -57,6 +66,7 @@ public class UserData : MonoBehaviour{
                     obj["Name"]  = userMame;
                     obj["scoreNormal"] = scoreNormal;
                     obj["scoreLunatic"] = scoreLunatic;
+                    obj["typedCount"] = typedCount;
                     obj.SaveAsync();
                 }
                 // ハイスコアが登録済みだったら
@@ -69,6 +79,7 @@ public class UserData : MonoBehaviour{
                     scoreNormal = scoreNormal.OrderByDescending(x => x).ToArray();
                     
                     scoreLunatic = System.Convert.ToInt32(objList[0]["scoreLunatic"]);
+                    typedCount = System.Convert.ToUInt64(objList[0]["typedCount"]);
                 }
             }
         });

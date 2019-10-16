@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class TitleSelect : MonoBehaviour {
 	private Text userName;
+	public Button ButtonUserData;
 
 	// Use this for initialization
 	void Start () {
@@ -15,9 +16,11 @@ public class TitleSelect : MonoBehaviour {
 		userName = GameObject.Find("ModeSelect/UserName").GetComponent<Text>();
 		if(UserAuth.currentPlayerName == null){
 			userName.text = "Typer ID: Guest";
+			ButtonUserData.interactable = false;
 		}
 		else {
 			userName.text = "Typer ID: " + UserAuth.currentPlayerName.ToString();
+			ButtonUserData.interactable = true;
 		}
 	}
 
