@@ -2,8 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
@@ -238,9 +240,13 @@ public class GenerateSentence {
 	};
 
 	// JP:原文, H:ひらがな, $:N2で置換, &:V2で置換(未収録)
-	private List<(string jp, string h)> qJP1;
+	private List<(string jp, string h)> qJP1 = new List<(string jp, string h)>() {
+		("一家に一台$", "いっかにいちだい$")
+	};
 
-	private List<(string jp, string h)> qJP2N;
+	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>() {
+		("山月記", "さんげつき")
+	};
 
 	private int gameModeEasy = ConfigScript.gameModeEasy;
 
@@ -392,9 +398,8 @@ public class GenerateSentence {
 	}
 
 	public void LoadSentenceData (string dataName){
-		var fileName = Application.streamingAssetsPath + "/" + dataName + ".json";
-		Debug.Log(fileName);
-		string jsonStr = File.ReadAllText(fileName);
+		var file = Resources.Load(dataName);
+		var jsonStr = file.ToString();
 		var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
 		DataSetName = problemData.sentenceDatasetScreenName;
 		var listJp1 = new List<(string jp, string h)>();
