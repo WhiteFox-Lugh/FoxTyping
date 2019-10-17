@@ -27,6 +27,11 @@ public class ConfigScript : MonoBehaviour {
 		get;
 	}
 
+	public static string DataSetName {
+		private set;
+		get;
+	} = "official";
+
 	// Use this for initialization
 	void Start () {
 		UIGameMode = GameObject.Find("GameMode/Dropdown").GetComponent<Dropdown>();
@@ -56,9 +61,6 @@ public class ConfigScript : MonoBehaviour {
 		}
 		else if(KeyCode.E == k){
 			UIGameMode.value = gameModeEasy;
-		}
-		else if(KeyCode.L == k){
-			UIGameMode.value = gameModeLunatic;
 		}
 		else if(KeyCode.J == k && UIGameMode.value != gameModeLunatic){
 			UISentenceNum.value++;

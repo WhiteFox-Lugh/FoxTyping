@@ -115,7 +115,7 @@ public class TypingSoft : MonoBehaviour {
 		get;
 	}
 
-	void Start () {
+	void Awake () {
 		GetUI();
 		InitGame();
 	}
@@ -179,6 +179,8 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	void InitData(){
+		// json
+		gs.LoadSentenceData(ConfigScript.DataSetName);
 		// データ関連の初期化
 		CorrectTypeNum = 0;
 		MisTypeNum = 0;
