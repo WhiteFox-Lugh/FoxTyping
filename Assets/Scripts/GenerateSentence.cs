@@ -95,6 +95,206 @@ public class GenerateSentence {
 		{"ゅ", new string[2] {"lyu", "xyu"}},
 		{"ょ", new string[2] {"lyo", "xyo"}},
 		{"っ", new string[4] {"ltu", "ltsu", "xtu", "xtsu"}},
+		{"きゃ", new string[3] {"kya", "kilya", "kixya"}},
+		{"きぃ", new string[5] {"kyi", "kili", "kilyi", "kixi", "kixyi"}},
+		{"きゅ", new string[3] {"kyu", "kilyu", "kixyu"}},
+		{"きぇ", new string[5] {"kye", "kile", "kilye", "kixe", "kixye"}},
+		{"きょ", new string[3] {"kyo", "kilyo", "kixyo"}},
+		{"ぎゃ", new string[3] {"gya", "gilya", "gixya"}},
+		{"ぎぃ", new string[5] {"gyi", "gili", "gilyi", "gixi", "gixyi"}},
+		{"ぎゅ", new string[3] {"gyu", "gilyu", "gixyu"}},
+		{"ぎぇ", new string[5] {"gye", "gile", "gilye", "gixe", "gixye"}},
+		{"ぎょ", new string[3] {"gyo", "gilyo", "gixyo"}},
+		{"くぁ", new string[8] {"qa", "kwa", "kula", "kuxa", "cula", "cuxa", "qula", "quxa"}},
+		{"くぃ", new string[14] {"qi", "qyi", "kuli", "kuxi", "kulyi", "kuxyi", "culi", "culyi", "cuxi", "cuxyi", "quli", "quxi", "qulyi", "quxyi"}},
+		{"くぅ", new string[7] {"qwu", "kulu", "kuxu", "culu", "cuxu", "qulu", "quxu"}},
+		{"くぇ", new string[14] {"qe", "qwe", "kule", "kuxe", "kulye", "kuxye", "cule", "cuxe", "culye", "cuxye", "qule", "quxe", "qulye", "quxye"}},
+		{"くぉ", new string[8] {"qo", "qwo", "kulo", "kuxo", "culo", "cuxo", "qulo", "quxo"}},
+		{"ぐぁ", new string[3] {"gwa", "gula", "guxa"}},
+		{"ぐぃ", new string[5] {"gwi", "guli", "gulyi", "guxi", "guxyi"}},
+		{"ぐぅ", new string[3] {"gwu", "gulu", "guxu"}},
+		{"ぐぇ", new string[5] {"gwe", "gule", "guxe", "gulye", "guxye"}},
+		{"ぐぉ", new string[3] {"gwo", "gulo", "guxo"}},
+		{"しゃ", new string[8] {"sya", "sha", "silya", "sixya", "shilya", "shixya", "cilya", "cixya"}},
+		{"しぃ", new string[13] {"syi", "sili", "sixi", "silyi", "sixyi", "shili", "shixi", "shilyi", "shixyi", "cili", "cixi", "cilyi", "cixyi"}},
+		{"しゅ", new string[8] {"syu", "shu", "silyu", "sixyu", "shilyu", "shixyu", "cilyu", "cixyu"}},
+		{"しぇ", new string[14] {"sye", "she", "sile", "silye", "sixe", "sixye", "shile", "shilye", "shixe", "shixye", "cile", "cilye", "cixe", "cixye"}},
+		{"しょ", new string[8] {"syo", "sho", "silyo", "sixyo", "shilyo", "shixyo", "cilyo", "cixyo"}},
+		{"じゃ", new string[7] {"ja", "jya", "zya", "jilya", "jixya", "zilya", "zixya"}},
+		{"じぃ", new string[10] {"jyi", "zyi", "jili", "jixi", "jilyi", "jixyi", "zili", "zixi", "zilyi", "zixyi"}},
+		{"じゅ", new string[7] {"ju", "jyu", "zyu", "jilyu", "jixyu", "zilyu", "zixyu"}},
+		{"じぇ", new string[11] {"je", "jye", "zye", "jile", "jixe", "jilye", "jixye", "zile", "zixe", "zilye", "zixye"}},
+		{"じょ", new string[7] {"jo", "jyo", "zyo", "jilyo", "jixyo", "zilyo", "zixyo"}},
+		{"すぁ", new string[3] {"swa", "sula", "suxa"}},
+		{"すぃ", new string[5] {"swi", "suli", "sulyi", "suxi", "suxyi"}},
+		{"すぅ", new string[3] {"swu", "sulu", "suxu"}},
+		{"すぇ", new string[5] {"swe", "sule", "suxe", "sulye", "suxye"}},
+		{"すぉ", new string[3] {"swo", "sulo", "suxo"}},
+		{"ちゃ", new string[7] {"tya", "cha", "cya", "tilya", "tixya", "chilya", "chixya"}},
+		{"ちぃ", new string[10] {"tyi", "cyi", "tili", "tixi", "tilyi", "tixyi", "chili", "chixi", "chilyi", "chixyi"}},
+		{"ちゅ", new string[7] {"tyu", "chu", "cyu", "tilyu", "tixyu", "chilyu", "chixyu"}},
+		{"ちぇ", new string[11] {"tye", "che", "cye", "tile", "tixe", "tilye", "tixye", "chile", "chixe", "chilye", "chixye"}},
+		{"ちょ", new string[7] {"tyo", "cho", "cyo", "tilyo", "tixyo", "chilyo", "chixyo"}},
+		{"ぢゃ", new string[3] {"dya", "dilya", "dixya"}},
+		{"ぢゅ", new string[3] {"dyu", "dilyu", "dixyu"}},
+		{"ぢぇ", new string[5] {"dye", "dile", "dixe", "dilye", "dixye"}},
+		{"ぢょ", new string[3] {"dyo", "dilyo", "dixyo"}},
+		{"つぁ", new string[5] {"tsa", "tula", "tuxa", "tsula", "tsuxa"}},
+		{"つぃ", new string[9] {"tsi", "tuli", "tuxi", "tulyi", "tuxyi", "tsuli", "tsuxi", "tsulyi", "tsuxyi"}},
+		{"つぇ", new string[9] {"tse", "tule", "tuxe", "tulye", "tuxye", "tsule", "tsuxe", "tsulye", "tsuxye"}},
+		{"つぉ", new string[5] {"tso", "tulo", "tuxo", "tsulo", "tsuxo"}},
+		{"てゃ", new string[3] {"tha", "telya", "texya"}},
+		{"てぃ", new string[5] {"thi", "teli", "texi", "telyi", "texyi"}},
+		{"てゅ", new string[3] {"thu", "telyu", "texyu"}},
+		{"てぇ", new string[5] {"the", "tele", "texe", "telye", "texye"}},
+		{"てょ", new string[3] {"tho", "telyo", "texyo"}},
+		{"でゃ", new string[3] {"dha", "delya", "dexya"}},
+		{"でぃ", new string[5] {"dhi", "deli", "dexi", "delyi", "dexyi"}},
+		{"でゅ", new string[3] {"dhu", "delyu", "dexyu"}},
+		{"でぇ", new string[5] {"dhe", "dele", "dexe", "delye", "dexye"}},
+		{"でょ", new string[3] {"dho", "delyo", "dexyo"}},
+		{"とぁ", new string[3] {"twa", "tola", "toxa"}},
+		{"とぃ", new string[5] {"twi", "toli", "toxi", "tolyi", "toxyi"}},
+		{"とぅ", new string[3] {"twu", "tolu", "toxu"}},
+		{"とぇ", new string[5] {"twe", "tole", "toxe", "tolye", "toxye"}},
+		{"とぉ", new string[3] {"two", "tolo", "toxo"}},
+		{"どぁ", new string[3] {"dwa", "dola", "doxa"}},
+		{"どぃ", new string[5] {"dwi", "doli", "doxi", "dolyi", "doxyi"}},
+		{"どぅ", new string[3] {"dwu", "dolu", "doxu"}},
+		{"どぇ", new string[5] {"dwe", "dole", "doxe", "dolye", "doxye"}},
+		{"どぉ", new string[3] {"dwo", "dolo", "doxo"}},
+		{"にゃ", new string[3] {"nya", "nilya", "nixya"}},
+		{"にぃ", new string[5] {"nyi", "nili", "nixi", "nilyi", "nixyi"}},
+		{"にゅ", new string[3] {"nyu", "nilyu", "nixyu"}},
+		{"にぇ", new string[5] {"nye", "nile", "nixe", "nilye", "nixye"}},
+		{"にょ", new string[3] {"nyo", "nilyo", "nixyo"}},
+		{"ぴゃ", new string[3] {"pya", "pilya", "pixya"}},
+		{"ぴぃ", new string[5] {"pyi", "pili", "pixi", "pilyi", "pixyi"}},
+		{"ぴゅ", new string[3] {"pyu", "pilyu", "pixyu"}},
+		{"ぴぇ", new string[5] {"pye", "pile", "pixe", "pilye", "pixye"}},
+		{"ぴょ", new string[3] {"pyo", "pilyo", "pixyo"}},
+		{"ひゃ", new string[3] {"hya", "hilya", "hixya"}},
+		{"ひぃ", new string[5] {"hyi", "hili", "hixi", "hilyi", "hixyi"}},
+		{"ひゅ", new string[3] {"hyu", "hilyu", "hixyu"}},
+		{"ひぇ", new string[5] {"hye", "hile", "hixe", "hilye", "hixye"}},
+		{"ひょ", new string[3] {"hyo", "hilyo", "hixyo"}},
+		{"びゃ", new string[3] {"bya", "bilya", "bixya"}},
+		{"びぃ", new string[5] {"byi", "bili", "bixi", "bilyi", "bixyi"}},
+		{"びゅ", new string[3] {"byu", "bilyu", "bixyu"}},
+		{"びぇ", new string[5] {"bye", "bile", "bixe", "bilye", "bixye"}},
+		{"びょ", new string[3] {"byo", "bilyo", "bixyo"}},
+		{"ふゃ", new string[5] {"fya", "fulya", "fuxya", "hulya", "huxya"}},
+		{"ふぃ", new string[10] {"fi", "fyi", "fuli", "fuxi", "fulyi", "fuxyi", "huli", "huxi", "hulyi", "huxyi"}},
+		{"ふゅ", new string[5] {"fyu", "fulyu", "fuxyu", "hulyu", "huxyu"}},
+		{"ふぇ", new string[10] {"fe", "fye", "fule", "fuxe", "fulye", "fuxye", "hule", "huxe", "hulye", "huxye"}},
+		{"ふょ", new string[5] {"fyo", "fulyo", "fuxyo", "hulyo", "huxyo"}},
+		{"ふぁ", new string[5] {"fa", "fula", "fuxa", "hula", "huxa"}},
+		{"ふぉ", new string[5] {"fo", "fulo", "fuxo", "hulo", "huxo"}},
+		{"みゃ", new string[3] {"mya", "milya", "mixya"}},
+		{"みぃ", new string[5] {"myi", "mili", "mixi", "milyi", "mixyi"}},
+		{"みゅ", new string[3] {"myu", "milyu", "mixyu"}},
+		{"みぇ", new string[5] {"mye", "mile", "mixe", "milye", "mixye"}},
+		{"みょ", new string[3] {"myo", "milyo", "mixyo"}},
+		{"りゃ", new string[3] {"rya", "rilya", "rixya"}},
+		{"りぃ", new string[5] {"ryi", "rili", "rixi", "rilyi", "rixyi"}},
+		{"りゅ", new string[3] {"ryu", "rilyu", "rixyu"}},
+		{"りぇ", new string[5] {"rye", "rile", "rixe", "rilye", "rixye"}},
+		{"りょ", new string[3] {"ryo", "rilyo", "rixyo"}},
+		{"うぁ", new string[7] {"wha", "ula", "uxa", "wula", "wuxa", "whula", "whuxa"}},
+		{"うぃ", new string[11] {"wi", "whi", "uli", "uxi", "ulyi", "uxyi", "wuli", "wuxi", "wulyi", "wuxyi", "whuli"}},
+		{"うぇ", new string[14] {"we", "whe", "ule", "uxe", "ulye", "uxye", "wule", "wuxe", "wulye", "wuxye", "whule", "whuxe", "whulye", "whuxye"}},
+		{"うぉ", new string[7] {"who", "ulo", "uxo", "wulo", "wuxo", "whulo", "whuxo"}},
+		{"ゔぁ", new string[3] {"va", "vula", "vuxa"}},
+		{"ゔぃ", new string[6] {"vi", "vyi", "vuli", "vuxi", "vulyi", "vuxyi"}},
+		{"ゔ", new string[1] {"vu"}},
+		{"ゔぇ", new string[6] {"ve", "vye", "vule", "vuxe", "vulye", "vuxye"}},
+		{"ゔぉ", new string[3] {"vo", "vulo", "vuxo"}},
+		{"ゔゃ", new string[3] {"vya", "vulya", "vuxya"}},
+		{"ゔゅ", new string[3] {"vyu", "vulyu", "vuxyu"}},
+		{"ゔょ", new string[3] {"vyo", "vulyo", "vuxyo"}},
+		{"ゐ", new string[1] {"wyi"}},
+		{"ゑ", new string[1] {"wye"}},
+		{"んあ", new string[2] {"nna", "xna"}},
+		{"んい", new string[4] {"nni", "xni", "nnyi", "xnyi"}},
+		{"んう", new string[6] {"nnu", "xnu", "nnwu", "xnwu", "nnwhu", "xnwhu"}},
+		{"んえ", new string[2] {"nne", "xne"}},
+		{"んお", new string[2] {"nno", "xno"}},
+		{"んな", new string[2] {"nnna", "xnna"}},
+		{"んに", new string[2] {"nnni", "xnni"}},
+		{"んぬ", new string[2] {"nnnu", "xnnu"}},
+		{"んね", new string[2] {"nnne", "xnne"}},
+		{"んの", new string[2] {"nnno", "xnno"}},
+		{"んや", new string[2] {"nnya", "xnya"}},
+		{"んゆ", new string[2] {"nnyu", "xnyu"}},
+		{"んよ", new string[2] {"nnyo", "xnyo"}},
+		{"んにゃ", new string[6] {"nnnya", "xnnya", "nnnixya", "xnnixya", "nnnilya", "xnnilya"}},
+		{"んにゅ", new string[6] {"nnnyu", "xnnyu", "nnnixyu", "xnnixyu", "nnnilyu", "xnnilyu"}},
+		{"んにょ", new string[6] {"nnnyo", "xnnyo", "nnnixyo", "xnnixyo", "nnnilyo", "xnnilyo"}},
+		{"っか", new string[10] {"kka", "cca", "ltuka", "xtuka", "ltsuka", "xtsuka", "ltuca", "xtuca", "ltsuca", "xtsuca"}},
+		{"っき", new string[5] {"kki", "ltuki", "xtuki", "ltsuki", "xtsuki"}},
+		{"っく", new string[10] {"kku", "ccu", "ltuku", "xtuku", "ltsuku", "xtsuku", "ltucu", "xtucu", "ltsucu", "xtsucu"}},
+		{"っけ", new string[5] {"kke", "ltuke", "xtuke", "ltsuke", "xtsuke"}},
+		{"っこ", new string[10] {"kko", "cco", "ltuko", "xtuko", "ltsuko", "xtsuko", "ltuco", "xtuco", "ltsuco", "xtsuco"}},
+		{"っさ", new string[5] {"ssa", "ltusa", "xtusa", "ltsusa", "xtsusa"}},
+		{"っし", new string[15] {"ssi", "cci", "sshi", "ltusi", "xtsusi", "ltsusi", "xtsusi", "ltuci", "xtuci", "ltsuci", "xtsuci", "ltushi", "xtushi", "ltsushi", "xtsushi"}},
+		{"っす", new string[5] {"ssu", "ltusu", "xtusu", "ltsusu", "xtsusu"}},
+		{"っせ", new string[10] {"sse", "cce", "ltuse", "xtuse", "ltsuse", "xtsuse", "ltuce", "xtuce", "ltsuce", "xtsuce"}},
+		{"っそ", new string[5] {"sso", "ltuso", "xtuso", "ltsuso", "xtsuso"}},
+		{"った", new string[5] {"tta", "ltuta", "xtuta", "ltsuta", "xtsuta"}},
+		{"っち", new string[10] {"tti", "cchi", "ltuti", "xtuti", "ltsuti", "xtsuti", "ltuchi", "xtuchi", "ltsuchi", "xtsuchi"}},
+		{"っつ", new string[10] {"ttu", "ttsu", "ltutu", "xtutu", "ltsutu", "xtsutu", "ltutsu", "xtutsu", "ltsutsu", "xtsutsu"}},
+		{"って", new string[5] {"tte", "ltute", "xtute", "ltsute", "xtsute"}},
+		{"っと", new string[5] {"tto", "ltuto", "xtuto", "ltsuto", "xtsuto"}},
+		{"っな", new string[4] {"ltuna", "xtuna", "ltsuna", "xtsuna"}},
+		{"っに", new string[4] {"ltuni", "xtuni", "ltsuni", "xtsuni"}},
+		{"っぬ", new string[4] {"ltunu", "xtunu", "ltsunu", "xtsunu"}},
+		{"っね", new string[4] {"ltune", "xtune", "ltsune", "xtsune"}},
+		{"っの", new string[4] {"ltuno", "xtuno", "ltsuno", "xtsuno"}},
+		{"っは", new string[5] {"hha", "ltuha", "xtuha", "ltsuha", "xtsuha"}},
+		{"っひ", new string[5] {"hhi", "ltuhi", "xtuhi", "ltsuhi", "xtsuhi"}},
+		{"っふ", new string[10] {"ffu", "hhu", "ltufu", "xtufu", "ltsufu", "xtsufu", "ltuhu", "xtuhu", "ltsuhu", "xtsuhu"}},
+		{"っへ", new string[5] {"hhe", "ltuhe", "xtuhe", "ltsuhe", "xtsuhe"}},
+		{"っほ", new string[5] {"hho", "ltuho", "xtuho", "ltsuho", "xtsuho"}},
+		{"っま", new string[5] {"mma", "ltuma", "xtuma", "ltsuma", "xtsuma"}},
+		{"っみ", new string[5] {"mmi", "ltumi", "xtumi", "ltsumi", "xtsumi"}},
+		{"っむ", new string[5] {"mmu", "ltumu", "xtumu", "ltsumu", "xtsumu"}},
+		{"っめ", new string[5] {"mme", "ltume", "xtume", "ltsume", "xtsume"}},
+		{"っも", new string[5] {"mmo", "ltumo", "xtumo", "ltsumo", "xtsumo"}},
+		{"っや", new string[5] {"yya", "ltuya", "xtuya", "ltsuya", "xtsuya"}},
+		{"っゆ", new string[5] {"yyu", "ltuyu", "xtuyu", "ltsuyu", "xtsuyu"}},
+		{"っよ", new string[5] {"yyo", "ltuyo", "xtuyo", "ltsuyo", "xtsuyo"}},
+		{"っら", new string[5] {"rra", "ltura", "xtura", "ltsura", "xtsura"}},
+		{"っり", new string[5] {"rri", "lturi", "xturi", "ltsuri", "xtsuri"}},
+		{"っる", new string[5] {"rru", "lturu", "xturu", "ltsuru", "xtsuru"}},
+		{"っれ", new string[5] {"rre", "lture", "xture", "ltsure", "xtsure"}},
+		{"っろ", new string[5] {"rro", "lturo", "xturo", "ltsuro", "xtsuro"}},
+		{"っわ", new string[5] {"wwa", "ltuwa", "xtuwa", "ltsuwa", "xtsuwa"}},
+		{"っを", new string[5] {"wwo", "ltuwo", "xtuwo", "ltsuwo", "xtsuwo"}},
+		{"っが", new string[5] {"gga", "ltuga", "xtuga", "ltsuga", "xtsuga"}},
+		{"っぎ", new string[5] {"ggi", "ltugi", "xtugi", "ltsugi", "xtsugi"}},
+		{"っぐ", new string[5] {"ggu", "ltugu", "xtugu", "ltsugu", "xtsugu"}},
+		{"っげ", new string[5] {"gge", "ltuge", "xtuge", "ltsuge", "xtsuge"}},
+		{"っご", new string[5] {"ggo", "ltugo", "xtugo", "ltsugo", "xtsugo"}},
+		{"っざ", new string[5] {"zza", "ltuza", "xtuza", "ltsuza", "xtsuza"}},
+		{"っじ", new string[10] {"jji", "zzi", "ltuji", "xtuji", "ltsuji", "xtsuji", "ltuzi", "xtuzi", "ltsuzi", "xtsuzi"}},
+		{"っず", new string[5] {"zzu", "ltuzu", "xtuzu", "ltsuzu", "xtsuzu"}},
+		{"っぜ", new string[5] {"zze", "ltuze", "xtuze", "ltsuze", "xtsuze"}},
+		{"っぞ", new string[5] {"zzo", "ltuzo", "xtuzo", "ltsuzo", "xtsuzo"}},
+		{"っだ", new string[5] {"dda", "ltuda", "xtuda", "ltsuda", "xtsuda"}},
+		{"っぢ", new string[5] {"ddi", "ltudi", "xtudi", "ltsudi", "xtsudi"}},
+		{"っづ", new string[5] {"ddu", "ltudu", "xtudu", "ltsudu", "xtsudu"}},
+		{"っで", new string[5] {"dde", "ltude", "xtude", "ltsude", "xtsude"}},
+		{"っど", new string[5] {"ddo", "ltudo", "xtudo", "ltsudo", "xtsudo"}},
+		{"っば", new string[5] {"bba", "ltuba", "xtuba", "ltsuba", "xtsuba"}},
+		{"っび", new string[5] {"bbi", "ltubi", "xtubi", "ltsubi", "xtsubi"}},
+		{"っぶ", new string[5] {"bbu", "ltubu", "xtubu", "ltsubu", "xtsubu"}},
+		{"っべ", new string[5] {"bbe", "ltube", "xtube", "ltsube", "xtsube"}},
+		{"っぼ", new string[5] {"bbo", "ltubo", "xtubo", "ltsubo", "xtsubo"}},
+		{"っぱ", new string[5] {"ppa", "ltupa", "xtupa", "ltsupa", "xtsupa"}},
+		{"っぴ", new string[5] {"ppi", "ltupi", "xtupi", "ltsupi", "xtsupi"}},
+		{"っぷ", new string[5] {"ppu", "ltupu", "xtupu", "ltsupu", "xtsupu"}},
+		{"っぺ", new string[5] {"ppe", "ltupe", "xtupe", "ltsupe", "xtsupe"}},
+		{"っぽ", new string[5] {"ppo", "ltupo", "xtupo", "ltsupo", "xtsupo"}},
 		{"ー", new string[1] {"-"}},
 		{"、", new string[1] {","}},
 		{"。", new string[1] {"."}},
@@ -121,136 +321,13 @@ public class GenerateSentence {
 		{"!", new string[1] {"!"}},
 		{"！", new string[1] {"!"}},
 		{"?", new string[1] {"?"}},
-		{"？", new string[1] {"?"}},
-		{"きゃ", new string[1] {"kya"}},
-		{"きぃ", new string[1] {"kyi"}},
-		{"きゅ", new string[1] {"kyu"}},
-		{"きぇ", new string[1] {"kye"}},
-		{"きょ", new string[1] {"kyo"}},
-		{"ぎゃ", new string[1] {"gya"}},
-		{"ぎぃ", new string[1] {"gyi"}},
-		{"ぎゅ", new string[1] {"gyu"}},
-		{"ぎぇ", new string[1] {"gye"}},
-		{"ぎょ", new string[1] {"gyo"}},
-		{"くぁ", new string[2] {"qa", "kwa"}},
-		{"くぃ", new string[3] {"qi", "qyi", "kwi"}},
-		{"くぅ", new string[3] {"qu", "qwu", "kwu"}},
-		{"くぇ", new string[3] {"qe", "qwe", "kwe"}},
-		{"くぉ", new string[3] {"qo", "qwo", "kwo"}},
-		{"ぐぁ", new string[1] {"gwa"}},
-		{"ぐぃ", new string[1] {"gwi"}},
-		{"ぐぅ", new string[1] {"gwu"}},
-		{"ぐぇ", new string[1] {"gwe"}},
-		{"ぐぉ", new string[1] {"gwo"}},
-		{"しゃ", new string[2] {"sya", "sha"}},
-		{"しぃ", new string[1] {"syi"}},
-		{"しゅ", new string[2] {"syu", "shu"}},
-		{"しぇ", new string[2] {"sye", "she"}},
-		{"しょ", new string[2] {"syo", "sho"}},
-		{"じゃ", new string[3] {"ja", "jya", "zya"}},
-		{"じぃ", new string[2] {"jyi", "zyi"}},
-		{"じゅ", new string[3] {"ju", "jyu", "zyu"}},
-		{"じぇ", new string[3] {"je", "jye", "zye"}},
-		{"じょ", new string[3] {"jo", "jyo", "zyo"}},
-		{"すぁ", new string[1] {"swa"}},
-		{"すぃ", new string[1] {"swi"}},
-		{"すぅ", new string[1] {"swu"}},
-		{"すぇ", new string[1] {"swe"}},
-		{"すぉ", new string[1] {"swo"}},
-		{"ちゃ", new string[3] {"tya", "cha", "cya"}},
-		{"ちぃ", new string[2] {"tyi", "cyi"}},
-		{"ちゅ", new string[3] {"tyu", "chu", "cyu"}},
-		{"ちぇ", new string[3] {"tye", "che", "cye"}},
-		{"ちょ", new string[3] {"tyo", "cho", "cyo"}},
-		{"ぢゃ", new string[1] {"dya"}},
-		{"ぢゅ", new string[1] {"dyu"}},
-		{"ぢぇ", new string[1] {"dye"}},
-		{"ぢょ", new string[1] {"dyo"}},
-		{"つぁ", new string[1] {"tsa"}},
-		{"つぃ", new string[1] {"tsi"}},
-		{"つぇ", new string[1] {"tse"}},
-		{"つぉ", new string[1] {"tso"}},
-		{"てゃ", new string[1] {"tha"}},
-		{"てぃ", new string[1] {"thi"}},
-		{"てゅ", new string[1] {"thu"}},
-		{"てぇ", new string[1] {"the"}},
-		{"てょ", new string[1] {"tho"}},
-		{"でゃ", new string[1] {"dha"}},
-		{"でぃ", new string[1] {"dhi"}},
-		{"でゅ", new string[1] {"dhu"}},
-		{"でぇ", new string[1] {"dhe"}},
-		{"でょ", new string[1] {"dho"}},
-		{"とぁ", new string[1] {"twa"}},
-		{"とぃ", new string[1] {"twi"}},
-		{"とぅ", new string[1] {"twu"}},
-		{"とぇ", new string[1] {"twe"}},
-		{"とぉ", new string[1] {"two"}},
-		{"どぁ", new string[1] {"dwa"}},
-		{"どぃ", new string[1] {"dwi"}},
-		{"どぅ", new string[1] {"dwu"}},
-		{"どぇ", new string[1] {"dwe"}},
-		{"どぉ", new string[1] {"dwo"}},
-		{"にゃ", new string[1] {"nya"}},
-		{"にぃ", new string[1] {"nyi"}},
-		{"にゅ", new string[1] {"nyu"}},
-		{"にぇ", new string[1] {"nye"}},
-		{"にょ", new string[1] {"nyo"}},
-		{"ぴゃ", new string[1] {"pya"}},
-		{"ぴぃ", new string[1] {"pyi"}},
-		{"ぴゅ", new string[1] {"pyu"}},
-		{"ぴぇ", new string[1] {"pye"}},
-		{"ぴょ", new string[1] {"pyo"}},
-		{"ひゃ", new string[1] {"hya"}},
-		{"ひぃ", new string[1] {"hyi"}},
-		{"ひゅ", new string[1] {"hyu"}},
-		{"ひぇ", new string[1] {"hye"}},
-		{"ひょ", new string[1] {"hyo"}},
-		{"びゃ", new string[1] {"bya"}},
-		{"びぃ", new string[1] {"byi"}},
-		{"びゅ", new string[1] {"byu"}},
-		{"びぇ", new string[1] {"bye"}},
-		{"びょ", new string[1] {"byo"}},
-		{"ふゃ", new string[1] {"fya"}},
-		{"ふぃ", new string[2] {"fi", "fyi"}},
-		{"ふゅ", new string[1] {"fyu"}},
-		{"ふぇ", new string[2] {"fe", "fye"}},
-		{"ふょ", new string[1] {"fyo"}},
-		{"ふぁ", new string[1] {"fa"}},
-		{"ふぉ", new string[1] {"fo"}},
-		{"みゃ", new string[1] {"mya"}},
-		{"みぃ", new string[1] {"myi"}},
-		{"みゅ", new string[1] {"myu"}},
-		{"みぇ", new string[1] {"mye"}},
-		{"みょ", new string[1] {"myo"}},
-		{"りゃ", new string[1] {"rya"}},
-		{"りぃ", new string[1] {"ryi"}},
-		{"りゅ", new string[1] {"ryu"}},
-		{"りぇ", new string[1] {"rye"}},
-		{"りょ", new string[1] {"ryo"}},
-		{"うぁ", new string[1] {"wha"}},
-		{"うぃ", new string[2] {"wi", "whi"}},
-		{"うぇ", new string[2] {"we", "whe"}},
-		{"うぉ", new string[1] {"who"}},
-		{"ゔぁ", new string[1] {"va"}},
-		{"ゔぃ", new string[2] {"vi", "vyi"}},
-		{"ゔ", new string[1] {"vu"}},
-		{"ゔぇ", new string[2] {"ve", "vye"}},
-		{"ゔぉ", new string[1] {"vo"}},
-		{"ゔゃ", new string[1] {"vya"}},
-		{"ゔゅ", new string[1] {"vyu"}},
-		{"ゔょ", new string[1] {"vyo"}},
-		{"ゐ", new string[1] {"wyi"}},
-		{"ゑ", new string[1] {"wye"}},
+		{"？", new string[1] {"?"}}
 	};
 
 	// JP:原文, H:ひらがな, $:N2で置換, &:V2で置換(未収録)
-	private List<(string jp, string h)> qJP1 = new List<(string jp, string h)>() {
-		("一家に一台$", "いっかにいちだい$")
-	};
+	private List<(string jp, string h)> qJP1 = new List<(string jp, string h)>();
 
-	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>() {
-		("山月記", "さんげつき")
-	};
+	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>();
 
 	private int gameModeEasy = ConfigScript.gameModeEasy;
 
@@ -259,20 +336,22 @@ public class GenerateSentence {
 		get;
 	}
 
-	// ひらがな読みを区切る
+	// ひらがな読みを1~3文字に区切る
 	List<string> ParseHiraganaSentence(string str){
 		var ret = new List<string>();
 		int i = 0;
-		string uni, bi;
+		string uni = "";
+		string bi = "";
+		string tri = "";
 		while (i < str.Length){
 			uni = str[i].ToString();
-			if(i + 1 < str.Length){
-				bi = str[i].ToString() + str[i+1].ToString();
+			bi = (i + 1 < str.Length) ? str.Substring(i, 2) : "";
+			tri = (i + 2 < str.Length) ? str.Substring(i, 3) : "";
+			if(mp.ContainsKey(tri)){
+				i += 3;
+				ret.Add(tri);
 			}
-			else {
-				bi = "";
-			}
-			if(mp.ContainsKey(bi)){
+			else if(mp.ContainsKey(bi)){
 				i += 2;
 				ret.Add(bi);
 			}
@@ -287,77 +366,20 @@ public class GenerateSentence {
 	// ひらがな読みをパースしてタイピング文字列を生成
 	public List<List<string>> ConstructTypeSentence(List<string> str){
 		var ret = new List<List<string>>();
-		string s, ns;
+		string s;
 		for (int i = 0; i < str.Count; ++i){
 			s = str[i];
-			if(i + 1 < str.Count){
-				ns = str[i+1];
+			var validTypeList = new List<string>();
+			// 文末「ん」の処理
+			if (s.Equals("ん") && str.Count - 1 == i){
+				var nList = new List<string>(mp[s]);
+				nList.Remove("n");
+				validTypeList = nList;
 			}
 			else {
-				ns = "";
+				validTypeList = mp[s].ToList();
 			}
-			var tmpList = new List<string>();
-			// ん の処理
-			if (s.Equals("ん")){
-				bool isValidSingleN;
-				var nList = mp[s];
-				// 文末の「ん」-> nn, xn のみ
-				if(str.Count - 1 == i){
-					isValidSingleN = false;
-				}
-				// 後ろに母音, ナ行, ヤ行 -> nn, xn のみ
-				else if(i + 1 < str.Count &&
-				(ns.Equals("あ") || ns.Equals("い") || ns.Equals("う") || ns.Equals("え") ||
-				ns.Equals("お") || ns.Equals("な") || ns.Equals("に") || ns.Equals("ぬ") ||
-				ns.Equals("ね") || ns.Equals("の") || ns.Equals("や") || ns.Equals("ゆ") || ns.Equals("よ"))){
-					isValidSingleN = false;
-				}
-				// それ以外は n も許容
-				else {
-					isValidSingleN = true;
-				}
-				foreach (var t in nList){
-					if(!isValidSingleN && t.Equals("n")){
-						continue;
-					}
-					tmpList.Add(t);
-				}
-			}
-			// っ の処理
-			else if(s.Equals("っ")){
-				var ltuList = mp[s];
-				var nextList = mp[ns];
-				var hs = new HashSet<string>();
-				// 次の文字の子音だけとってくる
-				foreach (string t in nextList){
-					string c = t[0].ToString();
-					hs.Add(c);
-				}
-				var hsList = hs.ToList();
-				List<string> ltuTypeList = hsList.Concat(ltuList).ToList();
-				tmpList = ltuTypeList;
-			}
-			// ちゃ などのように tya, cha や ち + ゃ を許容するパターン
-			else if(2 == s.Length && !string.Equals("ん", s[0])){
-				// ちゃ などとそのまま打つパターンの生成
-				tmpList = tmpList.Concat(mp[s]).ToList();
-				// ち + ゃ などの分解して入力するパターンを生成
-				var fstList = mp[s[0].ToString()];
-				var sndList = mp[s[1].ToString()];
-				var retList = new List<string>();
-				foreach (string fstStr in fstList){
-					foreach (string sndStr in sndList){
-						string t = fstStr + sndStr;
-						retList.Add(t);
-					}
-				}
-				tmpList = tmpList.Concat(retList).ToList();
-			}
-			// それ以外
-			else {
-				tmpList = mp[s].ToList();
-			}
-			ret.Add(tmpList);
+			ret.Add(validTypeList);
 		}
 		return ret;
 	}
@@ -436,5 +458,4 @@ public class SentenceData
 public class Word {
 	public string Item1;
 	public string Item2;
-
 }
