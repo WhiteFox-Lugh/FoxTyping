@@ -9,9 +9,6 @@ using UnityEngine.SceneManagement;
 
 public class ResultShowScript : MonoBehaviour {
 	private const double Weight = 1.0 + 2284815.0 / 2406151.0;
-	private const int gameModeNormal = ConfigScript.gameModeNormal;
-	private const int gameModeEasy = ConfigScript.gameModeEasy;
-	private const int gameModeLunatic = ConfigScript.gameModeLunatic;
 	private const int ratingDiffMin = 1;
 	private List<Color> ratingColor = new List<Color> {
 		new Color(128f / 255f, 128f / 255f, 128f / 255f, 1f),
@@ -57,7 +54,7 @@ public class ResultShowScript : MonoBehaviour {
 	public Text UIRatingDelta;
 	public Button ShareTwitterText;
 	public Button ShareTwitterImg;
-	
+
 	// Use this for initialization
 	void Start () {
 		GetData();
@@ -67,10 +64,9 @@ public class ResultShowScript : MonoBehaviour {
 		ShowResult();
 		GetTweetText();
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
-		
 	}
 
 	// Get data from TypingSoft.cs
@@ -84,64 +80,10 @@ public class ResultShowScript : MonoBehaviour {
 		tasks = TypingSoft.Tasks;
 	}
 
-	
 	void UpdateHiscore(){
-		isNewRecord = false;
-		if(UserAuth.Instance == null || UserAuth.currentPlayerName == null){
-			isLogin = false;
-			return;
-		}
-		isLogin = true;
-		// Rating の 計算 
-		if(gameMode == gameModeNormal || gameMode == gameModeEasy){
-			// Fetch
-			oldRating = 0;
-			newRating = 0;
-			ratingDiff = 0;
-			var oldarr = UserData.scoreNormal;
-			int itr = -1;
-			// 旧レートの計算
-			foreach (int topScore in UserData.scoreNormal){
-				oldRating += topScore;
-			}
-			// レート変動があるかチェック
-			for (int i = 0; i < UserData.scoreNormal.Length; ++i){
-				if(score - UserData.scoreNormal[i] >= ratingDiffMin){
-					itr = i;
-					break;
-				}
-			}
-			// あれば書き換え
-			if(itr != -1){
-				for (int i = UserData.scoreNormal.Length - 1; i > itr ; --i){
-					UserData.scoreNormal[i] = UserData.scoreNormal[i - 1];
-				}
-				UserData.scoreNormal[itr] = score;
-				isNewRecord = true;
-			}
-			// 新レートの計算
-			foreach (int topScore in UserData.scoreNormal){
-				newRating += topScore;
-			}
-			ratingDiff = newRating - oldRating;
-			var newarr = UserData.scoreNormal;
-			Debug.Log(oldarr);
-			Debug.Log(newarr);
-		}
-		// Lunatic の場合の計算
-		else if(gameMode == gameModeLunatic){
-			if(score > UserData.scoreLunatic){
-				isNewRecord = true;
-				UserData.scoreLunatic = (int)(score);
-			}
-		}
-		if(isNewRecord){
-			UserData.save();
-		}
 	}
 
 	void SetUI(){
-
 		UIScore.text = "";
 		UITypeNum.text = "";
 		UIMisType.text = "";
@@ -153,15 +95,7 @@ public class ResultShowScript : MonoBehaviour {
 	}
 
 	void CalculateScore(){
-		if (gameMode == gameModeEasy){
-			score = GetEasyModeScore();
-		}
-		else if(gameMode == gameModeLunatic){
-			score = TypingSoft.AcheivedKPM;
-		}
-		else {
-			score = GetNormalModeScore();
-		}
+		score = GetScore();
 	}
 
 	void ShowResult() {
@@ -172,12 +106,7 @@ public class ResultShowScript : MonoBehaviour {
 		UIMisType.text = mistypeNum.ToString();
 		UIAccuracy.text = accuracy.ToString("0.00") + "%";
 		ShowMistypeKey();
-		if (gameMode == gameModeLunatic){
-			UIKpm.text = "---";
-		}
-		else {
-			UIKpm.text = kpm.ToString("0.00") + " key / min";
-		}
+		UIKpm.text = kpm.ToString("0.00") + " key / min";
 		UIRating.text = (!isLogin) ? "---" : newRating.ToString();
 		for (int i = 0; i < ratingPartition.Length; ++i){
 			if(newRating < ratingPartition[i]){
@@ -217,14 +146,8 @@ public class ResultShowScript : MonoBehaviour {
 		return (-15.0 / (tasks + 10.0) + 1.5);
 	}
 
-	int GetNormalModeScore(){
+	int GetScore(){
 		return (int)(tasksNumPenalty() * kpm * (1.05 + Math.Max(-1.0, Weight * Math.Log(GetAccuracy()))));
-	}
-
-	int GetEasyModeScore(){
-		var x = GetNormalModeScore();
-		const int c = 1200;
-		return (int)(-1.0 * c * c / (x + c) + c);
 	}
 
 	void ShowMistypeKey(){
@@ -257,26 +180,17 @@ public class ResultShowScript : MonoBehaviour {
 
 	public void OnClickTweetButton(){
 		string tweetText = GetTweetText();
-		string url = "https://unityroom.com/games/cheetahtyping";
-		string hashTag = "CheetahTyping";
+		string url = "";
+		string hashTag = "FoxTyping";
 		OpenTweetWindow(tweetText, hashTag, url);
 	}
 
 	string GetTweetText(){
 		string ret = "";
-		const string template = "CheetahTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";
-		ret = template;
-		ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + " が") : ("")));
-		if(gameMode == gameModeEasy){
-			ret = ret.Replace("_Difficulty_", "Easy");
-		}
-		else if(gameMode == gameModeNormal){
-			ret = ret.Replace("_Difficulty_", "Normal");
-		}
-		else if(gameMode == gameModeLunatic){
-			ret = ret.Replace("_Difficulty_", "Lunatic");
-		}
-		ret = ret.Replace("_Score_", score.ToString());
+		// const string template = "FoxTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";
+		// ret = template;
+		// ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + " が") : ("")));
+		// ret = ret.Replace("_Score_", score.ToString());
 		return ret;
 	}
 

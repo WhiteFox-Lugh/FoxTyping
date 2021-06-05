@@ -6,9 +6,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const int gameModeNormal = ConfigScript.gameModeNormal;
-	private const int gameModeEasy = ConfigScript.gameModeEasy;
-	private const int gameModeLunatic = ConfigScript.gameModeLunatic;
 	private const double INTERVAL = 2.0F;
 	private const int KPMDIFF = 20;
 	private const int INITKPM = 300;
@@ -20,7 +17,7 @@ public class TypingSoft : MonoBehaviour {
 	// 時刻の queue
 	private Queue<double> timeQueue = new Queue<double>();
 	// ひらがなとタイプのマッピング
-	//　UI たち
+	// UI たち
 	private Text UIJ;
 	private Text UIR;
 	private Text UII;
@@ -29,10 +26,10 @@ public class TypingSoft : MonoBehaviour {
 	private Text UIcorrectA;
 	private Text UIAccuracy;
 	private Text UITypeInfo;
-	//　問題表示関連
+	// 問題表示関連
 	private string nQJ;
 	private string nQR;
-	//　これまで打った文字列
+	// これまで打った文字列
 	private string correctString;
 	// ミスタイプした文字の記録
 	private bool isRecMistype;
@@ -41,11 +38,6 @@ public class TypingSoft : MonoBehaviour {
 	private List<string> sentenceHiragana;
 	// 文章タイピング読み
 	private List<List<string>> sentenceTyping;
-	// んの例外処理用
-	private bool acceptSingleN;
-	// っの例外処理用
-	private string ltuChar;
-	private bool ltuCheck;
 	// index 類
 	private int index;
 	private List<List<int>> indexAdd = new List<List<int>>();
@@ -66,15 +58,13 @@ public class TypingSoft : MonoBehaviour {
 	// Lunatic mode 専用
 	private bool isInputValid;
 	private int sectionLength;
-	private int lowerBoundKPM;
-	private int life;
 
 	// ゲームモード
 	public static int GameMode {
 		private set;
 		get;
 	}
-	//　正解タイプ数
+	// 正解タイプ数
 	public static int CorrectTypeNum {
 		private set;
 		get;
@@ -84,12 +74,12 @@ public class TypingSoft : MonoBehaviour {
 		private set;
 		get;
 	}
-	//　ミスタイプ
+	// ミスタイプ
 	public static int MisTypeNum {
 		private set;
 		get;
 	}
-	//　正解率
+	// 正解率
 	public static double Accuracy {
 		private set;
 		get;
@@ -115,6 +105,7 @@ public class TypingSoft : MonoBehaviour {
 		get;
 	}
 
+	// 初期化関連
 	void Awake () {
 		GetUI();
 		InitGame();
@@ -127,9 +118,6 @@ public class TypingSoft : MonoBehaviour {
 				SceneManager.LoadScene("SinglePlayConfigScene");
 			}
 			Check();
-		}
-		if(life <= 0){
-			Death();
 		}
 	}
 
@@ -161,21 +149,13 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	void InitText(){
-		//　テキスト関連の初期化
+		// テキスト関連の初期化
 		UITypeInfo.text = "Correct : - / Mistype: - ";
 		UIAccuracy.text = "Accuracy : --.-- %";
 		UIKPM.text = "Speed : --- kpm ";
-		if(GameMode != gameModeLunatic){
-			UIKPM.text += "\n[Sentence: --- kpm]";
-		}
-		if(GameMode == gameModeLunatic){
-			UISTT.text = "Limit : <color=#ff0000ff>" + lowerBoundKPM.ToString() + " kpm</color>";
-			UIcorrectA.text = "Life : -";
-		}
-		else {
-			UISTT.text = "Time : --:--";
-			UIcorrectA.text = "Tasks : - / - ";
-		}
+		UIKPM.text += "\n[Sentence: --- kpm]";
+		UISTT.text = "Time : --:--";
+		UIcorrectA.text = "Tasks : - / - ";
 	}
 
 	void InitData(){
@@ -192,15 +172,13 @@ public class TypingSoft : MonoBehaviour {
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
 		GameMode = ConfigScript.GameMode;
-		Tasks = (GameMode == gameModeLunatic) ? 1000 : ConfigScript.Tasks;
-		life = 3;
-		lowerBoundKPM = INITKPM;
+		Tasks = ConfigScript.Tasks;
 		isInputValid = true;
 		MisTypeDictionary = new Dictionary<string, int>();
 		queue.Clear();
 	}
 
-	//　新しい問題を表示するメソッド	
+	//　新しい問題を表示するメソッド
 	void OutputQ() {
 		//　テキストUIを初期化する
 		UIJ.text = "";
@@ -210,18 +188,11 @@ public class TypingSoft : MonoBehaviour {
 		correctString = "";
 		// 変数等の初期化
 		isFirstInput = true;
-		acceptSingleN = false;
 		index = 0;
 		sectionLength = 0;
-		life = 3;
 		//　問題文生成
 		ChangeSentence();
-		if(GameMode == gameModeLunatic){
-			UIcorrectA.text = "Life : " + life.ToString();
-		}
-		else {
-			UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
-		}
+		UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
 		// 時刻を取得
 		lastUpdateTime = Time.realtimeSinceStartup;
 	}
@@ -255,31 +226,28 @@ public class TypingSoft : MonoBehaviour {
 		sentenceTyping = t.ty;
 		// いろいろ初期化
 		InitSentenceData();
-		// Easy mode : ローマ字表記をリセット
-		if(GameMode == gameModeEasy || GameMode == gameModeNormal){
-			for (int i = 0; i < sentenceTyping.Count; ++i){
-				UII.text += sentenceTyping[i][0];
-			}
+		for (int i = 0; i < sentenceTyping.Count; ++i){
+			UII.text += sentenceTyping[i][0];
 		}
 		// テキスト変更
 		UIJ.text = nQJ;
 		UIR.text = nQR;
 	}
 
-	// キーが入力されるたびに発生する
 	void OnGUI() {
-        Event e = Event.current;
-        if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
+    Event e = Event.current;
+    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
+			Debug.Log(e.keyCode);
 			var kc = e.keyCode;
 			if (isFirstInput){
 				firstCharInputTime = Time.realtimeSinceStartup;
 				isFirstInput = false;
 			}
-			queue.Enqueue(e.keyCode);
+			queue.Enqueue(kc);
 			timeQueue.Enqueue(Time.realtimeSinceStartup);
 		}
-    }
+  }
 
 	KeyCode GetKeycode(char c){
 		if('.' == c){
@@ -327,14 +295,8 @@ public class TypingSoft : MonoBehaviour {
 				}
 				int j = sentenceIndex[index][i];
 				KeyCode nextKC = GetKeycode(sentenceTyping[index][i][j]);
-				// n 1個でも ok の時に2個めの n がきた時の例外
-				if (acceptSingleN && KeyCode.N == kc){
-					isMistype = false;
-					indexAdd[index][i] = 0;
-					str = "n";
-				}
 				// 正解タイプ
-				else if(kc == nextKC){
+				if(kc == nextKC){
 					isMistype = false;
 					indexAdd[index][i] = 1;
 					str = sentenceTyping[index][i][j].ToString();
@@ -344,7 +306,7 @@ public class TypingSoft : MonoBehaviour {
 				}
 			}
 			if(!isMistype){
-				Correct(str, acceptSingleN);
+				Correct(str);
 			}
 			else {
 				Mistype();
@@ -361,11 +323,10 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	//　タイピング正解時の処理
-	void Correct(string str, bool singleN) {
+	void Correct(string str) {
 		//　正解数を増やす
 		CorrectTypeNum++;
 		UITypeInfo.text = "Correct : " + CorrectTypeNum.ToString() + " / Mistype : " + MisTypeNum.ToString();
-		// Lunatic mode
 		sectionLength++;
 		//　正解率の計算
 		CorrectAnswerRate();
@@ -373,7 +334,7 @@ public class TypingSoft : MonoBehaviour {
 		MisTypeAdd(str);
 		isRecMistype = false;
 		// 可能な入力パターンのチェック
-		bool isIndexCountUp = CheckValidSentence(str, singleN);
+		bool isIndexCountUp = CheckValidSentence(str);
 		// ローマ字入力表示を更新
 		UpdateSentence(str);
 		if(isIndexCountUp){
@@ -385,21 +346,12 @@ public class TypingSoft : MonoBehaviour {
 		}
 	}
 
-	bool CheckValidSentence(string str, bool singleN){
+	bool CheckValidSentence(string str){
 		bool ret = false;
-		// 例外処理フラグを false
-		acceptSingleN = false;
 		// 可能な入力パターンを残す
 		for (int i = 0; i < sentenceTyping[index].Count; ++i){
-			// んの例外処理
-			if(singleN && str.Equals("n")){
-				continue;
-			}
-			else if(0 == indexAdd[index][i] && !singleN){
-				sentenceValid[index][i] = 0;
-			}
 			// っの例外処理
-			else if(sentenceHiragana[index].Equals("っ") && index + 1 < sentenceTyping.Count 
+			if(sentenceHiragana[index].Equals("っ") && index + 1 < sentenceTyping.Count 
 			&& 1 == sentenceTyping[index][i].Length &&
 			str.Equals(sentenceTyping[index][i][0].ToString())){
 				for (int ni = 0; ni < sentenceTyping[index + 1].Count; ++ni){
@@ -416,9 +368,6 @@ public class TypingSoft : MonoBehaviour {
 			sentenceIndex[index][i] += indexAdd[index][i];
 			// 次の文字へ
 			if(sentenceIndex[index][i] >= sentenceTyping[index][i].Length) {
-				if(string.Equals("n", sentenceTyping[index][i])){
-					acceptSingleN = true;
-				}
 				ret = true;
 			}
 		}
@@ -428,56 +377,51 @@ public class TypingSoft : MonoBehaviour {
 	void CompleteTask(){
 		tasksCompleted++;
 		double currentTime = Time.realtimeSinceStartup;
-		if(GameMode == gameModeLunatic){
-			SectionKpm(currentTime);
-		}
-		else {
-			KeyPerMinute(currentTime);
-		}
+		KeyPerMinute(currentTime);
 		queue.Clear();
 		// 終了
 		if(tasksCompleted >= Tasks){
 			finished();
 		}
 		else {
-			if(!(GameMode == gameModeLunatic && !isInputValid)){
-				OutputQ();
-			}
+			// if(!(GameMode == gameModeLunatic && !isInputValid)){
+			OutputQ();
+			// }
 		}
 	}
 
-	void UpdateSentence (string str){
-		// Easy / Normal mode : 打った文字を消去
-		if(GameMode == gameModeEasy || GameMode == gameModeNormal){
-			UII.text = "";
-			for (int i = 0; i < sentenceTyping.Count; ++i){
-				if(i < index){
+	void UpdateSentence(string str){
+		// 打った文字を消去するオプションの場合
+		// if(GameMode == gameModeEasy){
+		UII.text = "";
+		for (int i = 0; i < sentenceTyping.Count; ++i){
+			if(i < index){
+				continue;
+			}
+			for (int j = 0; j < sentenceTyping[i].Count; ++j){
+				if(index == i && sentenceValid[index][j] == 0){
 					continue;
 				}
-				for (int j = 0; j < sentenceTyping[i].Count; ++j){
-					if(index == i && sentenceValid[index][j] == 0){
-						continue;
-					}
-					else if(index == i && sentenceValid[index][j] == 1){
-						for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
-							if(k >= sentenceIndex[index][j]){
-								UII.text += sentenceTyping[index][j][k].ToString();
-							}
+				else if(index == i && sentenceValid[index][j] == 1){
+					for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
+						if(k >= sentenceIndex[index][j]){
+							UII.text += sentenceTyping[index][j][k].ToString();
 						}
-						break;
 					}
-					else if(index != i && sentenceValid[i][j] == 1){
-						UII.text += sentenceTyping[i][j];
-						break;
-					}
+					break;
+				}
+				else if(index != i && sentenceValid[i][j] == 1){
+					UII.text += sentenceTyping[i][j];
+					break;
 				}
 			}
 		}
-		// Lunatic mode : 正解した文字を表示
-		else {
-			correctString += str;
-			UII.text = correctString;
-		}
+		// }
+		// 正解した文字を表示するオプションの場合
+		// else {
+		// 	correctString += str;
+		// 	UII.text = correctString;
+		// }
 	}
 
 	//　タイピング失敗時の処理
@@ -488,12 +432,11 @@ public class TypingSoft : MonoBehaviour {
 		//　正解率の計算
 		CorrectAnswerRate();
 		//　Lunatic mode : ミスタイプした文字を赤く表示
-		if(GameMode == gameModeLunatic && Input.inputString != "") {
-			UII.text = correctString + "<color=#ff0000ff>" + Input.inputString + "</color>";
-		}
+		// if(GameMode == gameModeLunatic && Input.inputString != "") {
+		// 	UII.text = correctString + "<color=#ff0000ff>" + Input.inputString + "</color>";
+		// }
 		// Easy / Normal mode : 打つべき文字を赤く表示
-		else if((GameMode == gameModeEasy || GameMode == gameModeNormal) &&
-		!isRecMistype && Input.inputString != ""){
+		if(!isRecMistype && Input.inputString != ""){
 			string rest = "";
 			string s = UII.text.ToString();
 			Debug.Log(s);
@@ -505,10 +448,6 @@ public class TypingSoft : MonoBehaviour {
 		}
 		// 苦手キー記録用
 		isRecMistype = true;
-		// Lunatic Mode ならセンテンス切り替え
-		if(GameMode == gameModeLunatic){
-			StartCoroutine(Damage());
-		}
 	}
 
 	void MisTypeAdd(string str){
@@ -534,70 +473,12 @@ public class TypingSoft : MonoBehaviour {
 		if (Math.Abs(firstCharInputTime - lastUpdateTime) <= INTERVAL){
 			Debug.Log(tasksCompleted.ToString() + " -> time:" + (currentTime - firstCharInputTime).ToString());
 			ret = currentTime - firstCharInputTime;
-			
 		}
 		else {
 			Debug.Log(tasksCompleted.ToString() + " -> time(late):" + (currentTime - (lastUpdateTime + INTERVAL)).ToString());
 			ret = currentTime - (lastUpdateTime + INTERVAL);
 		}
 		return ret;
-	}
-
-	// Lunatic mode の kpm
-	void SectionKpm (double currentTime) {
-		double sentenceTypetime = GetSentenceTypeTime(currentTime);
-		double sectionKPM = ((1.0 * sectionLength) / (1.0 * sentenceTypetime)) * 60.0;
-		int intKpm = Convert.ToInt32(Math.Floor(sectionKPM));
-		double diff = sectionKPM - lowerBoundKPM;
-		if (diff >= SAFETY){
-			UIKPM.text = "Speed : <color=#00b400ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		else if(diff >= WARNING){
-			UIKPM.text = "Speed : <color=#ee7800ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		else {
-			UIKPM.text = "Speed : <color=#ff0000ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		UISTT.text = "Limit : <color=#ff0000ff>" + lowerBoundKPM.ToString() + " kpm</color>";
-		if (sectionKPM < lowerBoundKPM){
-			StartCoroutine(Damage());
-		}
-		else {
-			AcheivedKPM = lowerBoundKPM;
-			lowerBoundKPM += KPMDIFF;
-		}
-	}
-
-	// Lunatic mode で指定 kpm 未満になった
-	void Death(){
-		isInputValid = false;
-		StartCoroutine(ShowFailed());
-	}
-
-	IEnumerator ShowFailed(){
-		yield return new WaitForSeconds(1.0f);
-		UIJ.text = "";
-		UIR.text = "";
-		UII.text = "Finished";
-		yield return new WaitForSeconds(1.0f);
-		finished();
-	}
-
-	IEnumerator Damage(){
-		isInputValid = false;
-		life--;
-		UIcorrectA.text = "Life : <color=#ff0000ff>" + life.ToString() + "</color>";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : ";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : <color=#ff0000ff>" + life.ToString() + "</color>";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : ";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : " + life.ToString();
-		yield return new WaitForSeconds(0.5f);
-		isInputValid = true;
-		OutputQ();
 	}
 
 	// kpm

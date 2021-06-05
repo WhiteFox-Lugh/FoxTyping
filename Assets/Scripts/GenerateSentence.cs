@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -531,8 +531,6 @@ public class GenerateSentence {
 
 	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>();
 
-	private int gameModeEasy = ConfigScript.gameModeEasy;
-
 	public static string DataSetName {
 		private set;
 		get;
@@ -596,25 +594,18 @@ public class GenerateSentence {
 			try {
 				int r1 = UnityEngine.Random.Range(0, qJP1.Count);
 				int r2N = UnityEngine.Random.Range(0, qJP2N.Count);
-				if(gameModeEasy == g){
+				string tmpJpStr = qJP1[r1].jp;
+				string tmpQhStr = qJP1[r1].h;
+				tmpJpStr = tmpJpStr.Replace("$", qJP2N[r2N].jp);
+				tmpQhStr = tmpQhStr.Replace("$", qJP2N[r2N].h);
+				if(minLength <= tmpQhStr.Length && tmpQhStr.Length <= maxLength){
+					jpStr = tmpJpStr;
+					qHStr = tmpQhStr;
+					Debug.Log(jpStr);
+					Debug.Log(qHStr);
+					hiraganaSeparated = ParseHiraganaSentence(qHStr);
+					typing = ConstructTypeSentence(hiraganaSeparated);
 					isOK = true;
-					jpStr = qJP2N[r2N].jp;
-					qHStr = qJP2N[r2N].h;
-				}
-				else if(gameModeEasy != g){
-					string tmpJpStr = qJP1[r1].jp;
-					string tmpQhStr = qJP1[r1].h;
-					tmpJpStr = tmpJpStr.Replace("$", qJP2N[r2N].jp);
-					tmpQhStr = tmpQhStr.Replace("$", qJP2N[r2N].h);
-					if(minLength <= tmpQhStr.Length && tmpQhStr.Length <= maxLength){
-						jpStr = tmpJpStr;
-						qHStr = tmpQhStr;
-						Debug.Log(jpStr);
-						Debug.Log(qHStr);
-						hiraganaSeparated = ParseHiraganaSentence(qHStr);
-						typing = ConstructTypeSentence(hiraganaSeparated);
-						isOK = true;
-					}
 				}
 			}
 			catch {
@@ -622,6 +613,7 @@ public class GenerateSentence {
 				Debug.Log("例文再度生成");
 			}
 		}
+		Debug.Log(typing);
 		return (jpStr, qHStr, hiraganaSeparated, typing);
 	}
 
