@@ -601,8 +601,6 @@ public class GenerateSentence {
 				if(minLength <= tmpQhStr.Length && tmpQhStr.Length <= maxLength){
 					jpStr = tmpJpStr;
 					qHStr = tmpQhStr;
-					Debug.Log(jpStr);
-					Debug.Log(qHStr);
 					hiraganaSeparated = ParseHiraganaSentence(qHStr);
 					typing = ConstructTypeSentence(hiraganaSeparated);
 					isOK = true;
@@ -610,10 +608,8 @@ public class GenerateSentence {
 			}
 			catch {
 				isOK = false;
-				Debug.Log("例文再度生成");
 			}
 		}
-		Debug.Log(typing);
 		return (jpStr, qHStr, hiraganaSeparated, typing);
 	}
 
@@ -625,7 +621,6 @@ public class GenerateSentence {
 		var listJp1 = new List<(string jp, string h)>();
 		var listJp2 = new List<(string jp, string h)>();
 		foreach (var word in problemData.words1){
-			Debug.Log(word.Item1);
 			var p = (word.Item1, word.Item2);
 			listJp1.Add(p);
 		}

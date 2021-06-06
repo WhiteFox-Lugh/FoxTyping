@@ -217,6 +217,7 @@ public class TypingSoft : MonoBehaviour {
 			}
 		}
 	}
+
 	void ChangeSentence (){
 		var t = gs.Generate(GameMode);
 		nQJ = t.jp;
@@ -240,6 +241,9 @@ public class TypingSoft : MonoBehaviour {
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			Debug.Log(e.keyCode);
 			var kc = e.keyCode;
+			if (Input.GetKeyDown(KeyCode.Alpha1)){
+				Debug.Log("keycode !");
+			}
 			if (isFirstInput){
 				firstCharInputTime = Time.realtimeSinceStartup;
 				isFirstInput = false;
@@ -350,18 +354,8 @@ public class TypingSoft : MonoBehaviour {
 		bool ret = false;
 		// 可能な入力パターンを残す
 		for (int i = 0; i < sentenceTyping[index].Count; ++i){
-			// っの例外処理
-			if(sentenceHiragana[index].Equals("っ") && index + 1 < sentenceTyping.Count 
-			&& 1 == sentenceTyping[index][i].Length &&
-			str.Equals(sentenceTyping[index][i][0].ToString())){
-				for (int ni = 0; ni < sentenceTyping[index + 1].Count; ++ni){
-					if(!str.Equals(sentenceTyping[index + 1][ni][0].ToString())){
-						sentenceValid[index+1][ni] = 0;
-					}
-				}
-			}
 			// str と一致しないものを無効化処理
-			else if(!str.Equals(sentenceTyping[index][i][sentenceIndex[index][i]].ToString())){
+			if(!str.Equals(sentenceTyping[index][i][sentenceIndex[index][i]].ToString())){
 				sentenceValid[index][i] = 0;
 			}
 			// 次のキーへ
