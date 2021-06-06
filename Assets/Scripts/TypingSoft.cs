@@ -13,7 +13,7 @@ public class TypingSoft : MonoBehaviour {
 	private const int WARNING = 50;
 	GenerateSentence gs = new GenerateSentence();
 	// 入力された文字の queue
-	private Queue<KeyCode> queue = new Queue<KeyCode>();
+	private Queue<char> queue = new Queue<char>();
 	// 時刻の queue
 	private Queue<double> timeQueue = new Queue<double>();
 	// ひらがなとタイプのマッピング
@@ -178,6 +178,14 @@ public class TypingSoft : MonoBehaviour {
 		queue.Clear();
 	}
 
+	void ReturnConfig(){
+		SceneManager.LoadScene("SinglePlayConfigScene");
+	}
+
+	void finished(){
+		SceneManager.LoadScene("ResultScene");
+	}
+
 	//　新しい問題を表示するメソッド
 	void OutputQ() {
 		//　テキストUIを初期化する
@@ -237,46 +245,50 @@ public class TypingSoft : MonoBehaviour {
 
 	void OnGUI() {
     Event e = Event.current;
+		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
-			Debug.Log(e.keyCode);
-			var kc = e.keyCode;
-			if (Input.GetKeyDown(KeyCode.Alpha1)){
-				Debug.Log("keycode !");
-			}
+			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
 			if (isFirstInput){
 				firstCharInputTime = Time.realtimeSinceStartup;
 				isFirstInput = false;
 			}
-			queue.Enqueue(kc);
+			queue.Enqueue(inputChar);
 			timeQueue.Enqueue(Time.realtimeSinceStartup);
 		}
   }
 
-	KeyCode GetKeycode(char c){
-		if('.' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Period");
-		}
-		else if(',' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Comma");
-		}
-		else if('-' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Minus");
-		}
-		else if('0' - '0' <= c - '0' && c - '0' <= '9' - '0'){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Alpha" + c.ToString());
-		}
-		else if('a' - 'a' <= c - 'a' && c - 'a' <= 'z' - 'a'){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), c.ToString().ToUpper());
-		}
-		return KeyCode.None;
-	}
+	// // ひらがな文の文字をKeyCodeに変換するための関数
+	// KeyCode GetKeycode(char c){
+	// 	// 数字
+	// 	if('0' - '0' <= c - '0' && c - '0' <= '9' - '0'){
+	// 		return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Alpha" + c.ToString());
+	// 	}
+	// 	// アルファベット
+	// 	else if('a' - 'a' <= c - 'a' && c - 'a' <= 'z' - 'a'){
+	// 		return (KeyCode)System.Enum.Parse(typeof(KeyCode), c.ToString().ToUpper());
+	// 	}
+	// 	// 以下記号
+	// 	switch(c){
+	// 		case '.':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Period");
+	// 		case ',':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Comma");
+	// 		case '-':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Minus");
+	// 		case ';':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Semicoron");
+	// 		case ':':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Coron");
+	// 	}
+	// 	return KeyCode.None;
+	// }
 
 	// タイピングチェック
 	void Check(){
 		while(queue.Count > 0){
 			// queue に入ってる keycode を取得
-			KeyCode kc = queue.Peek();
+			char inputChar = queue.Peek();
 			queue.Dequeue();
 			double keyDownTime = timeQueue.Peek();
 			timeQueue.Dequeue();
@@ -287,7 +299,7 @@ public class TypingSoft : MonoBehaviour {
 			bool isMistype = true;
 			string str = "";
 			// Esc なら Config 画面に戻る
-			if (kc == KeyCode.Escape){
+			if (inputChar == ConvertKeyCodeToChar(KeyCode.Escape, false)){
 				ReturnConfig();
 				break;
 			}
@@ -298,9 +310,9 @@ public class TypingSoft : MonoBehaviour {
 					continue;
 				}
 				int j = sentenceIndex[index][i];
-				KeyCode nextKC = GetKeycode(sentenceTyping[index][i][j]);
+				char nextInputChar = sentenceTyping[index][i][j];
 				// 正解タイプ
-				if(kc == nextKC){
+				if(inputChar == nextInputChar){
 					isMistype = false;
 					indexAdd[index][i] = 1;
 					str = sentenceTyping[index][i][j].ToString();
@@ -316,14 +328,6 @@ public class TypingSoft : MonoBehaviour {
 				Mistype();
 			}
 		}
-	}
-
-	void ReturnConfig(){
-		SceneManager.LoadScene("SinglePlayConfigScene");
-	}
-
-	void finished(){
-		SceneManager.LoadScene("ResultScene");
 	}
 
 	//　タイピング正解時の処理
@@ -486,5 +490,115 @@ public class TypingSoft : MonoBehaviour {
 		UIKPM.text = "Speed : " + intKpm.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
 		UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
 		+ TotalTypingTime.ToString("0.00") + " sec";
+	}
+
+	// シフトキーが押されたときのキーコード変換
+	char ConvertKeyCodeToChar(KeyCode kc, bool isShift){
+		switch(kc){
+			// かな入力用に便宜的にタブ文字を Shift+0 に割り当てている
+			case KeyCode.Alpha0:
+        return isShift ? '\t' : '0';
+      case KeyCode.Alpha1:
+        return isShift ? '!' : '1';
+      case KeyCode.Alpha2:
+        return isShift ? '\"' : '2';
+      case KeyCode.Alpha3:
+        return isShift ? '#' : '3';
+      case KeyCode.Alpha4:
+        return isShift ? '$' : '4';
+      case KeyCode.Alpha5:
+        return isShift ? '%' : '5';
+      case KeyCode.Alpha6:
+        return isShift ? '&' : '6';
+      case KeyCode.Alpha7:
+        return isShift ? '\'' : '7';
+      case KeyCode.Alpha8:
+        return isShift ? '(' : '8';
+      case KeyCode.Alpha9:
+        return isShift ? ')' : '9';
+			case KeyCode.A:
+        return isShift ? 'A' : 'a';
+      case KeyCode.B:
+        return isShift ? 'B' : 'b';
+      case KeyCode.C:
+        return isShift ? 'C' : 'c';
+      case KeyCode.D:
+        return isShift ? 'D' : 'd';
+      case KeyCode.E:
+        return isShift ? 'E' : 'e';
+      case KeyCode.F:
+        return isShift ? 'F' : 'f';
+      case KeyCode.G:
+        return isShift ? 'G' : 'g';
+      case KeyCode.H:
+        return isShift ? 'H' : 'h';
+      case KeyCode.I:
+        return isShift ? 'I' : 'i';
+      case KeyCode.J:
+        return isShift ? 'J' : 'j';
+      case KeyCode.K:
+        return isShift ? 'K' : 'k';
+      case KeyCode.L:
+        return isShift ? 'L' : 'l';
+      case KeyCode.M:
+        return isShift ? 'M' : 'm';
+      case KeyCode.N:
+        return isShift ? 'N' : 'n';
+      case KeyCode.O:
+        return isShift ? 'O' : 'o';
+      case KeyCode.P:
+        return isShift ? 'P' : 'p';
+      case KeyCode.Q:
+        return isShift ? 'Q' : 'q';
+      case KeyCode.R:
+        return isShift ? 'R' : 'r';
+      case KeyCode.S:
+        return isShift ? 'S' : 's';
+      case KeyCode.T:
+        return isShift ? 'T' : 't';
+      case KeyCode.U:
+        return isShift ? 'U' : 'u';
+      case KeyCode.V:
+        return isShift ? 'V' : 'v';
+      case KeyCode.W:
+        return isShift ? 'W' : 'w';
+      case KeyCode.X:
+        return isShift ? 'X' : 'x';
+      case KeyCode.Y:
+        return isShift ? 'Y' : 'y';
+      case KeyCode.Z:
+        return isShift ? 'Z' : 'z';
+      case KeyCode.Minus:
+        return isShift ? '=' : '-';
+      case KeyCode.Caret:
+        return isShift ? '~' : '^';
+      case KeyCode.Backslash:
+        return isShift ? '|' : '\\';
+      case KeyCode.At:
+        return isShift ? '`' : '@';
+      case KeyCode.LeftBracket:
+        return isShift ? '{' : '[';
+			case KeyCode.RightBracket:
+        return isShift ? '}' : ']';
+      case KeyCode.Semicolon:
+        return isShift ? '+' : ';';
+      case KeyCode.Colon:
+        return isShift ? '*' : ':';
+      case KeyCode.Comma:
+        return isShift ? '<' : ',';
+      case KeyCode.Period:
+        return isShift ? '>' : '.';
+      case KeyCode.Slash:
+        return isShift ? '?' : '/';
+      case KeyCode.Underscore:
+        return '_';
+      case KeyCode.Space:
+        return ' ';
+			// Esc も便宜的にバックスペースに割り当てる
+			case KeyCode.Escape:
+				return '\b';
+      default: // null
+        return '\0';
+		}
 	}
 }
