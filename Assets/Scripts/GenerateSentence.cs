@@ -590,10 +590,8 @@ public class GenerateSentence {
 		{"？", new string[1] {"?"}}
 	};
 
-	// JP:原文, H:ひらがな
-	private Dictionary<int, List<(string jp, string h)>> wordSetDict = new Dictionary<int, List<(string jp, string h)>>();
-
-	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>();
+	// originSentence:原文, H:ひらがな
+	private Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 
 	public static string DataSetName {
 		private set;
@@ -648,27 +646,27 @@ public class GenerateSentence {
 		return ret;
 	}
 
-	public (string jp, string hi, List<string> hiSep, List<List<string>> ty) Generate(int g){
+	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(int g){
 		bool isOK = false;
-		string jpStr = "";
-		string qHStr = "";
+		string originSentenceStr = "";
+		string typeSentenceStr = "";
 		var hiraganaSeparated = new List<string>();
 		var typing = new List<List<string>>();
 		while(!isOK){
 			try {
 				int r1 = UnityEngine.Random.Range(0, wordSetDict[0].Count);
-				string tmpJpStr = wordSetDict[0][r1].jp;
-				string tmpQhStr = wordSetDict[0][r1].h;
+				string tmpOriginSentenceStr = wordSetDict[0][r1].originSentence;
+				string tmpTypeSentenceStr = wordSetDict[0][r1].typeSentence;
 				foreach (var key in wordSetDict.Keys){
 					string replaceStr = "{" + key.ToString() + "}";
 					int r2 = UnityEngine.Random.Range(0, wordSetDict[key].Count);
-					tmpJpStr = tmpJpStr.Replace(replaceStr, wordSetDict[key][r2].jp);
-					tmpQhStr = tmpQhStr.Replace(replaceStr, wordSetDict[key][r2].h);
+					tmpOriginSentenceStr = tmpOriginSentenceStr.Replace(replaceStr, wordSetDict[key][r2].originSentence);
+					tmpTypeSentenceStr = tmpTypeSentenceStr.Replace(replaceStr, wordSetDict[key][r2].typeSentence);
 				}
-				if(minLength <= tmpQhStr.Length && tmpQhStr.Length <= maxLength){
-					jpStr = tmpJpStr;
-					qHStr = tmpQhStr;
-					hiraganaSeparated = ParseHiraganaSentence(qHStr);
+				if(minLength <= tmpTypeSentenceStr.Length && tmpTypeSentenceStr.Length <= maxLength){
+					originSentenceStr = tmpOriginSentenceStr;
+					typeSentenceStr = tmpTypeSentenceStr;
+					hiraganaSeparated = ParseHiraganaSentence(typeSentenceStr);
 					typing = ConstructTypeSentence(hiraganaSeparated);
 					isOK = true;
 				}
@@ -677,7 +675,7 @@ public class GenerateSentence {
 				isOK = false;
 			}
 		}
-		return (jpStr, qHStr, hiraganaSeparated, typing);
+		return (originSentenceStr, typeSentenceStr, hiraganaSeparated, typing);
 	}
 
 	public bool LoadSentenceData (string dataName){

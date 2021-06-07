@@ -228,8 +228,8 @@ public class TypingSoft : MonoBehaviour {
 
 	void ChangeSentence (){
 		var t = gs.Generate(GameMode);
-		nQJ = t.jp;
-		nQR = t.hi;
+		nQJ = t.originSentence;
+		nQR = t.typeSentence;
 		sentenceHiragana = t.hiSep;
 		Debug.Log(nQJ);
 		sentenceTyping = t.ty;
