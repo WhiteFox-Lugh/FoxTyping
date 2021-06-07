@@ -330,13 +330,13 @@ public class TypingSoft : MonoBehaviour {
 		}
 	}
 
-	//　タイピング正解時の処理
+	// タイピング正解時の処理
 	void Correct(string str) {
-		//　正解数を増やす
+		// 正解数を増やす
 		CorrectTypeNum++;
 		UITypeInfo.text = "Correct : " + CorrectTypeNum.ToString() + " / Mistype : " + MisTypeNum.ToString();
 		sectionLength++;
-		//　正解率の計算
+		// 正解率の計算
 		CorrectAnswerRate();
 		// ミスタイプがあったら苦手キーに追加
 		MisTypeAdd(str);
