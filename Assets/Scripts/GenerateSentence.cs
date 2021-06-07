@@ -668,38 +668,38 @@ public class GenerateSentence {
 		return (jpStr, qHStr, hiraganaSeparated, typing);
 	}
 
-	public void LoadSentenceData (string dataName){
-		var file = Resources.Load(dataName);
-		var jsonStr = file.ToString();
-		var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
-		DataSetName = problemData.sentenceDatasetScreenName;
-		var listJp1 = new List<(string jp, string h)>();
-		var listJp2 = new List<(string jp, string h)>();
-		foreach (var word in problemData.words1){
-			var p = (word.Item1, word.Item2);
-			listJp1.Add(p);
+	public bool LoadSentenceData (string dataName){
+		try {
+			var file = Resources.Load(dataName);
+			var jsonStr = file.ToString();
+			var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
+			DataSetName = problemData.sentenceDatasetScreenName;
+			inputType = inputTypeMap[problemData.inputType];
+			foreach (var word in problemData.words){
+				var wordSection = word.wordSection;
+				var wordInfo = (word.Sentence, word.TypeString);
+				wordSetList[wordSection].Add(wordInfo);
+			}
 		}
-		foreach (var word in problemData.words2){
-			var p = (word.Item1, word.Item2);
-			listJp2.Add(p);
+		catch {
+			return false;
 		}
-		qJP1 = listJp1;
-		qJP2N = listJp2;
+		return true;
 	}
 }
 
 [Serializable]
 public class SentenceData
 {
+	public string inputType;
 	public string sentenceDatasetName;
-    public string sentenceDatasetScreenName;
-    public string difficulty;
-    public Word[] words1;
-    public Word[] words2;
+	public string sentenceDatasetScreenName;
+	public Word[] words;
 }
 
 [Serializable]
 public class Word {
-	public string Item1;
-	public string Item2;
+	public int wordSection;
+	public string Sentence;
+	public string TypeString;
 }
