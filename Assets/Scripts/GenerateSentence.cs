@@ -11,8 +11,17 @@ using System.Runtime.Serialization.Json;
 
 public class GenerateSentence {
 
-	private const int minLength = 10;
-	private const int maxLength = 25;
+	private const int minLength = 1;
+	private const int maxLength = 50;
+	private const int inputTypeRoman = 0;
+	private const int inputTypeEnglish = 1;
+	private const int inputTypeKana = 2;
+	private int inputType;
+	private Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
+		{"Roman", 0},
+		{"English", 1},
+		{"Kana", 2}
+	};
 	// ひらがな -> ローマ字マッピング
 	private Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
 		{"あ", new string[1] {"a"}},
@@ -582,7 +591,7 @@ public class GenerateSentence {
 	};
 
 	// JP:原文, H:ひらがな
-	private List<(string jp, string h)> qJP1 = new List<(string jp, string h)>();
+	private Dictionary<int, List<(string jp, string h)>> wordSetDict = new Dictionary<int, List<(string jp, string h)>>();
 
 	private List<(string jp, string h)> qJP2N = new List<(string jp, string h)>();
 
@@ -647,12 +656,15 @@ public class GenerateSentence {
 		var typing = new List<List<string>>();
 		while(!isOK){
 			try {
-				int r1 = UnityEngine.Random.Range(0, qJP1.Count);
-				int r2N = UnityEngine.Random.Range(0, qJP2N.Count);
-				string tmpJpStr = qJP1[r1].jp;
-				string tmpQhStr = qJP1[r1].h;
-				tmpJpStr = tmpJpStr.Replace("$", qJP2N[r2N].jp);
-				tmpQhStr = tmpQhStr.Replace("$", qJP2N[r2N].h);
+				int r1 = UnityEngine.Random.Range(0, wordSetDict[0].Count);
+				string tmpJpStr = wordSetDict[0][r1].jp;
+				string tmpQhStr = wordSetDict[0][r1].h;
+				foreach (var key in wordSetDict.Keys){
+					string replaceStr = "{" + key.ToString() + "}";
+					int r2 = UnityEngine.Random.Range(0, wordSetDict[key].Count);
+					tmpJpStr = tmpJpStr.Replace(replaceStr, wordSetDict[key][r2].jp);
+					tmpQhStr = tmpQhStr.Replace(replaceStr, wordSetDict[key][r2].h);
+				}
 				if(minLength <= tmpQhStr.Length && tmpQhStr.Length <= maxLength){
 					jpStr = tmpJpStr;
 					qHStr = tmpQhStr;
@@ -677,8 +689,13 @@ public class GenerateSentence {
 			inputType = inputTypeMap[problemData.inputType];
 			foreach (var word in problemData.words){
 				var wordSection = word.wordSection;
-				var wordInfo = (word.Sentence, word.TypeString);
-				wordSetList[wordSection].Add(wordInfo);
+				var wordInfo = (word.sentence, word.typeString);
+				if (wordSetDict.ContainsKey(wordSection)){
+					wordSetDict[wordSection].Add(wordInfo);
+				}
+				else {
+					wordSetDict[wordSection] = new List<(string, string)>() {wordInfo};
+				}
 			}
 		}
 		catch {
@@ -700,6 +717,6 @@ public class SentenceData
 [Serializable]
 public class Word {
 	public int wordSection;
-	public string Sentence;
-	public string TypeString;
+	public string sentence;
+	public string typeString;
 }
