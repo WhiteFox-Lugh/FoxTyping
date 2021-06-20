@@ -6,9 +6,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const int gameModeNormal = ConfigScript.gameModeNormal;
-	private const int gameModeEasy = ConfigScript.gameModeEasy;
-	private const int gameModeLunatic = ConfigScript.gameModeLunatic;
 	private const double INTERVAL = 2.0F;
 	private const int KPMDIFF = 20;
 	private const int INITKPM = 300;
@@ -16,11 +13,11 @@ public class TypingSoft : MonoBehaviour {
 	private const int WARNING = 50;
 	GenerateSentence gs = new GenerateSentence();
 	// 入力された文字の queue
-	private Queue<KeyCode> queue = new Queue<KeyCode>();
+	private Queue<char> queue = new Queue<char>();
 	// 時刻の queue
 	private Queue<double> timeQueue = new Queue<double>();
 	// ひらがなとタイプのマッピング
-	//　UI たち
+	// UI たち
 	private Text UIJ;
 	private Text UIR;
 	private Text UII;
@@ -29,10 +26,10 @@ public class TypingSoft : MonoBehaviour {
 	private Text UIcorrectA;
 	private Text UIAccuracy;
 	private Text UITypeInfo;
-	//　問題表示関連
+	// 問題表示関連
 	private string nQJ;
 	private string nQR;
-	//　これまで打った文字列
+	// これまで打った文字列
 	private string correctString;
 	// ミスタイプした文字の記録
 	private bool isRecMistype;
@@ -41,11 +38,6 @@ public class TypingSoft : MonoBehaviour {
 	private List<string> sentenceHiragana;
 	// 文章タイピング読み
 	private List<List<string>> sentenceTyping;
-	// んの例外処理用
-	private bool acceptSingleN;
-	// っの例外処理用
-	private string ltuChar;
-	private bool ltuCheck;
 	// index 類
 	private int index;
 	private List<List<int>> indexAdd = new List<List<int>>();
@@ -66,15 +58,13 @@ public class TypingSoft : MonoBehaviour {
 	// Lunatic mode 専用
 	private bool isInputValid;
 	private int sectionLength;
-	private int lowerBoundKPM;
-	private int life;
 
 	// ゲームモード
 	public static int GameMode {
 		private set;
 		get;
 	}
-	//　正解タイプ数
+	// 正解タイプ数
 	public static int CorrectTypeNum {
 		private set;
 		get;
@@ -84,12 +74,12 @@ public class TypingSoft : MonoBehaviour {
 		private set;
 		get;
 	}
-	//　ミスタイプ
+	// ミスタイプ
 	public static int MisTypeNum {
 		private set;
 		get;
 	}
-	//　正解率
+	// 正解率
 	public static double Accuracy {
 		private set;
 		get;
@@ -115,6 +105,7 @@ public class TypingSoft : MonoBehaviour {
 		get;
 	}
 
+	// 初期化関連
 	void Awake () {
 		GetUI();
 		InitGame();
@@ -127,9 +118,6 @@ public class TypingSoft : MonoBehaviour {
 				SceneManager.LoadScene("SinglePlayConfigScene");
 			}
 			Check();
-		}
-		if(life <= 0){
-			Death();
 		}
 	}
 
@@ -161,21 +149,13 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	void InitText(){
-		//　テキスト関連の初期化
+		// テキスト関連の初期化
 		UITypeInfo.text = "Correct : - / Mistype: - ";
 		UIAccuracy.text = "Accuracy : --.-- %";
 		UIKPM.text = "Speed : --- kpm ";
-		if(GameMode != gameModeLunatic){
-			UIKPM.text += "\n[Sentence: --- kpm]";
-		}
-		if(GameMode == gameModeLunatic){
-			UISTT.text = "Limit : <color=#ff0000ff>" + lowerBoundKPM.ToString() + " kpm</color>";
-			UIcorrectA.text = "Life : -";
-		}
-		else {
-			UISTT.text = "Time : --:--";
-			UIcorrectA.text = "Tasks : - / - ";
-		}
+		UIKPM.text += "\n[Sentence: --- kpm]";
+		UISTT.text = "Time : --:--";
+		UIcorrectA.text = "Tasks : - / - ";
 	}
 
 	void InitData(){
@@ -192,15 +172,21 @@ public class TypingSoft : MonoBehaviour {
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
 		GameMode = ConfigScript.GameMode;
-		Tasks = (GameMode == gameModeLunatic) ? 1000 : ConfigScript.Tasks;
-		life = 3;
-		lowerBoundKPM = INITKPM;
+		Tasks = ConfigScript.Tasks;
 		isInputValid = true;
 		MisTypeDictionary = new Dictionary<string, int>();
 		queue.Clear();
 	}
 
-	//　新しい問題を表示するメソッド	
+	void ReturnConfig(){
+		SceneManager.LoadScene("SinglePlayConfigScene");
+	}
+
+	void finished(){
+		SceneManager.LoadScene("ResultScene");
+	}
+
+	//　新しい問題を表示するメソッド
 	void OutputQ() {
 		//　テキストUIを初期化する
 		UIJ.text = "";
@@ -210,18 +196,11 @@ public class TypingSoft : MonoBehaviour {
 		correctString = "";
 		// 変数等の初期化
 		isFirstInput = true;
-		acceptSingleN = false;
 		index = 0;
 		sectionLength = 0;
-		life = 3;
 		//　問題文生成
 		ChangeSentence();
-		if(GameMode == gameModeLunatic){
-			UIcorrectA.text = "Life : " + life.ToString();
-		}
-		else {
-			UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
-		}
+		UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
 		// 時刻を取得
 		lastUpdateTime = Time.realtimeSinceStartup;
 	}
@@ -246,65 +225,70 @@ public class TypingSoft : MonoBehaviour {
 			}
 		}
 	}
+
 	void ChangeSentence (){
 		var t = gs.Generate(GameMode);
-		nQJ = t.jp;
-		nQR = t.hi;
+		nQJ = t.originSentence;
+		nQR = t.typeSentence;
 		sentenceHiragana = t.hiSep;
 		Debug.Log(nQJ);
 		sentenceTyping = t.ty;
 		// いろいろ初期化
 		InitSentenceData();
-		// Easy mode : ローマ字表記をリセット
-		if(GameMode == gameModeEasy || GameMode == gameModeNormal){
-			for (int i = 0; i < sentenceTyping.Count; ++i){
-				UII.text += sentenceTyping[i][0];
-			}
+		for (int i = 0; i < sentenceTyping.Count; ++i){
+			UII.text += sentenceTyping[i][0];
 		}
 		// テキスト変更
 		UIJ.text = nQJ;
 		UIR.text = nQR;
 	}
 
-	// キーが入力されるたびに発生する
 	void OnGUI() {
-        Event e = Event.current;
-        if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
+    Event e = Event.current;
+		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
-			var kc = e.keyCode;
+			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
 			if (isFirstInput){
 				firstCharInputTime = Time.realtimeSinceStartup;
 				isFirstInput = false;
 			}
-			queue.Enqueue(e.keyCode);
+			queue.Enqueue(inputChar);
 			timeQueue.Enqueue(Time.realtimeSinceStartup);
 		}
-    }
+  }
 
-	KeyCode GetKeycode(char c){
-		if('.' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Period");
-		}
-		else if(',' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Comma");
-		}
-		else if('-' == c){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Minus");
-		}
-		else if('0' - '0' <= c - '0' && c - '0' <= '9' - '0'){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Alpha" + c.ToString());
-		}
-		else if('a' - 'a' <= c - 'a' && c - 'a' <= 'z' - 'a'){
-			return (KeyCode)System.Enum.Parse(typeof(KeyCode), c.ToString().ToUpper());
-		}
-		return KeyCode.None;
-	}
+	// // ひらがな文の文字をKeyCodeに変換するための関数
+	// KeyCode GetKeycode(char c){
+	// 	// 数字
+	// 	if('0' - '0' <= c - '0' && c - '0' <= '9' - '0'){
+	// 		return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Alpha" + c.ToString());
+	// 	}
+	// 	// アルファベット
+	// 	else if('a' - 'a' <= c - 'a' && c - 'a' <= 'z' - 'a'){
+	// 		return (KeyCode)System.Enum.Parse(typeof(KeyCode), c.ToString().ToUpper());
+	// 	}
+	// 	// 以下記号
+	// 	switch(c){
+	// 		case '.':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Period");
+	// 		case ',':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Comma");
+	// 		case '-':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Minus");
+	// 		case ';':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Semicoron");
+	// 		case ':':
+	// 			return (KeyCode)System.Enum.Parse(typeof(KeyCode), "Coron");
+	// 	}
+	// 	return KeyCode.None;
+	// }
 
 	// タイピングチェック
 	void Check(){
 		while(queue.Count > 0){
 			// queue に入ってる keycode を取得
-			KeyCode kc = queue.Peek();
+			char inputChar = queue.Peek();
 			queue.Dequeue();
 			double keyDownTime = timeQueue.Peek();
 			timeQueue.Dequeue();
@@ -315,7 +299,7 @@ public class TypingSoft : MonoBehaviour {
 			bool isMistype = true;
 			string str = "";
 			// Esc なら Config 画面に戻る
-			if (kc == KeyCode.Escape){
+			if (inputChar == ConvertKeyCodeToChar(KeyCode.Escape, false)){
 				ReturnConfig();
 				break;
 			}
@@ -326,15 +310,9 @@ public class TypingSoft : MonoBehaviour {
 					continue;
 				}
 				int j = sentenceIndex[index][i];
-				KeyCode nextKC = GetKeycode(sentenceTyping[index][i][j]);
-				// n 1個でも ok の時に2個めの n がきた時の例外
-				if (acceptSingleN && KeyCode.N == kc){
-					isMistype = false;
-					indexAdd[index][i] = 0;
-					str = "n";
-				}
+				char nextInputChar = sentenceTyping[index][i][j];
 				// 正解タイプ
-				else if(kc == nextKC){
+				if(inputChar == nextInputChar){
 					isMistype = false;
 					indexAdd[index][i] = 1;
 					str = sentenceTyping[index][i][j].ToString();
@@ -344,7 +322,7 @@ public class TypingSoft : MonoBehaviour {
 				}
 			}
 			if(!isMistype){
-				Correct(str, acceptSingleN);
+				Correct(str);
 			}
 			else {
 				Mistype();
@@ -352,28 +330,19 @@ public class TypingSoft : MonoBehaviour {
 		}
 	}
 
-	void ReturnConfig(){
-		SceneManager.LoadScene("SinglePlayConfigScene");
-	}
-
-	void finished(){
-		SceneManager.LoadScene("ResultScene");
-	}
-
-	//　タイピング正解時の処理
-	void Correct(string str, bool singleN) {
-		//　正解数を増やす
+	// タイピング正解時の処理
+	void Correct(string str) {
+		// 正解数を増やす
 		CorrectTypeNum++;
 		UITypeInfo.text = "Correct : " + CorrectTypeNum.ToString() + " / Mistype : " + MisTypeNum.ToString();
-		// Lunatic mode
 		sectionLength++;
-		//　正解率の計算
+		// 正解率の計算
 		CorrectAnswerRate();
 		// ミスタイプがあったら苦手キーに追加
 		MisTypeAdd(str);
 		isRecMistype = false;
 		// 可能な入力パターンのチェック
-		bool isIndexCountUp = CheckValidSentence(str, singleN);
+		bool isIndexCountUp = CheckValidSentence(str);
 		// ローマ字入力表示を更新
 		UpdateSentence(str);
 		if(isIndexCountUp){
@@ -385,40 +354,18 @@ public class TypingSoft : MonoBehaviour {
 		}
 	}
 
-	bool CheckValidSentence(string str, bool singleN){
+	bool CheckValidSentence(string str){
 		bool ret = false;
-		// 例外処理フラグを false
-		acceptSingleN = false;
 		// 可能な入力パターンを残す
 		for (int i = 0; i < sentenceTyping[index].Count; ++i){
-			// んの例外処理
-			if(singleN && str.Equals("n")){
-				continue;
-			}
-			else if(0 == indexAdd[index][i] && !singleN){
-				sentenceValid[index][i] = 0;
-			}
-			// っの例外処理
-			else if(sentenceHiragana[index].Equals("っ") && index + 1 < sentenceTyping.Count 
-			&& 1 == sentenceTyping[index][i].Length &&
-			str.Equals(sentenceTyping[index][i][0].ToString())){
-				for (int ni = 0; ni < sentenceTyping[index + 1].Count; ++ni){
-					if(!str.Equals(sentenceTyping[index + 1][ni][0].ToString())){
-						sentenceValid[index+1][ni] = 0;
-					}
-				}
-			}
 			// str と一致しないものを無効化処理
-			else if(!str.Equals(sentenceTyping[index][i][sentenceIndex[index][i]].ToString())){
+			if(!str.Equals(sentenceTyping[index][i][sentenceIndex[index][i]].ToString())){
 				sentenceValid[index][i] = 0;
 			}
 			// 次のキーへ
 			sentenceIndex[index][i] += indexAdd[index][i];
 			// 次の文字へ
 			if(sentenceIndex[index][i] >= sentenceTyping[index][i].Length) {
-				if(string.Equals("n", sentenceTyping[index][i])){
-					acceptSingleN = true;
-				}
 				ret = true;
 			}
 		}
@@ -428,56 +375,51 @@ public class TypingSoft : MonoBehaviour {
 	void CompleteTask(){
 		tasksCompleted++;
 		double currentTime = Time.realtimeSinceStartup;
-		if(GameMode == gameModeLunatic){
-			SectionKpm(currentTime);
-		}
-		else {
-			KeyPerMinute(currentTime);
-		}
+		KeyPerMinute(currentTime);
 		queue.Clear();
 		// 終了
 		if(tasksCompleted >= Tasks){
 			finished();
 		}
 		else {
-			if(!(GameMode == gameModeLunatic && !isInputValid)){
-				OutputQ();
-			}
+			// if(!(GameMode == gameModeLunatic && !isInputValid)){
+			OutputQ();
+			// }
 		}
 	}
 
-	void UpdateSentence (string str){
-		// Easy / Normal mode : 打った文字を消去
-		if(GameMode == gameModeEasy || GameMode == gameModeNormal){
-			UII.text = "";
-			for (int i = 0; i < sentenceTyping.Count; ++i){
-				if(i < index){
+	void UpdateSentence(string str){
+		// 打った文字を消去するオプションの場合
+		// if(GameMode == gameModeEasy){
+		UII.text = "";
+		for (int i = 0; i < sentenceTyping.Count; ++i){
+			if(i < index){
+				continue;
+			}
+			for (int j = 0; j < sentenceTyping[i].Count; ++j){
+				if(index == i && sentenceValid[index][j] == 0){
 					continue;
 				}
-				for (int j = 0; j < sentenceTyping[i].Count; ++j){
-					if(index == i && sentenceValid[index][j] == 0){
-						continue;
-					}
-					else if(index == i && sentenceValid[index][j] == 1){
-						for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
-							if(k >= sentenceIndex[index][j]){
-								UII.text += sentenceTyping[index][j][k].ToString();
-							}
+				else if(index == i && sentenceValid[index][j] == 1){
+					for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
+						if(k >= sentenceIndex[index][j]){
+							UII.text += sentenceTyping[index][j][k].ToString();
 						}
-						break;
 					}
-					else if(index != i && sentenceValid[i][j] == 1){
-						UII.text += sentenceTyping[i][j];
-						break;
-					}
+					break;
+				}
+				else if(index != i && sentenceValid[i][j] == 1){
+					UII.text += sentenceTyping[i][j];
+					break;
 				}
 			}
 		}
-		// Lunatic mode : 正解した文字を表示
-		else {
-			correctString += str;
-			UII.text = correctString;
-		}
+		// }
+		// 正解した文字を表示するオプションの場合
+		// else {
+		// 	correctString += str;
+		// 	UII.text = correctString;
+		// }
 	}
 
 	//　タイピング失敗時の処理
@@ -488,12 +430,11 @@ public class TypingSoft : MonoBehaviour {
 		//　正解率の計算
 		CorrectAnswerRate();
 		//　Lunatic mode : ミスタイプした文字を赤く表示
-		if(GameMode == gameModeLunatic && Input.inputString != "") {
-			UII.text = correctString + "<color=#ff0000ff>" + Input.inputString + "</color>";
-		}
+		// if(GameMode == gameModeLunatic && Input.inputString != "") {
+		// 	UII.text = correctString + "<color=#ff0000ff>" + Input.inputString + "</color>";
+		// }
 		// Easy / Normal mode : 打つべき文字を赤く表示
-		else if((GameMode == gameModeEasy || GameMode == gameModeNormal) &&
-		!isRecMistype && Input.inputString != ""){
+		if(!isRecMistype && Input.inputString != ""){
 			string rest = "";
 			string s = UII.text.ToString();
 			Debug.Log(s);
@@ -505,10 +446,6 @@ public class TypingSoft : MonoBehaviour {
 		}
 		// 苦手キー記録用
 		isRecMistype = true;
-		// Lunatic Mode ならセンテンス切り替え
-		if(GameMode == gameModeLunatic){
-			StartCoroutine(Damage());
-		}
 	}
 
 	void MisTypeAdd(string str){
@@ -534,70 +471,12 @@ public class TypingSoft : MonoBehaviour {
 		if (Math.Abs(firstCharInputTime - lastUpdateTime) <= INTERVAL){
 			Debug.Log(tasksCompleted.ToString() + " -> time:" + (currentTime - firstCharInputTime).ToString());
 			ret = currentTime - firstCharInputTime;
-			
 		}
 		else {
 			Debug.Log(tasksCompleted.ToString() + " -> time(late):" + (currentTime - (lastUpdateTime + INTERVAL)).ToString());
 			ret = currentTime - (lastUpdateTime + INTERVAL);
 		}
 		return ret;
-	}
-
-	// Lunatic mode の kpm
-	void SectionKpm (double currentTime) {
-		double sentenceTypetime = GetSentenceTypeTime(currentTime);
-		double sectionKPM = ((1.0 * sectionLength) / (1.0 * sentenceTypetime)) * 60.0;
-		int intKpm = Convert.ToInt32(Math.Floor(sectionKPM));
-		double diff = sectionKPM - lowerBoundKPM;
-		if (diff >= SAFETY){
-			UIKPM.text = "Speed : <color=#00b400ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		else if(diff >= WARNING){
-			UIKPM.text = "Speed : <color=#ee7800ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		else {
-			UIKPM.text = "Speed : <color=#ff0000ff>" + intKpm.ToString() + " kpm</color>";
-		}
-		UISTT.text = "Limit : <color=#ff0000ff>" + lowerBoundKPM.ToString() + " kpm</color>";
-		if (sectionKPM < lowerBoundKPM){
-			StartCoroutine(Damage());
-		}
-		else {
-			AcheivedKPM = lowerBoundKPM;
-			lowerBoundKPM += KPMDIFF;
-		}
-	}
-
-	// Lunatic mode で指定 kpm 未満になった
-	void Death(){
-		isInputValid = false;
-		StartCoroutine(ShowFailed());
-	}
-
-	IEnumerator ShowFailed(){
-		yield return new WaitForSeconds(1.0f);
-		UIJ.text = "";
-		UIR.text = "";
-		UII.text = "Finished";
-		yield return new WaitForSeconds(1.0f);
-		finished();
-	}
-
-	IEnumerator Damage(){
-		isInputValid = false;
-		life--;
-		UIcorrectA.text = "Life : <color=#ff0000ff>" + life.ToString() + "</color>";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : ";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : <color=#ff0000ff>" + life.ToString() + "</color>";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : ";
-		yield return new WaitForSeconds(0.25f);
-		UIcorrectA.text = "Life : " + life.ToString();
-		yield return new WaitForSeconds(0.5f);
-		isInputValid = true;
-		OutputQ();
 	}
 
 	// kpm
@@ -611,5 +490,115 @@ public class TypingSoft : MonoBehaviour {
 		UIKPM.text = "Speed : " + intKpm.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
 		UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
 		+ TotalTypingTime.ToString("0.00") + " sec";
+	}
+
+	// シフトキーが押されたときのキーコード変換
+	char ConvertKeyCodeToChar(KeyCode kc, bool isShift){
+		switch(kc){
+			// かな入力用に便宜的にタブ文字を Shift+0 に割り当てている
+			case KeyCode.Alpha0:
+        return isShift ? '\t' : '0';
+      case KeyCode.Alpha1:
+        return isShift ? '!' : '1';
+      case KeyCode.Alpha2:
+        return isShift ? '\"' : '2';
+      case KeyCode.Alpha3:
+        return isShift ? '#' : '3';
+      case KeyCode.Alpha4:
+        return isShift ? '$' : '4';
+      case KeyCode.Alpha5:
+        return isShift ? '%' : '5';
+      case KeyCode.Alpha6:
+        return isShift ? '&' : '6';
+      case KeyCode.Alpha7:
+        return isShift ? '\'' : '7';
+      case KeyCode.Alpha8:
+        return isShift ? '(' : '8';
+      case KeyCode.Alpha9:
+        return isShift ? ')' : '9';
+			case KeyCode.A:
+        return isShift ? 'A' : 'a';
+      case KeyCode.B:
+        return isShift ? 'B' : 'b';
+      case KeyCode.C:
+        return isShift ? 'C' : 'c';
+      case KeyCode.D:
+        return isShift ? 'D' : 'd';
+      case KeyCode.E:
+        return isShift ? 'E' : 'e';
+      case KeyCode.F:
+        return isShift ? 'F' : 'f';
+      case KeyCode.G:
+        return isShift ? 'G' : 'g';
+      case KeyCode.H:
+        return isShift ? 'H' : 'h';
+      case KeyCode.I:
+        return isShift ? 'I' : 'i';
+      case KeyCode.J:
+        return isShift ? 'J' : 'j';
+      case KeyCode.K:
+        return isShift ? 'K' : 'k';
+      case KeyCode.L:
+        return isShift ? 'L' : 'l';
+      case KeyCode.M:
+        return isShift ? 'M' : 'm';
+      case KeyCode.N:
+        return isShift ? 'N' : 'n';
+      case KeyCode.O:
+        return isShift ? 'O' : 'o';
+      case KeyCode.P:
+        return isShift ? 'P' : 'p';
+      case KeyCode.Q:
+        return isShift ? 'Q' : 'q';
+      case KeyCode.R:
+        return isShift ? 'R' : 'r';
+      case KeyCode.S:
+        return isShift ? 'S' : 's';
+      case KeyCode.T:
+        return isShift ? 'T' : 't';
+      case KeyCode.U:
+        return isShift ? 'U' : 'u';
+      case KeyCode.V:
+        return isShift ? 'V' : 'v';
+      case KeyCode.W:
+        return isShift ? 'W' : 'w';
+      case KeyCode.X:
+        return isShift ? 'X' : 'x';
+      case KeyCode.Y:
+        return isShift ? 'Y' : 'y';
+      case KeyCode.Z:
+        return isShift ? 'Z' : 'z';
+      case KeyCode.Minus:
+        return isShift ? '=' : '-';
+      case KeyCode.Caret:
+        return isShift ? '~' : '^';
+      case KeyCode.Backslash:
+        return isShift ? '|' : '\\';
+      case KeyCode.At:
+        return isShift ? '`' : '@';
+      case KeyCode.LeftBracket:
+        return isShift ? '{' : '[';
+			case KeyCode.RightBracket:
+        return isShift ? '}' : ']';
+      case KeyCode.Semicolon:
+        return isShift ? '+' : ';';
+      case KeyCode.Colon:
+        return isShift ? '*' : ':';
+      case KeyCode.Comma:
+        return isShift ? '<' : ',';
+      case KeyCode.Period:
+        return isShift ? '>' : '.';
+      case KeyCode.Slash:
+        return isShift ? '?' : '/';
+      case KeyCode.Underscore:
+        return '_';
+      case KeyCode.Space:
+        return ' ';
+			// Esc も便宜的にバックスペースに割り当てる
+			case KeyCode.Escape:
+				return '\b';
+      default: // null
+        return '\0';
+		}
 	}
 }

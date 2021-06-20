@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 using UnityEngine.SceneManagement;
@@ -7,9 +7,6 @@ public class ConfigScript : MonoBehaviour {
 
 	private const int taskUnit = 5;
 	private const int defaultTasksOption = 3;
-	public const int gameModeNormal = 0;
-	public const int gameModeEasy = 1;
-	public const int gameModeLunatic = 2;
 	private Dropdown UIGameMode;
 	private Dropdown UISentenceNum;
 	private Text UITextSentenceNum;
@@ -41,53 +38,39 @@ public class ConfigScript : MonoBehaviour {
 		UIGameMode.value = GameMode;
 		UISentenceNum.value = (Tasks > 0) ? (Tasks / taskUnit - 1) : defaultTasksOption;
 	}
-	
 	// Update is called once per frame
 	void Update () {
 		DrawOption();
 	}
 
-	void KeyCheck(KeyCode k){
-		if(KeyCode.Return == k || KeyCode.KeypadEnter == k){
+	void KeyCheck(KeyCode kc){
+		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
 			GameMode = UIGameMode.value;
 			Tasks = (UISentenceNum.value + 1) * taskUnit;
 			SceneManager.LoadScene("CountDownScene");
 		}
-		else if(KeyCode.Escape == k){
+		else if(KeyCode.Escape == kc){
 			SceneManager.LoadScene("TitleScene");
 		}
-		else if(KeyCode.N == k){
-			UIGameMode.value = gameModeNormal;
-		}
-		else if(KeyCode.E == k){
-			UIGameMode.value = gameModeEasy;
-		}
-		else if(KeyCode.J == k && UIGameMode.value != gameModeLunatic){
+		else if(KeyCode.J == kc){
 			UISentenceNum.value++;
 		}
-		else if(KeyCode.F == k && UIGameMode.value != gameModeLunatic){
+		else if(KeyCode.F == kc){
 			UISentenceNum.value--;
 		}
 	}
 
 	void DrawOption(){
-		if(UIGameMode.value == gameModeLunatic){
-			UISentenceNum.enabled = false;
-			UITextSentenceNumDescription.color = colorGray;
-			UITextSentenceNum.color = colorGray;
-		}
-		else {
-			UISentenceNum.enabled = true;
-			UITextSentenceNumDescription.color = colorBlack;
-			UITextSentenceNum.color = colorBlack;
-		}
+		UISentenceNum.enabled = true;
+		UITextSentenceNumDescription.color = colorBlack;
+		UITextSentenceNum.color = colorBlack;
 	}
 
 	void OnGUI() {
-        Event e = Event.current;
-        if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
+		Event e = Event.current;
+		if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			KeyCheck(e.keyCode);
 		}
-    }
+  }
 }
