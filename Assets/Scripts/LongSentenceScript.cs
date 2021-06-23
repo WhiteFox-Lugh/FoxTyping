@@ -13,7 +13,7 @@ public class LongSentenceScript : MonoBehaviour {
     private Text UIInputCounter;
     private Text UICountDownText;
     private InputField UIInputField;
-    private InputField UITextField;
+    private Text UITextField;
     // 課題文章
     private string taskText;
     // 制限時間
@@ -48,6 +48,9 @@ public class LongSentenceScript : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        // 必ず文末からしか編集できないようにする
+        // インテルステノ方式
+        UIInputField.MoveTextEnd(false);
         if (isShowInfo){
             CheckTimer();
             CheckInputStr();
@@ -68,19 +71,36 @@ public class LongSentenceScript : MonoBehaviour {
     void CheckInputStr(){
         var inputText = UIInputField.text;
         int inputCount = inputText.Length;
-        UIInputCounter.text = "入力文字数: " + inputCount.ToString();
+        int inputLine = UIInputField.caretPosition;
+        UIInputCounter.text = "行数: " + inputLine.ToString() + " / 入力文字数: " + inputCount.ToString();
     }
 
     void GetUI(){
-		UIRestTime = transform.Find("Timer").GetComponent<Text>();
+        UIRestTime = transform.Find("Timer").GetComponent<Text>();
         UICountDownText = transform.Find("CountDownText").GetComponent<Text>();
-		UIInputCounter = transform.Find("InputStrNum").GetComponent<Text>();
+        UIInputCounter = transform.Find("InputStrNum").GetComponent<Text>();
         UIInputField = transform.Find("InputTextField").GetComponent<InputField>();
-        UITextField = transform.Find("TaskTextField").GetComponent<InputField>();
-	}
+        UITextField = transform.Find("TaskTextField/Viewport/Content").GetComponent<Text>();
+    }
 
     void Finish(){
         Debug.Log("Finish");
+    }
+
+    void OnGUI() {
+        Event e = Event.current;
+        var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape){
+            ReturnConfig();
+        }
+        else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.V && isPushedCtrlKey){
+            Debug.Log("Copy detected");
+        }
+    }
+
+    void ReturnConfig(){
+        // あとで長文用のコンフィグシーンに差し替える
+        SceneManager.LoadScene("TitleScene");
     }
 
     string LoadSentenceData (string dataName){
@@ -96,13 +116,13 @@ public class LongSentenceScript : MonoBehaviour {
     }
 
     IEnumerator CountDown(){
-		UICountDownText.text = "3";
-		yield return new WaitForSeconds(1.0f);
-		UICountDownText.text = "2";
-		yield return new WaitForSeconds(1.0f);
-		UICountDownText.text = "1";
-		yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "3";
+        yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "2";
+        yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "1";
+        yield return new WaitForSeconds(1.0f);
         UICountDownText.text = "";
         AfterCountDown();
-	}
+    }
 }
