@@ -104,15 +104,25 @@ public class LongSentenceScript : MonoBehaviour {
     }
 
     void ShowScore(){
+        const string EOS = "{END}";
         // 編集距離の計算
-        string taskSentence = taskText;
+        string taskSentence = taskText + EOS;
         string userInputSentence = UIInputField.text;
+        userInputSentence = userInputSentence.Replace(EOS, "[END]");
         diff_match_patch dmp = new diff_match_patch();
         List<Diff> diff = dmp.diff_main(taskSentence, userInputSentence);
-        dmp.diff_cleanupSemantic(diff);
         for (int i = 0; i < diff.Count; i++) {
             Debug.Log(diff[i]);
         }
+        for (int i = diff.Count - 1; i >= 0; --i){
+            if ((diff[i].text).Contains(EOS)){
+                diff.RemoveAt(i);
+                break;
+            }
+        }
+        var diffHtml = dmp.diff_prettyHtml(diff);
+        diffHtml = diffHtml.Replace("&para;<br>", "[NL]\n");
+        UIResultTextField.text = diffHtml;
     }
 
     // (int dist, List<(int, int)> trace) GetEditDistance(string strA, string strB){
