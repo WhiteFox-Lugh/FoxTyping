@@ -48,7 +48,8 @@ public class TitleSelect : MonoBehaviour {
 	}
 
 	void LoadLoginScene(){
-		SceneManager.LoadScene("Login");
+		// SceneManager.LoadScene("Login");
+		SceneManager.LoadScene("LongSentenceTypingScene");
 	}
 
 	// キーが入力されるたびに発生する
