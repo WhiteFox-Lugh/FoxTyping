@@ -17,13 +17,13 @@ public class GenerateSentence {
 	private const int inputTypeEnglish = 1;
 	private const int inputTypeKana = 2;
 	private int inputType;
-	private Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
+	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
 		{"English", 1},
 		{"Kana", 2}
 	};
 	// ひらがな -> ローマ字マッピング
-	private Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
+	private static Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
 		{"あ", new string[1] {"a"}},
 		{"い", new string[2] {"i", "yi"}},
 		{"う", new string[3] {"u", "wu", "whu"}},
@@ -938,7 +938,7 @@ public class GenerateSentence {
 	};
 
 	// originSentence:原文, H:ひらがな
-	private Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
+	private static Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 
 	public static string DataSetName {
 		private set;
@@ -946,7 +946,7 @@ public class GenerateSentence {
 	}
 
 	// ひらがな読みを1~3文字に区切る
-	List<string> ParseHiraganaSentence(string str){
+	private	static List<string> ParseHiraganaSentence(string str){
 		var ret = new List<string>();
 		int i = 0;
 		string uni = "";
@@ -973,7 +973,7 @@ public class GenerateSentence {
 	}
 
 	// ひらがな読みをパースしてタイピング文字列を生成
-	public List<List<string>> ConstructTypeSentence(List<string> str){
+	private static List<List<string>> ConstructTypeSentence(List<string> str){
 		var ret = new List<List<string>>();
 		string s;
 		for (int i = 0; i < str.Count; ++i){
