@@ -65,11 +65,16 @@ public class LongSentenceScript : MonoBehaviour {
         get;
     } = 300;
 
-    void Awake()
-    {
+    /// <summary>
+    /// Update() 前の処理
+    /// </summary>
+    void Awake(){
         Init();
     }
 
+    /// <summary>
+    /// 各種初期化
+    /// </summary>
     void Init(){
         startTime = 0.0;
         isShowInfo = false;
@@ -88,28 +93,57 @@ public class LongSentenceScript : MonoBehaviour {
         StartCoroutine(CountDown());
     }
 
+    /// <summary>
+    /// カウントダウンの処理
+    /// </summary>
+    IEnumerator CountDown(){
+        UICountDownText.text = "3";
+        yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "2";
+        yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "1";
+        yield return new WaitForSeconds(1.0f);
+        UICountDownText.text = "";
+        AfterCountDown();
+    }
+
+    /// <summary>
+    /// カウントダウン後の処理
+    /// </summary>
     private void AfterCountDown(){
+        // 開始時刻取得
         startTime = Time.realtimeSinceStartup;
+        // 経過時間と入力文字数の表示
         isShowInfo = true;
+        // 課題文表示
         UITextField.text = taskText;
+        // 入力フィールドアクティブ化
         UIInputField.interactable = true;
         UIInputField.ActivateInputField();
     }
 
+    /// <summary>
+    /// 毎フレーム処理
+    /// </summary>
     void Update()
     {
-        // 必ず文末からしか編集できないようにする
-        // インテルステノ方式
+        // フォーカスされていなければ強制フォーカス
         if (!UIInputField.isFocused){
             UIInputField.Select();
         }
+        // 必ず文末からしか編集できないようにする
+        // インテルステノ方式
         UIInputField.MoveTextEnd(false);
+        // 入力中はタイマーを更新
         if (isShowInfo && !isFinished){
             CheckTimer();
             CheckInputStr();
         }
     }
 
+    /// <summary>
+    /// タイマーのチェックと更新
+    /// </summary>
     private void CheckTimer(){
         var elapsedTime = Time.realtimeSinceStartup - startTime;
         var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
@@ -121,12 +155,18 @@ public class LongSentenceScript : MonoBehaviour {
         UIRestTime.text = "残り時間: " + restMin.ToString() + " 分 " + restSec.ToString() + " 秒";
     }
 
+    /// <summary>
+    /// 入力文字数のカウントチェック
+    /// </summary>
     private void CheckInputStr(){
         var inputText = UIInputField.text;
         int inputCount = inputText.Length;
         UIInputCounter.text = "入力文字数: " + inputCount.ToString();
     }
 
+    /// <summary>
+    /// 入力終了後の処理
+    /// </summary>
     private void Finish(){
         // 表示の切り替え
         ResultPanel.SetActive(true);
@@ -141,6 +181,9 @@ public class LongSentenceScript : MonoBehaviour {
         ShowScore();
     }
 
+    /// <summary>
+    /// スコア表示の処理
+    /// </summary>
     private void ShowScore(){
         const string EOS = "{END}";
         // 編集距離の計算
@@ -153,6 +196,9 @@ public class LongSentenceScript : MonoBehaviour {
         UIResultTextField.text = coloredText;
     }
 
+    /// <summary>
+    /// オリジナル計算のスコアの表示切替
+    /// </summary>
     private void ShowOriginalScore(){
         int score = GetOriginalScore();
         var sbScore = new StringBuilder();
@@ -169,10 +215,16 @@ public class LongSentenceScript : MonoBehaviour {
         UIDetailText.text = sbDetail.ToString();
     }
 
+    /// <summary>
+    /// オリジナルスコアの値取得
+    /// </summary>
     private int GetOriginalScore(){
         return correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
     }
 
+    /// <summary>
+    /// maipaso 形式のスコアの表示切替
+    /// </summary>
     private void ShowMpScore(){
         (int score, int spScore) = GetMpScore();
         var sbScore = new StringBuilder();
@@ -190,6 +242,9 @@ public class LongSentenceScript : MonoBehaviour {
         UIDetailText.text = sbDetail.ToString();
     }
 
+    /// <summary>
+    /// maipaso 形式のスコア取得。特別点も取得する。
+    /// </summary>
     private (int score, int spScore) GetMpScore(){
         int missCount = deleteCount + insertCount + replaceCount;
         int retSpScore = (missCount <= 3) ? Convert.ToInt32(Math.Ceiling(correctCount * (0.20 - 0.05 * missCount))) : 0;
@@ -197,6 +252,9 @@ public class LongSentenceScript : MonoBehaviour {
         return (retScore, retSpScore);
     }
 
+    /// <summary>
+    /// 正解数、不正解数と不正解の内訳を Diff からカウント
+    /// </summary>
     private void SetScoreDetail(List<Diff> diffs){
         correctCount = 0;
         deleteCount = 0;
@@ -221,9 +279,13 @@ public class LongSentenceScript : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// strA (原文) から strB (入力文) への Diff を取得
+    /// </summary>
     private static List<Diff> GetDiff(string strA, string strB){
         var retBackTrace = new List<Diff>() { };
-        // 共通の prefix を探す
+
+        // 1: 共通の prefix を探す
         int minLen = Math.Min(strA.Length, strB.Length);
         int commonPrefixIndex = -1;
         for (int i = 0; i < minLen; ++i){
@@ -237,16 +299,16 @@ public class LongSentenceScript : MonoBehaviour {
         string commonPrefix = (commonPrefixIndex == -1) ? "" : strA.Substring(0, commonPrefixIndex + 1);
         string restStrA = (commonPrefixIndex == -1) ? strA : strA.Substring(commonPrefixIndex + 1, strA.Length - commonPrefixIndex - 1);
         string restStrB = (commonPrefixIndex == -1) ? strB : strB.Substring(commonPrefixIndex + 1, strB.Length - commonPrefixIndex - 1);
-        Debug.Log("Prefix: " + commonPrefix);
-        Debug.Log("restA : " + restStrA);
-        Debug.Log("restB : " + restStrB);
         // restB が空 -> そこまで全部正解
         if (restStrB.Equals("")){
             retBackTrace.Add(new Diff(OP_EQUAL, commonPrefix, ""));
             return retBackTrace;
         }
-        // 入力した文章の最後n文字が課題文に一致するか？
+
+        // 2: 入力した文章の最後n文字が課題文に一致するか？
         // ここでの suffix は厳密には suffix ではないが便宜上そう呼ぶことに
+
+        // 入力された文字(strB)の後ろ最大何文字が課題文の一部に含まれるか二分探索
         int lb = 0, ub = restStrB.Length + 1;
         bool hasSuffix = false;
         while (ub - lb > 1){
@@ -263,7 +325,8 @@ public class LongSentenceScript : MonoBehaviour {
         }
         int commonSuffixIndex = restStrB.Length - lb;
         string commonSuffix = restStrB.Substring(commonSuffixIndex, lb);
-        // rest の文字列長の差の絶対値が最小となるように切り取る
+
+        // 点数をできるだけ大きくしたいので、rest の文字列長の差の絶対値が最小となるように切り取る
         var suffixIndexList = new List<int>();
         int trimSubstrIndex = restStrA.IndexOf(commonSuffix);
         if (hasSuffix){
@@ -288,17 +351,17 @@ public class LongSentenceScript : MonoBehaviour {
                 }
             }
         }
+
+        // prefix と suffix をのぞいた残りの文字 (diff を取るべき文字列)
         restStrA = (commonSuffixIndex == restStrB.Length) ? restStrA : restStrA.Substring(0, trimSubstrIndex);
         restStrB = (commonSuffixIndex == restStrB.Length) ? restStrB : restStrB.Substring(0, commonSuffixIndex);
-        Debug.Log("Suffix: " + commonSuffix);
-        Debug.Log("restA : " + restStrA);
-        Debug.Log("restB : " + restStrB);
-        // 共通 suffix と prefix をのぞいた残りの文字の diff を求める
-        // BackTrace で前方一致させるため逆順にする
+
+        // 3: 共通 suffix と prefix をのぞいた残りの文字の diff を求める
+        // BackTrace で前方一致させるため、Reverse してから DP する
+
+        // 編集距離を求める DP パート
         string src = new string(restStrA.Reverse().ToArray());
         string dst = new string(restStrB.Reverse().ToArray());
-        Debug.Log(src);
-        Debug.Log(dst);
         var rows = src.Length + 1;
         var cols = dst.Length + 1;
         int[ , ] d = new int[rows, cols];
@@ -314,10 +377,11 @@ public class LongSentenceScript : MonoBehaviour {
                             Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1));
             }
         }
+
+        // バックトレース
         var tmpBackTrace = BackTrace(src, dst, d);
-        foreach (var t in tmpBackTrace){
-            Debug.Log(t);
-        }
+
+        // prefix, suffix と統合
         var prefixTrace = (commonPrefix.Equals("")) ? new List<Diff>() { }
                             : new List<Diff>() {(new Diff (OP_EQUAL, commonPrefix, ""))};
         var suffixTrace = (commonSuffix.Equals("")) ? new List<Diff>() { }
@@ -326,7 +390,9 @@ public class LongSentenceScript : MonoBehaviour {
         retBackTrace.AddRange(prefixTrace);
         retBackTrace.AddRange(trace);
         retBackTrace.AddRange(suffixTrace);
-        // 最後の2つのop処理
+
+        // 4. 最後の2つの Diff 例外処理 (得点をできるだけ大きくするため)
+
         // delete, equal だった場合
         var len = retBackTrace.Count;
         if (len >= 2 && (retBackTrace[len - 2].op).Equals(OP_DELETE) && (retBackTrace[len - 1].op).Equals(OP_EQUAL)){
@@ -334,14 +400,13 @@ public class LongSentenceScript : MonoBehaviour {
             var diff1 = retBackTrace[len - 1];
             var delLen = diff2.before.Length;
             var eqLen = diff1.before.Length;
-            Debug.Log("del : " + delLen.ToString() + ", eq : " + eqLen.ToString());
             // 脱字文字コスト + 正解数 よりも 余分文字コストのみの方がスコアが高くなる時置き換え
             if (MISS_COST * delLen > (MISS_COST + 1) * eqLen){
                 retBackTrace.RemoveRange(len - 2, 2);
                 retBackTrace.Add(new Diff(OP_INSERT, "", diff1.before));
             }
         }
-        // replace, delete だった場合
+        // replace, delete だった場合は置き換えて削除より余分文字として減点したほうが必ず得点が高い
         else if (len >= 2 && (retBackTrace[len - 2].op).Equals(OP_REPLACE) && (retBackTrace[len - 1].op).Equals(OP_DELETE)){
             var diff2 = retBackTrace[len - 2];
             retBackTrace.RemoveRange(len - 2, 2);
@@ -350,6 +415,9 @@ public class LongSentenceScript : MonoBehaviour {
         return retBackTrace;
     }
 
+    /// <summary>
+    /// 編集グラフをバックトレース
+    /// </summary>
     private static List<(string, (int, int))> BackTrace(string strA, string strB, int[ , ] matrix){
         const int INF = -1000;
         var ALen = strA.Length;
@@ -393,6 +461,9 @@ public class LongSentenceScript : MonoBehaviour {
         return ret;
     }
 
+    /// <summary>
+    /// バックトレースした行列の座標から Diff へ変換
+    /// </summary>
     private static List<Diff> ConvertDiff(List<(string op, (int idxA, int idxB))> opList, string compStrA, string compStrB){
         var ret = new List<Diff>() { };
         int i = 0;
@@ -439,6 +510,10 @@ public class LongSentenceScript : MonoBehaviour {
         return ret;
     }
 
+    /// <summary>
+    /// Diff から Html を生成
+    /// 文字に色を付けて強調表示を行う
+    /// </summary>
     private static string ConvertDiffToHtml (List<Diff> diffs){
         var sb = new StringBuilder();
         foreach (Diff diff in diffs) {
@@ -464,6 +539,9 @@ public class LongSentenceScript : MonoBehaviour {
         return ret;
     }
 
+    /// <summary>
+    /// キーが押されたときなどのイベント処理
+    /// </summary>
     void OnGUI() {
         Event e = Event.current;
         var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -491,11 +569,17 @@ public class LongSentenceScript : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Config 画面へ戻る
+    /// </summary>
     private static void ReturnConfig(){
         // あとで長文用のコンフィグシーンに差し替える
         SceneManager.LoadScene("TitleScene");
     }
 
+    /// <summary>
+    /// 文書データの読み込み
+    /// </summary>
     private static string LoadSentenceData (string dataName){
         var str = "";
         try {
@@ -506,16 +590,5 @@ public class LongSentenceScript : MonoBehaviour {
             return str;
         }
         return str;
-    }
-
-    IEnumerator CountDown(){
-        UICountDownText.text = "3";
-        yield return new WaitForSeconds(1.0f);
-        UICountDownText.text = "2";
-        yield return new WaitForSeconds(1.0f);
-        UICountDownText.text = "1";
-        yield return new WaitForSeconds(1.0f);
-        UICountDownText.text = "";
-        AfterCountDown();
     }
 }
