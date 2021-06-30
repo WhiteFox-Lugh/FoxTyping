@@ -68,7 +68,6 @@ public class LongSentenceScript : MonoBehaviour {
     void Awake()
     {
         Init();
-        StartCoroutine(CountDown());
     }
 
     void Init(){
@@ -76,12 +75,17 @@ public class LongSentenceScript : MonoBehaviour {
         isShowInfo = false;
         isFinished = false;
         UIInputField.interactable = false;
+        UITextField.text = "";
+        UIInputField.text = "";
+        UIRestTime.text = "";
+        UIInputCounter.text = "";
         InputPanel.SetActive(true);
         TaskPanel.SetActive(true);
         InfoPanel.SetActive(true);
         ResultPanel.SetActive(false);
         ScorePanel.SetActive(false);
         taskText = LoadSentenceData("long_constitution");
+        StartCoroutine(CountDown());
     }
 
     private void AfterCountDown(){
@@ -480,6 +484,9 @@ public class LongSentenceScript : MonoBehaviour {
             }
             else if(e.keyCode == KeyCode.F){
                 ShowOriginalScore();
+            }
+            else if(e.keyCode == KeyCode.R){
+                Init();
             }
         }
     }
