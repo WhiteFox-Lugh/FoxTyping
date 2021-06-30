@@ -67,7 +67,6 @@ public class LongSentenceScript : MonoBehaviour {
 
     void Awake()
     {
-        Debug.Log("Initialized!");
         Init();
         StartCoroutine(CountDown());
     }
@@ -85,7 +84,7 @@ public class LongSentenceScript : MonoBehaviour {
         taskText = LoadSentenceData("long_constitution");
     }
 
-    void AfterCountDown(){
+    private void AfterCountDown(){
         startTime = Time.realtimeSinceStartup;
         isShowInfo = true;
         UITextField.text = taskText;
@@ -107,7 +106,7 @@ public class LongSentenceScript : MonoBehaviour {
         }
     }
 
-    void CheckTimer(){
+    private void CheckTimer(){
         var elapsedTime = Time.realtimeSinceStartup - startTime;
         var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
         if (elapsedTimeInt >= LimitSec){
@@ -118,13 +117,13 @@ public class LongSentenceScript : MonoBehaviour {
         UIRestTime.text = "残り時間: " + restMin.ToString() + " 分 " + restSec.ToString() + " 秒";
     }
 
-    void CheckInputStr(){
+    private void CheckInputStr(){
         var inputText = UIInputField.text;
         int inputCount = inputText.Length;
         UIInputCounter.text = "入力文字数: " + inputCount.ToString();
     }
 
-    void Finish(){
+    private void Finish(){
         // 表示の切り替え
         ResultPanel.SetActive(true);
         ScorePanel.SetActive(true);
@@ -138,7 +137,7 @@ public class LongSentenceScript : MonoBehaviour {
         ShowScore();
     }
 
-    void ShowScore(){
+    private void ShowScore(){
         const string EOS = "{END}";
         // 編集距離の計算
         string taskSentence = taskText;
@@ -150,8 +149,8 @@ public class LongSentenceScript : MonoBehaviour {
         UIResultTextField.text = coloredText;
     }
 
-    void ShowOriginalScore(){
-        int score = correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
+    private void ShowOriginalScore(){
+        int score = GetOriginalScore();
         var sbScore = new StringBuilder();
         var sbDetail = new StringBuilder();
         sbScore.Append("スコア(F)：").Append(score.ToString());
@@ -166,10 +165,12 @@ public class LongSentenceScript : MonoBehaviour {
         UIDetailText.text = sbDetail.ToString();
     }
 
-    void ShowMpScore(){
-        int missCount = deleteCount + insertCount + replaceCount;
-        int spScore = (missCount <= 3) ? Convert.ToInt32(Math.Ceiling(correctCount * (0.20 - 0.05 * missCount))) : 0;
-        int score = correctCount - missCount * MISS_COST_MP + spScore;
+    private int GetOriginalScore(){
+        return correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
+    }
+
+    private void ShowMpScore(){
+        (int score, int spScore) = GetMpScore();
         var sbScore = new StringBuilder();
         var sbDetail = new StringBuilder();
         sbScore.Append("スコア(M)：").Append(score.ToString());
@@ -185,7 +186,14 @@ public class LongSentenceScript : MonoBehaviour {
         UIDetailText.text = sbDetail.ToString();
     }
 
-    void SetScoreDetail(List<Diff> diffs){
+    private (int score, int spScore) GetMpScore(){
+        int missCount = deleteCount + insertCount + replaceCount;
+        int retSpScore = (missCount <= 3) ? Convert.ToInt32(Math.Ceiling(correctCount * (0.20 - 0.05 * missCount))) : 0;
+        int retScore = correctCount - missCount * MISS_COST_MP + retSpScore;
+        return (retScore, retSpScore);
+    }
+
+    private void SetScoreDetail(List<Diff> diffs){
         correctCount = 0;
         deleteCount = 0;
         insertCount = 0;
@@ -209,7 +217,7 @@ public class LongSentenceScript : MonoBehaviour {
         }
     }
 
-    List<Diff> GetDiff(string strA, string strB){
+    private static List<Diff> GetDiff(string strA, string strB){
         var retBackTrace = new List<Diff>() { };
         // 共通の prefix を探す
         int minLen = Math.Min(strA.Length, strB.Length);
@@ -230,12 +238,13 @@ public class LongSentenceScript : MonoBehaviour {
         Debug.Log("restB : " + restStrB);
         // restB が空 -> そこまで全部正解
         if (restStrB.Equals("")){
-            retBackTrace.Add(new Diff(OP_EQUAL, commonPrefix, commonPrefix));
+            retBackTrace.Add(new Diff(OP_EQUAL, commonPrefix, ""));
             return retBackTrace;
         }
         // 入力した文章の最後n文字が課題文に一致するか？
         // ここでの suffix は厳密には suffix ではないが便宜上そう呼ぶことに
         int lb = 0, ub = restStrB.Length + 1;
+        bool hasSuffix = false;
         while (ub - lb > 1){
             int mid = lb + (ub - lb) / 2;
             string subStr = restStrB.Substring(restStrB.Length - mid, mid);
@@ -245,12 +254,37 @@ public class LongSentenceScript : MonoBehaviour {
             }
             else {
                 lb = mid;
+                hasSuffix = true;
             }
         }
         int commonSuffixIndex = restStrB.Length - lb;
         string commonSuffix = restStrB.Substring(commonSuffixIndex, lb);
-        int firstSubStrIdx = restStrA.IndexOf(commonSuffix);
-        restStrA = (commonSuffixIndex == restStrB.Length) ? restStrA : restStrA.Substring(0, firstSubStrIdx);
+        // rest の文字列長の差の絶対値が最小となるように切り取る
+        var suffixIndexList = new List<int>();
+        int trimSubstrIndex = restStrA.IndexOf(commonSuffix);
+        if (hasSuffix){
+            int idx = 0;
+            int nextIdx;
+            do {
+                nextIdx = restStrA.IndexOf(commonSuffix, idx);
+                idx = nextIdx + 1;
+                if (nextIdx != -1){
+                    suffixIndexList.Add(nextIdx);
+                }
+            } while(nextIdx != -1);
+            int diffAbsMin = Int32.MaxValue;
+            var middleStrB = restStrB.Substring(0, commonSuffixIndex);
+            foreach (int trimIdx in suffixIndexList){
+                Debug.Log("trimidx:" + trimIdx.ToString());
+                var middleStrA = restStrA.Substring(0, trimIdx);
+                int diff = Math.Abs(middleStrA.Length - middleStrB.Length);
+                if (diff <= diffAbsMin){
+                    trimSubstrIndex = trimIdx;
+                    diffAbsMin = diff;
+                }
+            }
+        }
+        restStrA = (commonSuffixIndex == restStrB.Length) ? restStrA : restStrA.Substring(0, trimSubstrIndex);
         restStrB = (commonSuffixIndex == restStrB.Length) ? restStrB : restStrB.Substring(0, commonSuffixIndex);
         Debug.Log("Suffix: " + commonSuffix);
         Debug.Log("restA : " + restStrA);
@@ -281,9 +315,9 @@ public class LongSentenceScript : MonoBehaviour {
             Debug.Log(t);
         }
         var prefixTrace = (commonPrefix.Equals("")) ? new List<Diff>() { }
-                            : new List<Diff>() {(new Diff (OP_EQUAL, commonPrefix, commonPrefix))};
+                            : new List<Diff>() {(new Diff (OP_EQUAL, commonPrefix, ""))};
         var suffixTrace = (commonSuffix.Equals("")) ? new List<Diff>() { }
-                            : new List<Diff>() {(new Diff (OP_EQUAL, commonSuffix, commonSuffix))};
+                            : new List<Diff>() {(new Diff (OP_EQUAL, commonSuffix, ""))};
         var trace = ConvertDiff(tmpBackTrace, restStrA, restStrB);
         retBackTrace.AddRange(prefixTrace);
         retBackTrace.AddRange(trace);
@@ -312,7 +346,7 @@ public class LongSentenceScript : MonoBehaviour {
         return retBackTrace;
     }
 
-    List<(string, (int, int))> BackTrace(string strA, string strB, int[ , ] matrix){
+    private static List<(string, (int, int))> BackTrace(string strA, string strB, int[ , ] matrix){
         const int INF = -1000;
         var ALen = strA.Length;
         var BLen = strB.Length;
@@ -355,7 +389,7 @@ public class LongSentenceScript : MonoBehaviour {
         return ret;
     }
 
-    List<Diff> ConvertDiff(List<(string op, (int idxA, int idxB))> opList, string compStrA, string compStrB){
+    private static List<Diff> ConvertDiff(List<(string op, (int idxA, int idxB))> opList, string compStrA, string compStrB){
         var ret = new List<Diff>() { };
         int i = 0;
         if (compStrA == ""){
@@ -390,15 +424,18 @@ public class LongSentenceScript : MonoBehaviour {
             else if (currentOp.Equals(OP_INSERT)){
                 ret.Add(new Diff(currentOp, "", targetStrB));
             }
-            else if (currentOp.Equals(OP_REPLACE) || currentOp.Equals(OP_EQUAL)){
+            else if (currentOp.Equals(OP_REPLACE)){
                 ret.Add(new Diff(currentOp, targetStrA, targetStrB));
+            }
+            else if (currentOp.Equals(OP_EQUAL)){
+                ret.Add(new Diff(currentOp, targetStrA, ""));
             }
             i += 1 + j;
         }
         return ret;
     }
 
-    string ConvertDiffToHtml (List<Diff> diffs){
+    private static string ConvertDiffToHtml (List<Diff> diffs){
         var sb = new StringBuilder();
         foreach (Diff diff in diffs) {
             string beforeText = diff.before.Replace("&", "&amp;").Replace("<", "&lt;")
@@ -447,12 +484,12 @@ public class LongSentenceScript : MonoBehaviour {
         }
     }
 
-    void ReturnConfig(){
+    private static void ReturnConfig(){
         // あとで長文用のコンフィグシーンに差し替える
         SceneManager.LoadScene("TitleScene");
     }
 
-    string LoadSentenceData (string dataName){
+    private static string LoadSentenceData (string dataName){
         var str = "";
         try {
             var file = Resources.Load(dataName);
