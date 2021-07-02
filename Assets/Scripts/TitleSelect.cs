@@ -3,73 +3,51 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TitleSelect : MonoBehaviour {
-	private Text userName;
-	public Button ButtonUserData;
 
-	// Use this for initialization
+	/// <summary>
+	/// 初期化
+	/// </summary>
 	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		userName = GameObject.Find("ModeSelect/UserName").GetComponent<Text>();
-		if(UserAuth.currentPlayerName == null){
-			userName.text = "Typer ID: Guest";
-			ButtonUserData.interactable = false;
-		}
-		else {
-			userName.text = "Typer ID: " + UserAuth.currentPlayerName.ToString();
-			ButtonUserData.interactable = true;
-		}
 	}
 
+	/// <summary>
+	/// 1f ごとの処理
+	/// </summary>
+	void Update () {
+	}
+
+	/// <summary>
+	/// 押されたキーのチェックと対応する操作への移行
+	/// </summary>
 	void KeyCheck(KeyCode k){
 		if(KeyCode.P == k){
 			// シングルプレイに移行する
-			LoadSPScene();
-		}
-		else if(KeyCode.U == k){
-			// レコードに移行
-			LoadRecordScene();
-		}
-		else if(KeyCode.L == k){
-			// Log in / out
-			LoadLoginScene();
+			LoadModeSelectScene();
 		}
 	}
 
-	void LoadSPScene(){
-		SceneManager.LoadScene("SinglePlayConfigScene");
+	/// <summary>
+	/// モードセレクトへシーン変更
+	/// </summary>
+	void LoadModeSelectScene(){
+		SceneManager.LoadScene("ModeSelectScene");
 	}
 
-	void LoadRecordScene(){
-		SceneManager.LoadScene("RecordScene");
+	/// <summary>
+	/// play ボタンを押したときの挙動
+	/// </summary>
+	public void OnClickPlayButton(){
+		LoadModeSelectScene();
 	}
 
-	void LoadLoginScene(){
-		// SceneManager.LoadScene("Login");
-		SceneManager.LoadScene("LongSentenceTypingScene");
-	}
-
-	// キーが入力されるたびに発生する
+	/// <summary>
+	/// イベント発生時の処理。主にキーボード入力処理
+	/// </summary>
 	void OnGUI() {
-        Event e = Event.current;
-        if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
-		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
+    Event e = Event.current;
+    if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None
+				&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			KeyCheck(e.keyCode);
 		}
-    }
-
-	public void OnClickSPModeButton(){
-		LoadSPScene();
-	}
-
-	public void OnClickRecordButton(){
-		LoadRecordScene();
-	}
-
-	public void OnClickRegistButton(){
-		LoadLoginScene();
-	}
+  }
 }
