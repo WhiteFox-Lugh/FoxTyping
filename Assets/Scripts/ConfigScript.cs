@@ -37,10 +37,12 @@ public class ConfigScript : MonoBehaviour {
 		UITextSentenceNumDescription = GameObject.Find("SentenceNum/DescriptionSentenceNum").GetComponent<Text>();
 		UIGameMode.value = GameMode;
 		UISentenceNum.value = (Tasks > 0) ? (Tasks / taskUnit - 1) : defaultTasksOption;
+		UISentenceNum.enabled = true;
+		UITextSentenceNumDescription.color = colorBlack;
+		UITextSentenceNum.color = colorBlack;
 	}
 	// Update is called once per frame
 	void Update () {
-		DrawOption();
 	}
 
 	void KeyCheck(KeyCode kc){
@@ -58,12 +60,6 @@ public class ConfigScript : MonoBehaviour {
 		else if(KeyCode.F == kc){
 			UISentenceNum.value--;
 		}
-	}
-
-	void DrawOption(){
-		UISentenceNum.enabled = true;
-		UITextSentenceNumDescription.color = colorBlack;
-		UITextSentenceNum.color = colorBlack;
 	}
 
 	void OnGUI() {
