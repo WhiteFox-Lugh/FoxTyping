@@ -89,7 +89,7 @@ public class LongSentenceScript : MonoBehaviour {
         InfoPanel.SetActive(true);
         ResultPanel.SetActive(false);
         ScorePanel.SetActive(false);
-        taskText = LoadSentenceData("long_constitution");
+        taskText = LoadSentenceData(ConfigScript.LongSentenceTaskName);
         StartCoroutine(CountDown());
     }
 

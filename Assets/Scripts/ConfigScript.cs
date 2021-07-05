@@ -11,10 +11,15 @@ public class ConfigScript : MonoBehaviour {
 	private const int MIN_SENTENCE_NUM = 10;
 	private const int MAX_SENTENCE_NUM = 100;
 	private const int DEFAULT_SENTENCE_NUM = 30;
-	[SerializeField] Dropdown UIGameMode;
+	[SerializeField] TMP_Dropdown UIGameMode;
 	[SerializeField] TMP_InputField UISentenceNum;
-	[SerializeField] TextMeshProUGUI UITextSentenceNum;
-	[SerializeField] Text UITextSentenceNumDescription;
+	[SerializeField] GameObject ConfigPanel;
+	[SerializeField] GameObject LongSentenceConfigPanel;
+
+	enum GameModeNumber {
+		ShortSentence,
+		LongSentence
+	}
 
 	public static int Tasks {
 		private set;
@@ -36,7 +41,7 @@ public class ConfigScript : MonoBehaviour {
 	} = "official";
 
 	// 長文打つモードでのデータセットのファイル名
-	public static string LongSentenceDataSetName {
+	public static string LongSentenceTaskName {
 		private set;
 		get;
 	} = "long_constitution";
@@ -54,6 +59,8 @@ public class ConfigScript : MonoBehaviour {
 	/// 1フレームごとの処理
 	/// </summary>
 	void Update () {
+		SetGameMode();
+		ChangeConfigPanel();
 		if (!UISentenceNum.isFocused && !IsSentenceNumValid()){
 			ComplementSentenceNum();
 		}
@@ -64,6 +71,21 @@ public class ConfigScript : MonoBehaviour {
 	/// </summary>
 	void ComplementSentenceNum(){
 		UISentenceNum.text = DEFAULT_SENTENCE_NUM.ToString();
+	}
+
+	/// <summary>
+	/// 選択されているゲームモードにより表示パネルを変更
+	/// </summary>
+	void ChangeConfigPanel(){
+		ConfigPanel.SetActive(GameMode == (int)GameModeNumber.ShortSentence);
+    LongSentenceConfigPanel.SetActive(GameMode == (int)GameModeNumber.LongSentence);
+	}
+
+	/// <summary>
+	/// ゲームモードの値をプロパティにセット
+	/// </summary>
+	void SetGameMode(){
+		GameMode = UIGameMode.value;
 	}
 
 	/// <summary>
@@ -84,8 +106,12 @@ public class ConfigScript : MonoBehaviour {
 	/// </summary>
 	void KeyCheck(KeyCode kc){
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
-			if (IsSentenceNumValid()){
+			SetGameMode();
+			if (GameMode == (int)GameModeNumber.ShortSentence && IsSentenceNumValid()){
 				SceneManager.LoadScene("CountDownScene");
+			}
+			else if(GameMode == (int)GameModeNumber.LongSentence){
+				SceneManager.LoadScene("LongSentenceTypingScene");
 			}
 		}
 		else if(KeyCode.Escape == kc){
