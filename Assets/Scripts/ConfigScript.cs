@@ -11,7 +11,12 @@ public class ConfigScript : MonoBehaviour {
 	private const int MIN_SENTENCE_NUM = 10;
 	private const int MAX_SENTENCE_NUM = 100;
 	private const int DEFAULT_SENTENCE_NUM = 30;
+		// 練習後、元の設定を再現するための変数
+	private static int dataSetNameNum;
+	private static int longDataSetNameNum;
 	[SerializeField] TMP_Dropdown UIGameMode;
+	[SerializeField] TMP_Dropdown UIDataSetName;
+	[SerializeField] TMP_Dropdown UILongDataSetName;
 	[SerializeField] TMP_InputField UISentenceNum;
 	[SerializeField] GameObject ConfigPanel;
 	[SerializeField] GameObject LongSentenceConfigPanel;
@@ -20,6 +25,14 @@ public class ConfigScript : MonoBehaviour {
 		ShortSentence,
 		LongSentence
 	}
+
+	private static string[] datasetFileName = new string[2] {
+		"FoxTypingOfficial", "FoxTypingOfficialEnglish"
+	};
+
+	private static string[] longDatasetFileName = new string[2] {
+		"Long_Constitution", "Long_ConstitutionEnglish"
+	};
 
 	public static int Tasks {
 		private set;
@@ -38,19 +51,21 @@ public class ConfigScript : MonoBehaviour {
 	public static string DataSetName {
 		private set;
 		get;
-	} = "official";
+	}
 
 	// 長文打つモードでのデータセットのファイル名
 	public static string LongSentenceTaskName {
 		private set;
 		get;
-	} = "long_constitution";
+	}
 
 	/// <summary>
 	/// 初期化など
 	/// </summary>
 	void Awake () {
 		UIGameMode.value = GameMode;
+		UIDataSetName.value = dataSetNameNum;
+		UILongDataSetName.value = longDataSetNameNum;
 		UISentenceNum.text = Tasks.ToString();
 		UISentenceNum.enabled = true;
 	}
@@ -89,6 +104,22 @@ public class ConfigScript : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// データセットをプロパティにセット
+	/// </summary>
+	void SetDataSet(){
+		dataSetNameNum = UIDataSetName.value;
+		DataSetName = datasetFileName[dataSetNameNum];
+	}
+
+	/// <summary>
+	/// 長文データセットをプロパティにセット
+	/// </summary>
+	void SetLongDataSet(){
+		longDataSetNameNum = UILongDataSetName.value;
+		LongSentenceTaskName = longDatasetFileName[longDataSetNameNum];
+	}
+
+	/// <summary>
 	/// 文章数の値が規定の値に入っているかチェックする
 	/// </summary>
 	bool IsSentenceNumValid(){
@@ -108,9 +139,11 @@ public class ConfigScript : MonoBehaviour {
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
 			SetGameMode();
 			if (GameMode == (int)GameModeNumber.ShortSentence && IsSentenceNumValid()){
+				SetDataSet();
 				SceneManager.LoadScene("CountDownScene");
 			}
 			else if(GameMode == (int)GameModeNumber.LongSentence){
+				SetLongDataSet();
 				SceneManager.LoadScene("LongSentenceTypingScene");
 			}
 		}
