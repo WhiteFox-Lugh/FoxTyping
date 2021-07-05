@@ -1,64 +1,74 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using TMPro;
 using UnityEngine.SceneManagement;
 
 public class ConfigScript : MonoBehaviour {
-
-	private const int taskUnit = 5;
-	private const int defaultTasksOption = 3;
-	private Dropdown UIGameMode;
-	private Dropdown UISentenceNum;
-	private Text UITextSentenceNum;
-	private Text UITextSentenceNumDescription;
-	private Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
-	private Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
+	private const int MIN_SENTENCE_NUM = 10;
+	private const int MAX_SENTENCE_NUM = 100;
+	private const int DEFAULT_SENTENCE_NUM = 30;
+	[SerializeField] Dropdown UIGameMode;
+	[SerializeField] TMP_InputField UISentenceNum;
+	[SerializeField] TextMeshProUGUI UITextSentenceNum;
+	[SerializeField] Text UITextSentenceNumDescription;
 
 	public static int Tasks {
 		private set;
 		get;
-	}
+	} = 30;
 
 	public static int GameMode {
 		private set;
 		get;
-	}
+	} = 0;
 
 	public static string DataSetName {
 		private set;
 		get;
 	} = "official";
 
-	// Use this for initialization
-	void Start () {
-		UIGameMode = GameObject.Find("GameMode/Dropdown").GetComponent<Dropdown>();
-		UISentenceNum = GameObject.Find("SentenceNum/Dropdown").GetComponent<Dropdown>();
-		UITextSentenceNum = GameObject.Find("SentenceNum/TextSentenceNum").GetComponent<Text>();
-		UITextSentenceNumDescription = GameObject.Find("SentenceNum/DescriptionSentenceNum").GetComponent<Text>();
+	public static string LongSentenceDataSetName {
+		private set;
+		get;
+	} = "long_constitution";
+
+	void Awake () {
 		UIGameMode.value = GameMode;
-		UISentenceNum.value = (Tasks > 0) ? (Tasks / taskUnit - 1) : defaultTasksOption;
+		UISentenceNum.text = Tasks.ToString();
 		UISentenceNum.enabled = true;
-		UITextSentenceNumDescription.color = colorBlack;
-		UITextSentenceNum.color = colorBlack;
 	}
 	// Update is called once per frame
 	void Update () {
+		if (!UISentenceNum.isFocused && !IsSentenceNumValid()){
+			ComplementSentenceNum();
+		}
+	}
+
+	void ComplementSentenceNum(){
+		UISentenceNum.text = DEFAULT_SENTENCE_NUM.ToString();
+	}
+
+	bool IsSentenceNumValid(){
+		int num;
+		bool isNumOfSentenceParseSuccess = Int32.TryParse(UISentenceNum.text, out num);
+		bool isNumOfSentenceValid = (isNumOfSentenceParseSuccess && MIN_SENTENCE_NUM <= num && num <= MAX_SENTENCE_NUM);
+		if (isNumOfSentenceValid){
+			Tasks = num;
+		}
+		return isNumOfSentenceValid;
 	}
 
 	void KeyCheck(KeyCode kc){
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
-			GameMode = UIGameMode.value;
-			Tasks = (UISentenceNum.value + 1) * taskUnit;
-			SceneManager.LoadScene("CountDownScene");
+			if (IsSentenceNumValid()){
+				SceneManager.LoadScene("CountDownScene");
+			}
 		}
 		else if(KeyCode.Escape == kc){
 			SceneManager.LoadScene("TitleScene");
-		}
-		else if(KeyCode.J == kc){
-			UISentenceNum.value++;
-		}
-		else if(KeyCode.F == kc){
-			UISentenceNum.value--;
 		}
 	}
 
