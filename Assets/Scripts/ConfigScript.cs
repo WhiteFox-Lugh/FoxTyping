@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 
 public class ConfigScript : MonoBehaviour {
+	// 文章数の最小値、最大値、デフォルト値
 	private const int MIN_SENTENCE_NUM = 10;
 	private const int MAX_SENTENCE_NUM = 100;
 	private const int DEFAULT_SENTENCE_NUM = 30;
@@ -20,37 +21,54 @@ public class ConfigScript : MonoBehaviour {
 		get;
 	} = 30;
 
+	// ゲームモード
+	// 0 : 短文を打つモード
+	// 1 : 長文を打つモード
 	public static int GameMode {
 		private set;
 		get;
 	} = 0;
 
+	// 短文打つモードでのデータセットのファイル名
 	public static string DataSetName {
 		private set;
 		get;
 	} = "official";
 
+	// 長文打つモードでのデータセットのファイル名
 	public static string LongSentenceDataSetName {
 		private set;
 		get;
 	} = "long_constitution";
 
+	/// <summary>
+	/// 初期化など
+	/// </summary>
 	void Awake () {
 		UIGameMode.value = GameMode;
 		UISentenceNum.text = Tasks.ToString();
 		UISentenceNum.enabled = true;
 	}
-	// Update is called once per frame
+
+	/// <summary>
+	/// 1フレームごとの処理
+	/// </summary>
 	void Update () {
 		if (!UISentenceNum.isFocused && !IsSentenceNumValid()){
 			ComplementSentenceNum();
 		}
 	}
 
+	/// <summary>
+	/// 文章数の値をデフォルト値で補完する
+	/// </summary>
 	void ComplementSentenceNum(){
 		UISentenceNum.text = DEFAULT_SENTENCE_NUM.ToString();
 	}
 
+	/// <summary>
+	/// 文章数の値が規定の値に入っているかチェックする
+	/// </summary>
 	bool IsSentenceNumValid(){
 		int num;
 		bool isNumOfSentenceParseSuccess = Int32.TryParse(UISentenceNum.text, out num);
@@ -61,6 +79,9 @@ public class ConfigScript : MonoBehaviour {
 		return isNumOfSentenceValid;
 	}
 
+	/// <summary>
+	/// Keycode と対応する操作
+	/// </summary>
 	void KeyCheck(KeyCode kc){
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
 			if (IsSentenceNumValid()){
@@ -72,6 +93,9 @@ public class ConfigScript : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// キーボードの入力などの受付
+	/// </summary>
 	void OnGUI() {
 		Event e = Event.current;
 		if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
