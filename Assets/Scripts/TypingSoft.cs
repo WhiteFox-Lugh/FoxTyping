@@ -227,9 +227,12 @@ public class TypingSoft : MonoBehaviour {
 		sentenceTyping = t.ty;
 		// いろいろ初期化
 		InitSentenceData();
+		string tmpTypingSentence = "";
 		for (int i = 0; i < sentenceTyping.Count; ++i){
-			UII.text += sentenceTyping[i][0];
+			tmpTypingSentence += sentenceTyping[i][0];
 		}
+		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
+		UII.text = tmpTypingSentence.Replace(' ', '_');
 		// テキスト変更
 		UIJ.text = nQJ;
 		UIR.text = nQR;
@@ -395,7 +398,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void UpdateSentence(string str){
 		// 打った文字を消去するオプションの場合
-		UII.text = "";
+		string tmpTypingSentence = "";
 		for (int i = 0; i < sentenceTyping.Count; ++i){
 			if(i < index){
 				continue;
@@ -407,13 +410,13 @@ public class TypingSoft : MonoBehaviour {
 				else if(index == i && sentenceValid[index][j] == 1){
 					for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
 						if(k >= sentenceIndex[index][j]){
-							UII.text += sentenceTyping[index][j][k].ToString();
+							tmpTypingSentence += sentenceTyping[index][j][k].ToString();
 						}
 					}
 					break;
 				}
 				else if(index != i && sentenceValid[i][j] == 1){
-					UII.text += sentenceTyping[i][j];
+					tmpTypingSentence += sentenceTyping[i][j];
 					break;
 				}
 			}
@@ -424,6 +427,8 @@ public class TypingSoft : MonoBehaviour {
 		// 	correctString += str;
 		// 	UII.text = correctString;
 		// }
+		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
+		UII.text = tmpTypingSentence.Replace(' ', '_');
 	}
 
 	/// <summary>
