@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -135,7 +135,10 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void InitData(){
 		// json
-		gs.LoadSentenceData(ConfigScript.DataSetName);
+		bool isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
+		if (!isLoadSuccess){
+			ReturnConfig();
+		}
 		// データ関連の初期化
 		CorrectTypeNum = 0;
 		MisTypeNum = 0;

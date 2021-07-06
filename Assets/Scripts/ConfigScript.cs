@@ -51,13 +51,13 @@ public class ConfigScript : MonoBehaviour {
 	public static string DataSetName {
 		private set;
 		get;
-	}
+	} = "FoxTypingOfficial";
 
 	// 長文打つモードでのデータセットのファイル名
 	public static string LongSentenceTaskName {
 		private set;
 		get;
-	}
+	} = "Long_Constitution";
 
 	/// <summary>
 	/// 初期化など
