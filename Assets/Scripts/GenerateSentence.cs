@@ -13,10 +13,7 @@ public class GenerateSentence {
 
 	private const int minLength = 1;
 	private const int maxLength = 50;
-	private const int inputTypeRoman = 0;
-	private const int inputTypeEnglish = 1;
-	private const int inputTypeKana = 2;
-	private int inputType;
+	private static int inputType;
 	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
 		{"English", 1},
@@ -987,15 +984,19 @@ public class GenerateSentence {
 		{"？", new string[1] {"?"}}
 	};
 
-	// originSentence:原文, H:ひらがな
+	// 原文と読み方のセット
 	private static Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 
+	// データセット名
+	// リザルト画面に表示する用として使いたい
 	public static string DataSetName {
 		private set;
 		get;
 	}
 
-	// ひらがな読みを1~3文字に区切る
+	/// <summary>
+	/// ひらがなの読みをパースして、1～3文字ごとに区切る
+	/// </summary>
 	private	static List<string> ParseHiraganaSentence(string str){
 		var ret = new List<string>();
 		int i = 0;
@@ -1022,7 +1023,10 @@ public class GenerateSentence {
 		return ret;
 	}
 
-	// ひらがな読みをパースしてタイピング文字列を生成
+	/// <summary>
+	/// ParseHiraganaSentence で区切った文字をもとにして
+	/// タイピング入力判定器を作成
+	/// </summary>
 	private static List<List<string>> ConstructTypeSentence(List<string> str){
 		var ret = new List<List<string>>();
 		string s;
@@ -1044,6 +1048,9 @@ public class GenerateSentence {
 		return ret;
 	}
 
+	/// <summary>
+	/// 例文を生成する
+	/// </summary>
 	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(int g){
 		bool isOK = false;
 		string originSentenceStr = "";
@@ -1076,6 +1083,9 @@ public class GenerateSentence {
 		return (originSentenceStr, typeSentenceStr, hiraganaSeparated, typing);
 	}
 
+	/// <summary>
+	/// ワードセットのデータを読み込む
+	/// </summary>
 	public bool LoadSentenceData (string dataName){
 		try {
 			var file = Resources.Load(dataName);
