@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,21 +7,10 @@ using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
 	private const double INTERVAL = 2.0F;
-	GenerateSentence gs = new GenerateSentence();
 	// 入力された文字の queue
 	private static Queue<char> queue = new Queue<char>();
 	// 時刻の queue
 	private static Queue<double> timeQueue = new Queue<double>();
-	// ひらがなとタイプのマッピング
-	// UI たち
-	[SerializeField] Text UIJ;
-	[SerializeField] Text UIR;
-	[SerializeField] Text UII;
-	[SerializeField] Text UIKPM;
-	[SerializeField] Text UISTT;
-	[SerializeField] Text UIcorrectA;
-	[SerializeField] Text UIAccuracy;
-	[SerializeField] Text UITypeInfo;
 	// 問題表示関連
 	private static string nQJ;
 	private static string nQR;
@@ -31,9 +20,8 @@ public class TypingSoft : MonoBehaviour {
 	private static bool isInputValid;
 	// センテンスの長さ
 	private static int sectionLength;
-	// ミスタイプした文字の記録
+	// ミスタイプ記録
 	private static bool isRecMistype;
-	private static string misTypeLetter;
 	// 文章の読み
 	private static List<string> sentenceHiragana;
 	// 文章タイピング読み
@@ -48,71 +36,43 @@ public class TypingSoft : MonoBehaviour {
 	private static double lastUpdateTime;
 	private static double firstCharInputTime;
 	private static double lastJudgeTime;
-	// 問題数関連
+	// ゲームモード
+	private static int gameMode;
+	// タイピング情報表示関連
 	private static int tasksCompleted;
+	private static int correctTypeNum;
+	private static int misTypeNum;
+	private static double keyPerMin;
+	private static double accuracyValue;
+	private static double totalTypingTime;
+	private static int numOfTask;
 	// 色
 	private static Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
 	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
 	private static Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
 	private static Color colorPurple = new Color(148f / 255f, 16f / 255f, 218f / 255f, 1f);
-
-	// ゲームモード
-	public static int GameMode {
-		private set;
-		get;
-	}
-	// 正解タイプ数
-	public static int CorrectTypeNum {
-		private set;
-		get;
-	}
-	// kpm
-	public static double Kpm {
-		private set;
-		get;
-	}
-	// ミスタイプ
-	public static int MisTypeNum {
-		private set;
-		get;
-	}
-	// 正解率
-	public static double Accuracy {
-		private set;
-		get;
-	}
-	// 合計時間
-	public static double TotalTypingTime {
-		private set;
-		get;
-	}
-	// ミスタイプの記録
-	public static Dictionary<string, int> MisTypeDictionary {
-		private set;
-		get;
-	}
-	// 文章数
-	public static int Tasks {
-		set;
-		get;
-	}
-	// Lunatic 用
-	public static int AcheivedKPM {
-		private set;
-		get;
-	}
+	// UI たち
+	[SerializeField] Text UIJ;
+	[SerializeField] Text UIR;
+	[SerializeField] Text UII;
+	[SerializeField] Text UIKPM;
+	[SerializeField] Text UISTT;
+	[SerializeField] Text UITask;
+	[SerializeField] Text UIAccuracy;
+	[SerializeField] Text UITypeInfo;
+	GenerateSentence gs = new GenerateSentence();
 
 	/// <summary>
 	/// Update() 前に読み込み
 	/// </summary>
-	void Awake () {
+	void Awake() {
 		InitGame();
 	}
 
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void InitGame(){
+	void InitGame() {
 		InitData();
 		InitText();
 		GenerateNewSentence();
@@ -121,64 +81,61 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// UI テキストの初期化
 	/// </summary>
-	void InitText(){
+	void InitText() {
 		UITypeInfo.text = "Correct : - / Mistype: - ";
 		UIAccuracy.text = "Accuracy : --.-- %";
-		UIKPM.text = "Speed : --- kpm ";
-		UIKPM.text += "\n[Sentence: --- kpm]";
+		UIKPM.text = "Speed : --- kpm\n[Sentence: --- kpm]";
 		UISTT.text = "Time : --:--";
-		UIcorrectA.text = "Tasks : - / - ";
+		UITask.text = "Tasks : - / - ";
 	}
 
 	/// <summary>
 	/// 内部データの初期化
 	/// </summary>
-	void InitData(){
+	void InitData() {
 		// json
 		bool isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
 		if (!isLoadSuccess){
 			ReturnConfig();
 		}
 		// データ関連の初期化
-		CorrectTypeNum = 0;
-		MisTypeNum = 0;
-		TotalTypingTime = 0.0;
-		Kpm = 0.0;
-		Accuracy = 0.0;
-		AcheivedKPM = 0;
+		correctTypeNum = 0;
+		misTypeNum = 0;
+		totalTypingTime = 0.0;
+		keyPerMin = 0.0;
+		accuracyValue = 0.0;
 		tasksCompleted = 0;
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
-		GameMode = ConfigScript.GameMode;
-		Tasks = ConfigScript.Tasks;
+		gameMode = ConfigScript.GameMode;
+		numOfTask = ConfigScript.Tasks;
 		isInputValid = true;
-		MisTypeDictionary = new Dictionary<string, int>();
 		queue.Clear();
 	}
 
 	/// <summary>
 	/// Config 画面へ戻る
 	/// </summary>
-	void ReturnConfig(){
+	void ReturnConfig() {
 		SceneManager.LoadScene("SinglePlayConfigScene");
 	}
 
 	/// <summary>
 	/// 結果画面へ遷移
 	/// </summary>
-	void finished(){
+	void Finished() {
 		SceneManager.LoadScene("ResultScene");
 	}
 
 	/// <summary>
 	/// 1f ごとの処理
 	/// </summary>
-	void Update () {
+	void Update() {
 		TextColorChange();
 		if (queue.Count > 0 && timeQueue.Count > 0){
 			// キューの長さが一致しないなら Config へ戻す
 			if(queue.Count != timeQueue.Count){
-				SceneManager.LoadScene("SinglePlayConfigScene");
+				ReturnConfig();
 			}
 			TypingCheck();
 		}
@@ -188,7 +145,7 @@ public class TypingSoft : MonoBehaviour {
 	/// 課題文の文字色を変更
 	/// 最初の1文字目を打つか時間経過で変わる
 	/// </summary>
-	void TextColorChange(){
+	void TextColorChange() {
 		double currentTime = Time.realtimeSinceStartup;
 		if(isFirstInput && Math.Abs(lastUpdateTime - Time.realtimeSinceStartup) <= INTERVAL){
 			UIJ.color = colorBlack;
@@ -214,7 +171,7 @@ public class TypingSoft : MonoBehaviour {
 		sectionLength = 0;
 		// 問題文生成
 		ChangeSentence();
-		UIcorrectA.text = "Tasks : " + tasksCompleted.ToString() + " / " + Tasks.ToString();
+		UpdateUITask();
 		// 時刻を取得
 		lastUpdateTime = Time.realtimeSinceStartup;
 	}
@@ -222,8 +179,8 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// 課題文章の変更を行う
 	/// </summary>
-	void ChangeSentence (){
-		var t = gs.Generate(GameMode);
+	void ChangeSentence() {
+		var t = gs.Generate(gameMode);
 		nQJ = t.originSentence;
 		nQR = t.typeSentence;
 		sentenceHiragana = t.hiSep;
@@ -235,16 +192,24 @@ public class TypingSoft : MonoBehaviour {
 			tmpTypingSentence += sentenceTyping[i][0];
 		}
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		UII.text = tmpTypingSentence.Replace(' ', '_');
+		ReplaceWhitespaceToUnderbar();
 		// テキスト変更
 		UIJ.text = nQJ;
 		UIR.text = nQR;
 	}
 
 	/// <summary>
+	/// タイピング文の半角スペースをアンダーバーに置換
+	/// 打ったか打ってないかわかりにくいため、アンダーバーを表示することで改善
+	/// </summary>
+	void ReplaceWhitespaceToUnderbar() {
+		UII.text = tmpTypingSentence.Replace(' ', '_');
+	}
+
+	/// <summary>
 	/// タイピング正誤判定まわりの初期化
 	/// </summary>
-	void InitSentenceData (){
+	void InitSentenceData() {
 		var sLength = sentenceTyping.Count;
 		sentenceIndex.Clear();
 		sentenceValid.Clear();
@@ -286,7 +251,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// タイピングの正誤判定部分
 	/// </summary>
-	void TypingCheck(){
+	void TypingCheck() {
 		while(queue.Count > 0){
 			// queue に入ってる keycode を取得
 			char inputChar = queue.Peek();
@@ -327,7 +292,7 @@ public class TypingSoft : MonoBehaviour {
 				Correct(str);
 			}
 			else {
-				Mistype();
+				Mistype(str);
 			}
 		}
 	}
@@ -337,13 +302,12 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void Correct(string str) {
 		// 正解数を増やす
-		CorrectTypeNum++;
-		UITypeInfo.text = "Correct : " + CorrectTypeNum.ToString() + " / Mistype : " + MisTypeNum.ToString();
+		correctTypeNum++;
 		sectionLength++;
+		UpdateUITypeInfo();
 		// 正解率の計算
-		CorrectAnswerRate();
-		// ミスタイプがあったら苦手キーに追加
-		MisTypeAdd(str);
+		accuracyValue = GetCorrectTypeRate();
+		UpdateUICorrectTypeRate();
 		isRecMistype = false;
 		// 可能な入力パターンのチェック
 		bool isIndexCountUp = CheckValidSentence(str);
@@ -361,7 +325,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// 有効パターンのチェック
 	/// </summary>
-	bool CheckValidSentence(string str){
+	bool CheckValidSentence(string str) {
 		bool ret = false;
 		// 可能な入力パターンを残す
 		for (int i = 0; i < sentenceTyping[index].Count; ++i){
@@ -380,16 +344,38 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// KPM の取得
+	/// </summary>
+	double GetKeyPerMinute() {
+		return ((1.0 * correctTypeNum) / (1.0 * totalTypingTime)) * 60.0;
+	}
+
+	/// <summary>
+	/// センテンスの KPM の取得
+	/// </summary>
+	double GetSentenceKeyPerMinute(double sentenceTypeTime) {
+		return ((1.0 * sectionLength) / (1.0 * sentenceTypeTime)) * 60.0;
+	}
+
+	/// <summary>
 	/// 1文打ち終わった後の処理
 	/// </summary>
-	void CompleteTask(){
+	void CompleteTask() {
 		tasksCompleted++;
+		// 現在時刻の取得
 		double currentTime = Time.realtimeSinceStartup;
-		KeyPerMinute(currentTime);
+		double sentenceTypeTime = GetSentenceTypeTime(currentTime);
+		totalTypingTime += sentenceTypeTime;
+		keyPerMin = GetKeyPerMinute();
+		double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
+		int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
+		int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
+		UpdateUIKeyPerMinute(intKPM, intSectionKPM);
+		UpdateUIElapsedTime(sentenceTypeTime);
 		queue.Clear();
 		// 終了
-		if(tasksCompleted >= Tasks){
-			finished();
+		if(tasksCompleted >= numOfTask){
+			Finished();
 		}
 		else {
 			GenerateNewSentence();
@@ -399,7 +385,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// 画面上に表示する打つ文字の表示を更新する
 	/// </summary>
-	void UpdateSentence(string str){
+	void UpdateSentence(string str) {
 		// 打った文字を消去するオプションの場合
 		string tmpTypingSentence = "";
 		for (int i = 0; i < sentenceTyping.Count; ++i){
@@ -431,82 +417,84 @@ public class TypingSoft : MonoBehaviour {
 		// 	UII.text = correctString;
 		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		UII.text = tmpTypingSentence.Replace(' ', '_');
+		ReplaceWhitespaceToUnderbar();
 	}
 
 	/// <summary>
 	/// ミスタイプ時の処理
 	/// </summary>
-	void Mistype() {
+	void Mistype(string str) {
 		// ミスタイプ数を増やす
-		MisTypeNum += Input.inputString.Length;
-		UITypeInfo.text = "Correct: " + CorrectTypeNum.ToString() + " / Mistype: " + MisTypeNum.ToString();
+		misTypeNum++;
+		UpdateUITypeInfo();
 		// 正解率の計算
-		CorrectAnswerRate();
+		accuracyValue = GetCorrectTypeRate();
+		UpdateUICorrectTypeRate();
 		// 打つべき文字を赤く表示
-		if(!isRecMistype && Input.inputString != ""){
-			string rest = "";
+		if(!isRecMistype){
 			string s = UII.text.ToString();
-			UII.text = "";
-			for (int i = 1; i < s.Length; ++i){
-				rest += s[i].ToString();
-			}
+			string rest = s.Substring(1);
 			UII.text = "<color=#ff0000ff>" + s[0].ToString() + "</color>" + rest;
 		}
-		// 苦手キー記録用
+		// color タグを多重で入れないようにする
 		isRecMistype = true;
-	}
-
-	/// <summary>
-	/// ミスタイプを記録
-	/// </summary>
-	void MisTypeAdd(string str){
-		if(isRecMistype){
-			if(MisTypeDictionary.ContainsKey(str)){
-				MisTypeDictionary[str]++;
-			}
-			else {
-				MisTypeDictionary.Add(str, 1);
-			}
-		}
 	}
 
 	/// <summary>
 	/// 正解率の計算処理
 	/// </summary>
-	void CorrectAnswerRate() {
-		// 正解率の計算
-		Accuracy = 100f * CorrectTypeNum / (CorrectTypeNum + MisTypeNum);
-		UIAccuracy.text = "Accuracy : " + Accuracy.ToString("0.00") + " %";
+	double GetCorrectTypeRate() {
+		return 100f * correctTypeNum / (correctTypeNum + misTypeNum);
 	}
 
 	/// <summary>
 	/// 1文打つのにかかった時間を取得
 	/// </summary>
-	double GetSentenceTypeTime (double currentTime){
+	double GetSentenceTypeTime(double currentTime) {
 		return (Math.Abs(firstCharInputTime - lastUpdateTime) <= INTERVAL) ? currentTime - firstCharInputTime
 						: currentTime - (lastUpdateTime + INTERVAL);
 	}
 
 	/// <summary>
-	/// KPM の取得
+	/// 正解率の UI 表示を更新
 	/// </summary>
-	void KeyPerMinute(double currentTime) {
-		double sentenceTypeTime = GetSentenceTypeTime(currentTime);
-		TotalTypingTime += sentenceTypeTime;
-		Kpm = ((1.0 * CorrectTypeNum) / (1.0 * TotalTypingTime)) * 60.0;
-		double sectionKPM = ((1.0 * sectionLength) / (1.0 * sentenceTypeTime)) * 60.0;
-		int intKpm = Convert.ToInt32(Math.Floor(Kpm));
-		int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
-		UIKPM.text = "Speed : " + intKpm.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
+	void UpdateUICorrectTypeRate() {
+		UIAccuracy.text = "Accuracy : " + accuracyValue.ToString("0.00") + " %";
+	}
+
+	/// <summary>
+	/// 正解数、不正解数の UI 表示を更新
+	/// </summary>
+	void UpdateUITypeInfo() {
+		UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + " / Mistype : " + misTypeNum.ToString();
+	}
+
+	/// <summary>
+	/// KPM 関連の UI 表示を更新
+	/// </summary>
+	void UpdateUIKeyPerMinute(int intKPM, int intSectionKPM) {
+		UIKPM.text = "Speed : " + intKPM.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
+	}
+
+	/// <summary>
+	/// 経過時間関連の UI 表示を更新
+	/// </summary>
+	void UpdateUIElapsedTime(double sentenceTypeTime) {
 		UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
-		+ TotalTypingTime.ToString("0.00") + " sec";
+		+ totalTypingTime.ToString("0.00") + " sec";
+	}
+
+	/// <summary>
+	/// 文章数関連の UI 表示を更新
+	/// </summary>
+	void UpdateUITask() {
+		UITask.text = "Tasks : " + tasksCompleted.ToString() + " / " + numOfTask.ToString();
 	}
 
 	/// <summary>
 	/// キーコードから char への変換
 	/// </summary>
-	char ConvertKeyCodeToChar(KeyCode kc, bool isShift){
+	char ConvertKeyCodeToChar(KeyCode kc, bool isShift) {
 		switch(kc){
 			// かな入力用に便宜的にタブ文字を Shift+0 に割り当てている
 			case KeyCode.Alpha0:
