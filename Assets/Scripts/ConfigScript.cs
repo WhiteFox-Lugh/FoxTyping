@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class ConfigScript : MonoBehaviour {
 	// 文章数の最小値、最大値、デフォルト値
-	private const int MIN_SENTENCE_NUM = 10;
+	private const int MIN_SENTENCE_NUM = 5;
 	private const int MAX_SENTENCE_NUM = 100;
 	private const int DEFAULT_SENTENCE_NUM = 30;
 		// 練習後、元の設定を再現するための変数

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class TypingSoft : MonoBehaviour {
 	// 入力受け付け
 	private static bool isInputValid;
 	// センテンスの長さ
-	private static int sectionLength;
+	private static int sentenceLength;
 	// ミスタイプ記録
 	private static bool isRecMistype;
 	// 文章の読み
@@ -46,6 +47,10 @@ public class TypingSoft : MonoBehaviour {
 	private static double accuracyValue;
 	private static double totalTypingTime;
 	private static int numOfTask;
+	// リザルト集計用
+	private static StringBuilder typedLetter = new StringBuilder();
+	private static List<int> typeJudgeList = new List<int>();
+	private static List<double> typeTimeList = new List<double>();
 	// 色
 	private static Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
 	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
@@ -61,6 +66,11 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] Text UIAccuracy;
 	[SerializeField] Text UITypeInfo;
 	GenerateSentence gs = new GenerateSentence();
+
+	public static TypingPerformance Performance {
+		private set;
+		get;
+	}
 
 	/// <summary>
 	/// Update() 前に読み込み
@@ -110,6 +120,7 @@ public class TypingSoft : MonoBehaviour {
 		gameMode = ConfigScript.GameMode;
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = true;
+		Performance = new TypingPerformance();
 		queue.Clear();
 		timeQueue.Clear();
 	}
@@ -174,10 +185,14 @@ public class TypingSoft : MonoBehaviour {
 		UII.text = "";
 		// 正解した文字列を初期化
 		correctString = "";
+		// リザルト集積用の変数を初期化
+		typedLetter = new StringBuilder();
+		typeJudgeList = new List<int>();
+		typeTimeList = new List<double>();
 		// 変数等の初期化
 		isFirstInput = true;
 		index = 0;
-		sectionLength = 0;
+		sentenceLength = 0;
 		// 問題文生成
 		ChangeSentence();
 		UpdateUITask();
@@ -275,9 +290,12 @@ public class TypingSoft : MonoBehaviour {
 			}
 			lastJudgeTime = keyDownTime;
 
+			// リザルト集積用
+			typedLetter.Append(inputChar);
+			typeTimeList.Add(keyDownTime);
+
 			// まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
 			bool isMistype = true;
-			string str = "";
 			// Esc なら Config 画面に戻る
 			if (inputChar == ConvertKeyCodeToChar(KeyCode.Escape, false)){
 				ReturnConfig();
@@ -295,17 +313,16 @@ public class TypingSoft : MonoBehaviour {
 				if(inputChar == nextInputChar){
 					isMistype = false;
 					indexAdd[index][i] = 1;
-					str = sentenceTyping[index][i][j].ToString();
 				}
 				else {
 					indexAdd[index][i] = 0;
 				}
 			}
 			if(!isMistype){
-				Correct(str);
+				Correct(inputChar.ToString());
 			}
 			else {
-				Mistype(str);
+				Mistype();
 			}
 		}
 	}
@@ -316,7 +333,7 @@ public class TypingSoft : MonoBehaviour {
 	void Correct(string str) {
 		// 正解数を増やす
 		correctTypeNum++;
-		sectionLength++;
+		sentenceLength++;
 		UpdateUITypeInfo();
 		// 正解率の計算
 		accuracyValue = GetCorrectTypeRate();
@@ -329,6 +346,8 @@ public class TypingSoft : MonoBehaviour {
 		if(isIndexCountUp){
 			index++;
 		}
+		// リザルト集積用
+		typeJudgeList.Add(1);
 		// 文章入力完了処理
 		if(index >= sentenceTyping.Count){
 			CompleteTask();
@@ -367,7 +386,7 @@ public class TypingSoft : MonoBehaviour {
 	/// センテンスの KPM の取得
 	/// </summary>
 	double GetSentenceKeyPerMinute(double sentenceTypeTime) {
-		return ((1.0 * sectionLength) / (1.0 * sentenceTypeTime)) * 60.0;
+		return ((1.0 * sentenceLength) / (1.0 * sentenceTypeTime)) * 60.0;
 	}
 
 	/// <summary>
@@ -375,6 +394,11 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void CompleteTask() {
 		tasksCompleted++;
+		// リザルト集積用に追加
+		Performance.AddOriginSentence(nQJ);
+		Performance.AddTypedSentenceList(typedLetter.ToString());
+		Performance.AddTypeJudgeList(typeJudgeList);
+		Performance.AddTypeTimeList(typeTimeList);
 		// 現在時刻の取得
 		double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
 		totalTypingTime += sentenceTypeTime;
@@ -437,7 +461,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// ミスタイプ時の処理
 	/// </summary>
-	void Mistype(string str) {
+	void Mistype() {
 		// ミスタイプ数を増やす
 		misTypeNum++;
 		UpdateUITypeInfo();
@@ -452,6 +476,8 @@ public class TypingSoft : MonoBehaviour {
 		}
 		// color タグを多重で入れないようにする
 		isRecMistype = true;
+		// リザルト集積用
+		typeJudgeList.Add(0);
 	}
 
 	/// <summary>
