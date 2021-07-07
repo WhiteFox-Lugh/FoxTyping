@@ -131,4 +131,25 @@ public class TypingPerformance {
 		sb.Append(GetTimeInfoString(num)).Append("\n\n");
 		return sb.ToString();
 	}
+
+	/// <summary>
+	/// Score を計算する
+	/// </summary>
+	public int GetScore() {
+		return 0;
+	}
+
+	/// <summary>
+	/// 全センテンス打ち終わるまでの経過時間を返す
+	/// </summary>
+	public double GetElapsedTime() {
+		return 0.0;
+	}
+
+	/// <summary>
+	/// 全センテンスにおける精度を返す
+	/// </summary>
+	public double GetAccuracy() {
+		return 0.0;
+	}
 }

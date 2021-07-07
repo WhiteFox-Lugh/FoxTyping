@@ -11,8 +11,12 @@ using UnityEngine.SceneManagement;
 
 public class RecordSceneScript : MonoBehaviour {
 	[SerializeField] Text UIResultDetailText;
+	[SerializeField] TextMeshProUGUI UIScoreText;
+	[SerializeField] TextMeshProUGUI UITimeText;
+	[SerializeField] TextMeshProUGUI UIAccuracyText;
 	// Start is called before the first frame update
 	void Awake(){
+		SetResult();
 		SetResultDetail();
 	}
 
@@ -20,24 +24,12 @@ public class RecordSceneScript : MonoBehaviour {
 	void Update(){
 	}
 
-	// double GetAccuracy (){
-	// 	return 1.0 * typeNum / (typeNum + mistypeNum);
-	// }
-
-	// double tasksNumPenalty(){
-	// 	if(tasks >= 20){
-	// 		return 1.0;
-	// 	}
-	// 	return (-15.0 / (tasks + 10.0) + 1.5);
-	// }
-
-	// void CalculateScore(){
-	// 	score = GetScore();
-	// }
-
-	// int GetScore(){
-	// 	return (int)(tasksNumPenalty() * kpm * (1.05 + Math.Max(-1.0, Weight * Math.Log(GetAccuracy()))));
-	// }
+	void SetResult() {
+		var perf = TypingSoft.Performance;
+		UIScoreText.text = perf.GetScore().ToString();
+		UITimeText.text = perf.GetElapsedTime().ToString("0.000");
+		UIAccuracyText.text = perf.GetAccuracy().ToString("0.000");
+	}
 
 	void SetResultDetail() {
 		var sb = new StringBuilder();
