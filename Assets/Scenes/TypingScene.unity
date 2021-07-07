@@ -273,7 +273,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Text
+  m_Text: 'Speed: 1000 kpm
+
+    [Sentence: 1000 kpm]'
 --- !u!222 &99868349
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -456,8 +458,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.8999999, y: 0.29999998, z: 1}
   m_Children:
-  - {fileID: 1772649523}
   - {fileID: 563039683}
+  - {fileID: 1772649523}
   - {fileID: 1804917067}
   - {fileID: 99868347}
   - {fileID: 2007298560}
@@ -699,7 +701,7 @@ RectTransform:
   m_LocalScale: {x: 0.99999994, y: 2.9999995, z: 1}
   m_Children: []
   m_Father: {fileID: 502970297}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -739,7 +741,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Text
+  m_Text: 'Correct : 10000 / Mistype : 10000'
 --- !u!222 &563039685
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -947,7 +949,7 @@ MonoBehaviour:
   UII: {fileID: 1357472710}
   UIKPM: {fileID: 99868348}
   UISTT: {fileID: 2007298561}
-  UIcorrectA: {fileID: 1772649524}
+  UITask: {fileID: 1772649524}
   UIAccuracy: {fileID: 1804917068}
   UITypeInfo: {fileID: 563039684}
 --- !u!1 &1772649522
@@ -962,7 +964,7 @@ GameObject:
   - component: {fileID: 1772649525}
   - component: {fileID: 1772649524}
   m_Layer: 5
-  m_Name: CorrectAnswer
+  m_Name: TaskInfo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -980,7 +982,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 3, z: 1}
   m_Children: []
   m_Father: {fileID: 502970297}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -1020,7 +1022,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Text
+  m_Text: 'Tasks : 100 / 100'
 --- !u!222 &1772649525
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1177,7 +1179,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Text
+  m_Text: 'Accuracy : 100.00%'
 --- !u!222 &1804917069
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1332,7 +1334,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Text
+  m_Text: 'Time : 100.00 sec
+
+    Total : 1000.00 sec'
 --- !u!222 &2007298562
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const double INTERVAL = 2.0F;
+	private const double INTERVAL = 3.0F;
 	// 入力された文字の queue
 	private static Queue<char> queue = new Queue<char>();
 	// 時刻の queue
@@ -33,7 +33,7 @@ public class TypingSoft : MonoBehaviour {
 	private static List<List<int>> sentenceValid = new List<List<int>>();
 	// 時間計測関連
 	private static bool isFirstInput;
-	private static double lastUpdateTime;
+	private static double lastSentenceUpdateTime;
 	private static double firstCharInputTime;
 	private static double lastJudgeTime;
 	// ゲームモード
@@ -82,11 +82,11 @@ public class TypingSoft : MonoBehaviour {
 	/// UI テキストの初期化
 	/// </summary>
 	void InitText() {
-		UITypeInfo.text = "Correct : - / Mistype: - ";
-		UIAccuracy.text = "Accuracy : --.-- %";
-		UIKPM.text = "Speed : --- kpm\n[Sentence: --- kpm]";
-		UISTT.text = "Time : --:--";
-		UITask.text = "Tasks : - / - ";
+		UpdateUITypeInfo();
+		UpdateUICorrectTypeRate();
+		UpdateUIKeyPerMinute(0, 0);
+		UpdateUIElapsedTime(0.0);
+		UpdateUITask();
 	}
 
 	/// <summary>
@@ -111,6 +111,7 @@ public class TypingSoft : MonoBehaviour {
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = true;
 		queue.Clear();
+		timeQueue.Clear();
 	}
 
 	/// <summary>
@@ -147,13 +148,21 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void TextColorChange() {
 		double currentTime = Time.realtimeSinceStartup;
-		if(isFirstInput && Math.Abs(lastUpdateTime - Time.realtimeSinceStartup) <= INTERVAL){
+		if(isFirstInput && currentTime - lastSentenceUpdateTime <= INTERVAL){
 			UIJ.color = colorBlack;
 		}
 		else {
 			UIJ.color = colorBrown;
 		}
 	}
+
+	/// <summary>
+	/// 次のセンテンスへ移行前に休止を挟む
+	/// </summary>
+	private IEnumerator DelayGenerateNewSentence() {
+    yield return new WaitForSeconds(1f);
+		GenerateNewSentence();
+  }
 
 	/// <summary>
 	/// 新しい課題文を生成する
@@ -172,8 +181,10 @@ public class TypingSoft : MonoBehaviour {
 		// 問題文生成
 		ChangeSentence();
 		UpdateUITask();
+		// 入力受け付け状態にする
+		isInputValid = true;
 		// 時刻を取得
-		lastUpdateTime = Time.realtimeSinceStartup;
+		lastSentenceUpdateTime = Time.realtimeSinceStartup;
 	}
 
 	/// <summary>
@@ -192,7 +203,7 @@ public class TypingSoft : MonoBehaviour {
 			tmpTypingSentence += sentenceTyping[i][0];
 		}
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar();
+		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
 		// テキスト変更
 		UIJ.text = nQJ;
 		UIR.text = nQR;
@@ -202,8 +213,8 @@ public class TypingSoft : MonoBehaviour {
 	/// タイピング文の半角スペースをアンダーバーに置換
 	/// 打ったか打ってないかわかりにくいため、アンダーバーを表示することで改善
 	/// </summary>
-	void ReplaceWhitespaceToUnderbar() {
-		UII.text = tmpTypingSentence.Replace(' ', '_');
+	void ReplaceWhitespaceToUnderbar(string sentence) {
+		UII.text = sentence.Replace(' ', '_');
 	}
 
 	/// <summary>
@@ -234,17 +245,18 @@ public class TypingSoft : MonoBehaviour {
 	/// キーが入力されたとき等の処理
 	/// </summary>
 	void OnGUI() {
+		double currentTime = Time.realtimeSinceStartup;
     Event e = Event.current;
 		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
 			if (isFirstInput){
-				firstCharInputTime = Time.realtimeSinceStartup;
+				firstCharInputTime = currentTime;
 				isFirstInput = false;
 			}
 			queue.Enqueue(inputChar);
-			timeQueue.Enqueue(Time.realtimeSinceStartup);
+			timeQueue.Enqueue(currentTime);
 		}
   }
 
@@ -261,6 +273,7 @@ public class TypingSoft : MonoBehaviour {
 			if(keyDownTime <= lastJudgeTime){
 				continue;
 			}
+			lastJudgeTime = keyDownTime;
 
 			// まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
 			bool isMistype = true;
@@ -363,8 +376,7 @@ public class TypingSoft : MonoBehaviour {
 	void CompleteTask() {
 		tasksCompleted++;
 		// 現在時刻の取得
-		double currentTime = Time.realtimeSinceStartup;
-		double sentenceTypeTime = GetSentenceTypeTime(currentTime);
+		double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
 		totalTypingTime += sentenceTypeTime;
 		keyPerMin = GetKeyPerMinute();
 		double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
@@ -373,12 +385,14 @@ public class TypingSoft : MonoBehaviour {
 		UpdateUIKeyPerMinute(intKPM, intSectionKPM);
 		UpdateUIElapsedTime(sentenceTypeTime);
 		queue.Clear();
+		timeQueue.Clear();
+		isInputValid = false;
 		// 終了
 		if(tasksCompleted >= numOfTask){
 			Finished();
 		}
 		else {
-			GenerateNewSentence();
+			StartCoroutine(DelayGenerateNewSentence());
 		}
 	}
 
@@ -417,7 +431,7 @@ public class TypingSoft : MonoBehaviour {
 		// 	UII.text = correctString;
 		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar();
+		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
 	}
 
 	/// <summary>
@@ -451,8 +465,8 @@ public class TypingSoft : MonoBehaviour {
 	/// 1文打つのにかかった時間を取得
 	/// </summary>
 	double GetSentenceTypeTime(double currentTime) {
-		return (Math.Abs(firstCharInputTime - lastUpdateTime) <= INTERVAL) ? currentTime - firstCharInputTime
-						: currentTime - (lastUpdateTime + INTERVAL);
+		return (firstCharInputTime - lastSentenceUpdateTime <= INTERVAL) ? (currentTime - firstCharInputTime)
+						: (currentTime - (lastSentenceUpdateTime + INTERVAL));
 	}
 
 	/// <summary>
