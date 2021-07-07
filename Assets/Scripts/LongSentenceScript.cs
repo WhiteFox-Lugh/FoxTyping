@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 // 差分表示用
-public class Diff {
+public struct Diff {
 	public string op;
 	public string before;
 	public string after;
