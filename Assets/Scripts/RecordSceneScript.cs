@@ -27,8 +27,8 @@ public class RecordSceneScript : MonoBehaviour {
 	void SetResult() {
 		var perf = TypingSoft.Performance;
 		UIScoreText.text = perf.GetScore().ToString();
-		UITimeText.text = perf.GetElapsedTime().ToString("0.000");
-		UIAccuracyText.text = perf.GetAccuracy().ToString("0.000");
+		UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " s";
+		UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
 	}
 
 	void SetResultDetail() {
