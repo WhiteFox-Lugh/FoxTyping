@@ -1,71 +1,160 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using TMPro;
 using UnityEngine.SceneManagement;
 
 public class ConfigScript : MonoBehaviour {
+	// 文章数の最小値、最大値、デフォルト値
+	private const int MIN_SENTENCE_NUM = 5;
+	private const int MAX_SENTENCE_NUM = 100;
+	private const int DEFAULT_SENTENCE_NUM = 30;
+		// 練習後、元の設定を再現するための変数
+	private static int dataSetNameNum;
+	private static int longDataSetNameNum;
+	[SerializeField] TMP_Dropdown UIGameMode;
+	[SerializeField] TMP_Dropdown UIDataSetName;
+	[SerializeField] TMP_Dropdown UILongDataSetName;
+	[SerializeField] TMP_InputField UISentenceNum;
+	[SerializeField] GameObject ConfigPanel;
+	[SerializeField] GameObject LongSentenceConfigPanel;
 
-	private const int taskUnit = 5;
-	private const int defaultTasksOption = 3;
-	private Dropdown UIGameMode;
-	private Dropdown UISentenceNum;
-	private Text UITextSentenceNum;
-	private Text UITextSentenceNumDescription;
-	private Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
-	private Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
+	enum GameModeNumber {
+		ShortSentence,
+		LongSentence
+	}
+
+	private static string[] datasetFileName = new string[2] {
+		"FoxTypingOfficial", "FoxTypingOfficialEnglish"
+	};
+
+	private static string[] longDatasetFileName = new string[2] {
+		"Long_Constitution", "Long_ConstitutionEnglish"
+	};
 
 	public static int Tasks {
 		private set;
 		get;
-	}
+	} = 30;
 
+	// ゲームモード
+	// 0 : 短文を打つモード
+	// 1 : 長文を打つモード
 	public static int GameMode {
 		private set;
 		get;
-	}
+	} = 0;
 
+	// 短文打つモードでのデータセットのファイル名
 	public static string DataSetName {
 		private set;
 		get;
-	} = "official";
+	} = "FoxTypingOfficial";
 
-	// Use this for initialization
-	void Start () {
-		UIGameMode = GameObject.Find("GameMode/Dropdown").GetComponent<Dropdown>();
-		UISentenceNum = GameObject.Find("SentenceNum/Dropdown").GetComponent<Dropdown>();
-		UITextSentenceNum = GameObject.Find("SentenceNum/TextSentenceNum").GetComponent<Text>();
-		UITextSentenceNumDescription = GameObject.Find("SentenceNum/DescriptionSentenceNum").GetComponent<Text>();
+	// 長文打つモードでのデータセットのファイル名
+	public static string LongSentenceTaskName {
+		private set;
+		get;
+	} = "Long_Constitution";
+
+	/// <summary>
+	/// 初期化など
+	/// </summary>
+	void Awake () {
 		UIGameMode.value = GameMode;
-		UISentenceNum.value = (Tasks > 0) ? (Tasks / taskUnit - 1) : defaultTasksOption;
-	}
-	// Update is called once per frame
-	void Update () {
-		DrawOption();
+		UIDataSetName.value = dataSetNameNum;
+		UILongDataSetName.value = longDataSetNameNum;
+		UISentenceNum.text = Tasks.ToString();
+		UISentenceNum.enabled = true;
 	}
 
+	/// <summary>
+	/// 1フレームごとの処理
+	/// </summary>
+	void Update () {
+		SetGameMode();
+		ChangeConfigPanel();
+		if (!UISentenceNum.isFocused && !IsSentenceNumValid()){
+			ComplementSentenceNum();
+		}
+	}
+
+	/// <summary>
+	/// 文章数の値をデフォルト値で補完する
+	/// </summary>
+	void ComplementSentenceNum(){
+		UISentenceNum.text = DEFAULT_SENTENCE_NUM.ToString();
+	}
+
+	/// <summary>
+	/// 選択されているゲームモードにより表示パネルを変更
+	/// </summary>
+	void ChangeConfigPanel(){
+		ConfigPanel.SetActive(GameMode == (int)GameModeNumber.ShortSentence);
+    LongSentenceConfigPanel.SetActive(GameMode == (int)GameModeNumber.LongSentence);
+	}
+
+	/// <summary>
+	/// ゲームモードの値をプロパティにセット
+	/// </summary>
+	void SetGameMode(){
+		GameMode = UIGameMode.value;
+	}
+
+	/// <summary>
+	/// データセットをプロパティにセット
+	/// </summary>
+	void SetDataSet(){
+		dataSetNameNum = UIDataSetName.value;
+		DataSetName = datasetFileName[dataSetNameNum];
+	}
+
+	/// <summary>
+	/// 長文データセットをプロパティにセット
+	/// </summary>
+	void SetLongDataSet(){
+		longDataSetNameNum = UILongDataSetName.value;
+		LongSentenceTaskName = longDatasetFileName[longDataSetNameNum];
+	}
+
+	/// <summary>
+	/// 文章数の値が規定の値に入っているかチェックする
+	/// </summary>
+	bool IsSentenceNumValid(){
+		int num;
+		bool isNumOfSentenceParseSuccess = Int32.TryParse(UISentenceNum.text, out num);
+		bool isNumOfSentenceValid = (isNumOfSentenceParseSuccess && MIN_SENTENCE_NUM <= num && num <= MAX_SENTENCE_NUM);
+		if (isNumOfSentenceValid){
+			Tasks = num;
+		}
+		return isNumOfSentenceValid;
+	}
+
+	/// <summary>
+	/// Keycode と対応する操作
+	/// </summary>
 	void KeyCheck(KeyCode kc){
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
-			GameMode = UIGameMode.value;
-			Tasks = (UISentenceNum.value + 1) * taskUnit;
-			SceneManager.LoadScene("CountDownScene");
+			SetGameMode();
+			if (GameMode == (int)GameModeNumber.ShortSentence && IsSentenceNumValid()){
+				SetDataSet();
+				SceneManager.LoadScene("CountDownScene");
+			}
+			else if(GameMode == (int)GameModeNumber.LongSentence){
+				SetLongDataSet();
+				SceneManager.LoadScene("LongSentenceTypingScene");
+			}
 		}
 		else if(KeyCode.Escape == kc){
 			SceneManager.LoadScene("TitleScene");
 		}
-		else if(KeyCode.J == kc){
-			UISentenceNum.value++;
-		}
-		else if(KeyCode.F == kc){
-			UISentenceNum.value--;
-		}
 	}
 
-	void DrawOption(){
-		UISentenceNum.enabled = true;
-		UITextSentenceNumDescription.color = colorBlack;
-		UITextSentenceNum.color = colorBlack;
-	}
-
+	/// <summary>
+	/// キーボードの入力などの受付
+	/// </summary>
 	void OnGUI() {
 		Event e = Event.current;
 		if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None

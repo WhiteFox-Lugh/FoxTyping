@@ -13,10 +13,7 @@ public class GenerateSentence {
 
 	private const int minLength = 1;
 	private const int maxLength = 50;
-	private const int inputTypeRoman = 0;
-	private const int inputTypeEnglish = 1;
-	private const int inputTypeKana = 2;
-	private int inputType;
+	private static int inputType;
 	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
 		{"English", 1},
@@ -918,8 +915,59 @@ public class GenerateSentence {
 		{"X", new string[1] {"X"}},
 		{"Y", new string[1] {"Y"}},
 		{"Z", new string[1] {"Z"}},
+		{"んa", new string[2] {"nna", "xna"}},
+		{"んb", new string[2] {"nnb", "xnb"}},
+		{"んc", new string[2] {"nnc", "xnc"}},
+		{"んd", new string[2] {"nnd", "xnd"}},
+		{"んe", new string[2] {"nne", "xne"}},
+		{"んf", new string[2] {"nnf", "xnf"}},
+		{"んg", new string[2] {"nng", "xng"}},
+		{"んh", new string[2] {"nnh", "xnh"}},
+		{"んi", new string[2] {"nni", "xni"}},
+		{"んj", new string[2] {"nnj", "xnj"}},
+		{"んk", new string[2] {"nnk", "xnk"}},
+		{"んl", new string[2] {"nnl", "xnl"}},
+		{"んm", new string[2] {"nnm", "xnm"}},
+		{"んn", new string[2] {"nnn", "xnn"}},
+		{"んo", new string[2] {"nno", "xno"}},
+		{"んp", new string[2] {"nnp", "xnp"}},
+		{"んq", new string[2] {"nnq", "xnq"}},
+		{"んr", new string[2] {"nnr", "xnr"}},
+		{"んs", new string[2] {"nns", "xns"}},
+		{"んt", new string[2] {"nnt", "xnt"}},
+		{"んu", new string[2] {"nnu", "xnu"}},
+		{"んv", new string[2] {"nnv", "xnv"}},
+		{"んw", new string[2] {"nnw", "xnw"}},
+		{"んx", new string[2] {"nnx", "xnx"}},
+		{"んy", new string[2] {"nny", "xny"}},
+		{"んz", new string[2] {"nnz", "xnz"}},
+		{"んA", new string[2] {"nnA", "xnA"}},
+		{"んB", new string[2] {"nnB", "xnB"}},
+		{"んC", new string[2] {"nnC", "xnC"}},
+		{"んD", new string[2] {"nnD", "xnD"}},
+		{"んE", new string[2] {"nnE", "xnE"}},
+		{"んF", new string[2] {"nnF", "xnF"}},
+		{"んG", new string[2] {"nnG", "xnG"}},
+		{"んH", new string[2] {"nnH", "xnH"}},
+		{"んI", new string[2] {"nnI", "xnI"}},
+		{"んJ", new string[2] {"nnJ", "xnJ"}},
+		{"んK", new string[2] {"nnK", "xnK"}},
+		{"んL", new string[2] {"nnL", "xnL"}},
+		{"んM", new string[2] {"nnM", "xnM"}},
+		{"んN", new string[2] {"nnN", "xnN"}},
+		{"んO", new string[2] {"nnO", "xnO"}},
+		{"んP", new string[2] {"nnP", "xnP"}},
+		{"んQ", new string[2] {"nnQ", "xnQ"}},
+		{"んR", new string[2] {"nnR", "xnR"}},
+		{"んS", new string[2] {"nnS", "xnS"}},
+		{"んT", new string[2] {"nnT", "xnT"}},
+		{"んU", new string[2] {"nnU", "xnU"}},
+		{"んV", new string[2] {"nnV", "xnV"}},
+		{"んW", new string[2] {"nnW", "xnW"}},
+		{"んX", new string[2] {"nnX", "xnX"}},
+		{"んY", new string[2] {"nnY", "xnY"}},
+		{"んZ", new string[2] {"nnZ", "xnZ"}},
 		{" ", new string[1] {" "}},
-		{"　", new string[1] {" "}},
 		{"\'", new string[1] {"\'"}},
 		{"-", new string[1] {"-"}},
 		{",", new string[1] {","}},
@@ -930,22 +978,25 @@ public class GenerateSentence {
 		{"]", new string[1] {"]"}},
 		{"@", new string[1] {"@"}},
 		{"/", new string[1] {"/"}},
-		{"_", new string[1] {"_"}},
 		{"!", new string[1] {"!"}},
 		{"！", new string[1] {"!"}},
 		{"?", new string[1] {"?"}},
 		{"？", new string[1] {"?"}}
 	};
 
-	// originSentence:原文, H:ひらがな
+	// 原文と読み方のセット
 	private static Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 
+	// データセット名
+	// リザルト画面に表示する用として使いたい
 	public static string DataSetName {
 		private set;
 		get;
 	}
 
-	// ひらがな読みを1~3文字に区切る
+	/// <summary>
+	/// ひらがなの読みをパースして、1～3文字ごとに区切る
+	/// </summary>
 	private	static List<string> ParseHiraganaSentence(string str){
 		var ret = new List<string>();
 		int i = 0;
@@ -972,7 +1023,10 @@ public class GenerateSentence {
 		return ret;
 	}
 
-	// ひらがな読みをパースしてタイピング文字列を生成
+	/// <summary>
+	/// ParseHiraganaSentence で区切った文字をもとにして
+	/// タイピング入力判定器を作成
+	/// </summary>
 	private static List<List<string>> ConstructTypeSentence(List<string> str){
 		var ret = new List<List<string>>();
 		string s;
@@ -994,6 +1048,9 @@ public class GenerateSentence {
 		return ret;
 	}
 
+	/// <summary>
+	/// 例文を生成する
+	/// </summary>
 	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(int g){
 		bool isOK = false;
 		string originSentenceStr = "";
@@ -1026,6 +1083,9 @@ public class GenerateSentence {
 		return (originSentenceStr, typeSentenceStr, hiraganaSeparated, typing);
 	}
 
+	/// <summary>
+	/// ワードセットのデータを読み込む
+	/// </summary>
 	public bool LoadSentenceData (string dataName){
 		try {
 			var file = Resources.Load(dataName);
