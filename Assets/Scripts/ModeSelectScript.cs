@@ -27,6 +27,9 @@ public class ModeSelectScript : MonoBehaviour
     else if(KeyCode.O == k){
       LoadOtherScene();
     }
+    else if(KeyCode.Escape == k){
+      LoadTitleScene();
+    }
   }
 
   /// <summary>
@@ -55,6 +58,13 @@ public class ModeSelectScript : MonoBehaviour
   /// </summary>
   public void LoadOtherScene(){
     SceneManager.LoadScene("OtherScene");
+  }
+
+  /// <summary>
+  /// タイトルへ移動
+  /// </summary>
+  public void LoadTitleScene(){
+    SceneManager.LoadScene("TitleScene");
   }
 
   /// <summary>

@@ -573,7 +573,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// Config 画面へ戻る
 	/// </summary>
 	private static void ReturnConfig(){
-			SceneManager.LoadScene("SinglePlayConfigScene");
+		SceneManager.LoadScene("SinglePlayConfigScene");
 	}
 
 	/// <summary>

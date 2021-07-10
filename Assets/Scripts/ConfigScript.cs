@@ -125,7 +125,7 @@ public class ConfigScript : MonoBehaviour {
 			}
 		}
 		else if(KeyCode.Escape == kc){
-			SceneManager.LoadScene("TitleScene");
+			SceneManager.LoadScene("ModeSelectScene");
 		}
 	}
 

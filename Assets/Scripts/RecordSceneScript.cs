@@ -57,7 +57,7 @@ public class RecordSceneScript : MonoBehaviour {
 	/// </summary>
 	void KeyCheck(KeyCode k){
 		if(KeyCode.Escape == k){
-			SceneManager.LoadScene("TitleScene");
+			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
 	}
 
