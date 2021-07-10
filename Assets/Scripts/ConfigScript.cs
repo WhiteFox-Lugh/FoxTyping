@@ -7,17 +7,16 @@ using TMPro;
 using UnityEngine.SceneManagement;
 
 public class ConfigScript : MonoBehaviour {
-	// 文章数の最小値、最大値、デフォルト値
-	private const int MIN_SENTENCE_NUM = 5;
-	private const int MAX_SENTENCE_NUM = 100;
-	private const int DEFAULT_SENTENCE_NUM = 30;
+	// 文章数のデフォルト値
+	private const int TASK_NUM_UNIT = 5;
+	private const int TASK_NUM_OPTION_INIT = 4;
 		// 練習後、元の設定を再現するための変数
 	private static int dataSetNameNum;
 	private static int longDataSetNameNum;
 	[SerializeField] TMP_Dropdown UIGameMode;
 	[SerializeField] TMP_Dropdown UIDataSetName;
 	[SerializeField] TMP_Dropdown UILongDataSetName;
-	[SerializeField] TMP_InputField UISentenceNum;
+	[SerializeField] TMP_Dropdown UISentenceNum;
 	[SerializeField] GameObject ConfigPanel;
 	[SerializeField] GameObject LongSentenceConfigPanel;
 
@@ -66,7 +65,7 @@ public class ConfigScript : MonoBehaviour {
 		UIGameMode.value = GameMode;
 		UIDataSetName.value = dataSetNameNum;
 		UILongDataSetName.value = longDataSetNameNum;
-		UISentenceNum.text = Tasks.ToString();
+		UISentenceNum.value = TASK_NUM_OPTION_INIT;
 		UISentenceNum.enabled = true;
 	}
 
@@ -76,16 +75,6 @@ public class ConfigScript : MonoBehaviour {
 	void Update () {
 		SetGameMode();
 		ChangeConfigPanel();
-		if (!UISentenceNum.isFocused && !IsSentenceNumValid()){
-			ComplementSentenceNum();
-		}
-	}
-
-	/// <summary>
-	/// 文章数の値をデフォルト値で補完する
-	/// </summary>
-	void ComplementSentenceNum(){
-		UISentenceNum.text = DEFAULT_SENTENCE_NUM.ToString();
 	}
 
 	/// <summary>
@@ -104,11 +93,12 @@ public class ConfigScript : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// データセットをプロパティにセット
+	/// オプションをプロパティにセット（短文練習）
 	/// </summary>
-	void SetDataSet(){
+	void SetShortModeConfig(){
 		dataSetNameNum = UIDataSetName.value;
 		DataSetName = datasetFileName[dataSetNameNum];
+		Tasks = (UISentenceNum.value + 1) * TASK_NUM_UNIT;
 	}
 
 	/// <summary>
@@ -120,26 +110,13 @@ public class ConfigScript : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 文章数の値が規定の値に入っているかチェックする
-	/// </summary>
-	bool IsSentenceNumValid(){
-		int num;
-		bool isNumOfSentenceParseSuccess = Int32.TryParse(UISentenceNum.text, out num);
-		bool isNumOfSentenceValid = (isNumOfSentenceParseSuccess && MIN_SENTENCE_NUM <= num && num <= MAX_SENTENCE_NUM);
-		if (isNumOfSentenceValid){
-			Tasks = num;
-		}
-		return isNumOfSentenceValid;
-	}
-
-	/// <summary>
 	/// Keycode と対応する操作
 	/// </summary>
 	void KeyCheck(KeyCode kc){
 		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
 			SetGameMode();
-			if (GameMode == (int)GameModeNumber.ShortSentence && IsSentenceNumValid()){
-				SetDataSet();
+			if (GameMode == (int)GameModeNumber.ShortSentence){
+				SetShortModeConfig();
 				SceneManager.LoadScene("CountDownScene");
 			}
 			else if(GameMode == (int)GameModeNumber.LongSentence){
