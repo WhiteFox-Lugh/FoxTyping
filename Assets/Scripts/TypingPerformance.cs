@@ -150,16 +150,15 @@ public class TypingPerformance {
 	/// </summary>
 	private double FuncAcc((int correct, int miss) typeInfo){
 		double accuracy = 100.0 * typeInfo.correct / (typeInfo.correct + typeInfo.miss);
-		double x = 100.0 - accuracy;
 		double ret;
 		if (accuracy >= 99.9){
 			ret = 1.0;
 		}
-		else if (accuracy >= 99.5){
-			ret = ALPHA * 1.0 / (1.0 + Math.Exp(-x)) + (1.0 - ALPHA);
+		else if (accuracy >= 95.0){
+			ret = ALPHA * 1.0 / (1.0 + Math.Exp(-(accuracy - 95.0))) + (1.0 - ALPHA);
 		}
 		else {
-			ret = (1.0 - ALPHA / 2.0) * Math.Exp(x * ALPHA / (4.0 - 2.0 * ALPHA));
+			ret = (1.0 - ALPHA / 2.0) * Math.Exp((accuracy - 95.0) * ALPHA / (4.0 - 2.0 * ALPHA));
 		}
 		return ret;
 	}
