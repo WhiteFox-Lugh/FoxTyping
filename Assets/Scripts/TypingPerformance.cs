@@ -6,8 +6,11 @@ using System;
 using UnityEngine;
 
 public class TypingPerformance {
+	// ALPHA: 正確さから倍率への関数の定数
 	const double ALPHA = 0.25;
-	const int PARAM_S = 20;
+	// BETA: ノーマルスコアの加重平均の重み
+	const double BETA = 0.75;
+	const int PARAM_S = 10;
 	// 原文のリスト
 	public List<string> OriginSentenceList {
 		private set;
@@ -124,15 +127,6 @@ public class TypingPerformance {
 	}
 
 	/// <summary>
-	/// num 番目のセンテンスに対してスコアを文章化
-	/// </summary>
-	private string GetScoreString(int num) {
-		var sb = new StringBuilder();
-		sb.Append("Sentence Score: ").Append(GetSentenceScore(num).ToString("0.00"));
-		return sb.ToString();
-	}
-
-	/// <summary>
 	/// num 番目のセンテンスに対して、リザルト表示用に整形した string を返す
 	/// </summary>
 	public string ConvertDetailResult(int num) {
@@ -140,8 +134,7 @@ public class TypingPerformance {
 		sb.Append(this.OriginSentenceList[num]).Append("\n");
 		sb.Append(GetColoredTypedSentence(num)).Append("\n");
 		sb.Append(GetCorrectAndMistypeNumString(num)).Append("\n");
-		sb.Append(GetTimeInfoString(num)).Append("\n");
-		sb.Append(GetScoreString(num)).Append("\n\n");
+		sb.Append(GetTimeInfoString(num)).Append("\n\n");
 		return sb.ToString();
 	}
 
@@ -170,23 +163,50 @@ public class TypingPerformance {
 		return GetSentenceKPM(num) * FuncAcc(GetSentenceCorrectAndMistypeNum(num));
 	}
 
+
 	/// <summary>
-	/// スコアを計算する
+	/// センテンスごと音スコアを低い順にソートしたものを返す
 	/// </summary>
-	public int GetScore() {
+	private List<double> GetSortedScoreList() {
 		var sentenceScoreList = new List<double>();
-		var len = OriginSentenceList.Count();
-		int ignoreNum = len / PARAM_S;
-		var score = 0.0;
-		int ret;
-		for (int i = 0; i < len; ++i){
+		for (int i = 0; i < OriginSentenceList.Count(); ++i){
 			sentenceScoreList.Add(GetSentenceScore(i));
 		}
 		sentenceScoreList.Sort();
-		for (int i = ignoreNum; i < len - ignoreNum; ++i){
-			score += sentenceScoreList[i];
+		sentenceScoreList.Reverse();
+		return sentenceScoreList;
+	}
+
+	/// <summary>
+	/// スコアを計算する
+	/// </summary>
+	public int GetNormalScore() {
+		var sortedScoreList = GetSortedScoreList();
+		var len = OriginSentenceList.Count();
+		double numerator = 0.0;
+		double denominator = 0.0;
+		double weight = BETA;
+		for (int i = 0; i < len; ++i){
+			numerator += sortedScoreList[i] * weight;
+			denominator += weight;
+			weight *= BETA;
 		}
-		ret = Convert.ToInt32(Math.Floor(score / (len - 2 * ignoreNum)));
+		int ret = Convert.ToInt32(Math.Floor(numerator / denominator));
+		return ret;
+	}
+
+	/// <summary>
+	/// Fox スコア（上級者向け）を計算する
+	/// </summary>
+	public int GetFoxScore() {
+		var sortedScoreList = GetSortedScoreList();
+		var len = OriginSentenceList.Count();
+		int ignoreNum = len / PARAM_S;
+		double score = 0.0;
+		for (int i = ignoreNum; i < len - ignoreNum; ++i){
+			score += sortedScoreList[i];
+		}
+		int ret = Convert.ToInt32(Math.Floor(score / (len - 2 * ignoreNum)));
 		return ret;
 	}
 
@@ -215,5 +235,19 @@ public class TypingPerformance {
 		}
 		ret = 100.0 * correctTypeSum / (correctTypeSum + mistypeSum);
 		return ret;
+	}
+
+	/// <summary>
+	/// 全センテンスにおける kps を返す
+	/// </summary>
+	public double GetKPSAll() {
+		int correctTypeCount = 0;
+		double elapsedTime = GetElapsedTime();
+		for (int i = 0; i < OriginSentenceList.Count(); ++i){
+			var typeNum = GetSentenceCorrectAndMistypeNum(i);
+			correctTypeCount += typeNum.correctTypeNum;
+		}
+		double kps = correctTypeCount / elapsedTime;
+		return kps;
 	}
 }

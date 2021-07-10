@@ -36,7 +36,7 @@ public class ConfigScript : MonoBehaviour {
 	public static int Tasks {
 		private set;
 		get;
-	} = 30;
+	} = -1;
 
 	// ゲームモード
 	// 0 : 短文を打つモード
@@ -65,7 +65,7 @@ public class ConfigScript : MonoBehaviour {
 		UIGameMode.value = GameMode;
 		UIDataSetName.value = dataSetNameNum;
 		UILongDataSetName.value = longDataSetNameNum;
-		UISentenceNum.value = TASK_NUM_OPTION_INIT;
+		UISentenceNum.value = (Tasks == -1) ? TASK_NUM_OPTION_INIT : Tasks;
 		UISentenceNum.enabled = true;
 	}
 

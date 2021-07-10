@@ -11,9 +11,11 @@ using UnityEngine.SceneManagement;
 
 public class RecordSceneScript : MonoBehaviour {
 	[SerializeField] Text UIResultDetailText;
+	[SerializeField] TextMeshProUGUI UISpeedText;
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UITimeText;
 	[SerializeField] TextMeshProUGUI UIAccuracyText;
+	[SerializeField] TextMeshProUGUI UIFScoreText;
 
 	/// <summary>
 	/// 初期化など
@@ -34,7 +36,9 @@ public class RecordSceneScript : MonoBehaviour {
 	/// </summary>
 	void SetResult() {
 		var perf = TypingSoft.Performance;
-		UIScoreText.text = perf.GetScore().ToString();
+		UISpeedText.text = perf.GetKPSAll().ToString("0.00") + " key/s";
+		UIScoreText.text = perf.GetNormalScore().ToString();
+		UIFScoreText.text = perf.GetFoxScore().ToString();
 		UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " s";
 		UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
 	}
