@@ -11,42 +11,65 @@ using UnityEngine.SceneManagement;
 
 public class RecordSceneScript : MonoBehaviour {
 	[SerializeField] Text UIResultDetailText;
+	[SerializeField] TextMeshProUGUI UISpeedText;
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UITimeText;
 	[SerializeField] TextMeshProUGUI UIAccuracyText;
-	// Start is called before the first frame update
+	[SerializeField] TextMeshProUGUI UIFScoreText;
+
+	/// <summary>
+	/// 初期化など
+	/// </summary>
 	void Awake(){
 		SetResult();
 		SetResultDetail();
 	}
 
-	// Update is called once per frame
+	/// <summary>
+	/// 1フレームごとの更新処理。現時点ではなし
+	/// </summary>
 	void Update(){
 	}
 
+	/// <summary>
+	/// 簡易リザルトの表示処理
+	/// </summary>
 	void SetResult() {
 		var perf = TypingSoft.Performance;
-		UIScoreText.text = perf.GetScore().ToString();
+		UISpeedText.text = perf.GetKPSAll().ToString("0.00") + " key/s";
+		UIScoreText.text = perf.GetNormalScore().ToString();
+		UIFScoreText.text = perf.GetFoxScore().ToString();
 		UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " s";
 		UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
 	}
 
+	/// <summary>
+	/// 詳細リザルトの表示処理
+	/// </summary>
 	void SetResultDetail() {
 		var sb = new StringBuilder();
 		var perf = TypingSoft.Performance;
 		int len = perf.OriginSentenceList.Count();
 		for (int i = 0; i < len; ++i){
-			sb.Append(perf.ConvertDetailResult(i));
+			if(perf.isSentenceInfoValid(i)) {
+				sb.Append(perf.ConvertDetailResult(i));
+			}
 		}
 		UIResultDetailText.text = sb.ToString();
 	}
 
+	/// <summary>
+	/// キー入力に対応する処理を実行
+	/// </summary>
 	void KeyCheck(KeyCode k){
 		if(KeyCode.Escape == k){
-			SceneManager.LoadScene("TitleScene");
+			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
 	}
 
+	/// <summary>
+	/// キー入力などのイベント処理
+	/// </summary>
 	void OnGUI() {
 		Event e = Event.current;
 		if (e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None
@@ -55,6 +78,9 @@ public class RecordSceneScript : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// ツイートボタンを押したときの処理（現時点で機能自体は非表示）
+	/// </summary>
 	public void OnClickTweetButton(){
 		string tweetText = GetTweetText();
 		string url = "";
@@ -62,6 +88,9 @@ public class RecordSceneScript : MonoBehaviour {
 		OpenTweetWindow(tweetText, hashTag, url);
 	}
 
+	/// <summary>
+	/// ツイート文章を生成
+	/// </summary>
 	string GetTweetText(){
 		string ret = "";
 		// const string template = "FoxTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";

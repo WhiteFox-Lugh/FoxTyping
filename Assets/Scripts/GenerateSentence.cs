@@ -968,7 +968,6 @@ public class GenerateSentence {
 		{"んY", new string[2] {"nnY", "xnY"}},
 		{"んZ", new string[2] {"nnZ", "xnZ"}},
 		{" ", new string[1] {" "}},
-		{"\'", new string[1] {"\'"}},
 		{"-", new string[1] {"-"}},
 		{",", new string[1] {","}},
 		{".", new string[1] {"."}},
@@ -1032,7 +1031,6 @@ public class GenerateSentence {
 		string s;
 		for (int i = 0; i < str.Count; ++i){
 			s = str[i];
-			Debug.Log("i = " + i.ToString() + ": " + s);
 			var validTypeList = new List<string>();
 			// 文末「ん」の処理
 			if (s.Equals("ん") && str.Count - 1 == i){

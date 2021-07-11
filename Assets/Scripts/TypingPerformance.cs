@@ -6,8 +6,11 @@ using System;
 using UnityEngine;
 
 public class TypingPerformance {
+	// ALPHA: 正確さから倍率への関数の定数
 	const double ALPHA = 0.25;
-	const int PARAM_S = 20;
+	// BETA: ノーマルスコアの加重平均の重み
+	const double BETA = 0.75;
+	const int PARAM_S = 10;
 	// 原文のリスト
 	public List<string> OriginSentenceList {
 		private set;
@@ -68,35 +71,53 @@ public class TypingPerformance {
 	}
 
 	/// <summary>
+	/// n 番目の情報がすべて整合性が取れているかを判定する
+	/// </summary>
+	public bool isSentenceInfoValid(int i) {
+		bool isCountValid = (TypedSentenceList[i].Length == TypeJudgeList[i].Count())
+												&& (TypeJudgeList[i].Count() == TypeTimeList[i].Count());
+		return isCountValid;
+	}
+
+	/// <summary>
 	/// num 番目 (0-index) のセンテンスの入力時間を取得する
 	/// </summary>
-	private double GetSentenceTypeTime(int num){
+	public double GetSentenceTypeTime(int num){
 		return TypeTimeList[num][TypeTimeList[num].Count() - 1] - TypeTimeList[num][0];
 	}
 
 	/// <summary>
 	/// num 番目の Sentence KPM を取得する
 	/// </summary>
-	private double GetSentenceKPM(int num){
+	public double GetSentenceKPM(int num){
 		return 60.0 * TypeJudgeList[num].Count(judge => judge == 1) / GetSentenceTypeTime(num);
 	}
 
 	/// <summary>
 	/// num 番目の Sentence の正解タイプ数、ミスタイプ数を取得
 	/// </summary>
-	private (int correctTypeNum, int mistypeNum) GetSentenceCorrectAndMistypeNum(int num){
+	public (int correctTypeNum, int mistypeNum) GetSentenceCorrectAndMistypeNum(int num){
 		return (TypeJudgeList[num].Count(judge => judge == 1), TypeJudgeList[num].Count(judge => judge == 0));
 	}
 
 	/// <summary>
 	/// num 番目のセンテンスに対してミスタイプを色付けした文を返す
 	/// </summary>
-	private string GetColoredTypedSentence(int num) {
+	public string GetColoredTypedSentence(int num) {
 		var sb = new StringBuilder();
 		for (int i = 0; i < TypedSentenceList[num].Length; ++i){
 			char c = TypedSentenceList[num][i];
 			int judge = TypeJudgeList[num][i];
-			sb.Append((judge == 1) ? c.ToString() : ("<color=red>" + c.ToString() + "</color>"));
+			int prevJudge = (i == 0) ? 1 : TypeJudgeList[num][i - 1];
+			if (prevJudge == 1 && judge == 0) {
+				sb.Append("<color=red>" + c.ToString());
+			}
+			else if(prevJudge == 0 && judge == 1){
+				sb.Append("</color>" + c.ToString());
+			}
+			else {
+				sb.Append(c.ToString());
+			}
 		}
 		return sb.ToString();
 	}
@@ -124,15 +145,6 @@ public class TypingPerformance {
 	}
 
 	/// <summary>
-	/// num 番目のセンテンスに対してスコアを文章化
-	/// </summary>
-	private string GetScoreString(int num) {
-		var sb = new StringBuilder();
-		sb.Append("Sentence Score: ").Append(GetSentenceScore(num).ToString("0.00"));
-		return sb.ToString();
-	}
-
-	/// <summary>
 	/// num 番目のセンテンスに対して、リザルト表示用に整形した string を返す
 	/// </summary>
 	public string ConvertDetailResult(int num) {
@@ -140,26 +152,24 @@ public class TypingPerformance {
 		sb.Append(this.OriginSentenceList[num]).Append("\n");
 		sb.Append(GetColoredTypedSentence(num)).Append("\n");
 		sb.Append(GetCorrectAndMistypeNumString(num)).Append("\n");
-		sb.Append(GetTimeInfoString(num)).Append("\n");
-		sb.Append(GetScoreString(num)).Append("\n\n");
+		sb.Append(GetTimeInfoString(num)).Append("\n\n");
 		return sb.ToString();
 	}
 
 	/// <summary>
 	/// 正確さを倍率に換算する関数
 	/// </summary>
-	private double FuncAcc((int correct, int miss) typeInfo){
+	private static double FuncAcc((int correct, int miss) typeInfo){
 		double accuracy = 100.0 * typeInfo.correct / (typeInfo.correct + typeInfo.miss);
-		double x = 100.0 - accuracy;
 		double ret;
-		if (accuracy >= 99.9){
+		if (accuracy >= 99.99){
 			ret = 1.0;
 		}
-		else if (accuracy >= 99.5){
-			ret = ALPHA * 1.0 / (1.0 + Math.Exp(-x)) + (1.0 - ALPHA);
+		else if (accuracy >= 95.0){
+			ret = ALPHA * 1.0 / (1.0 + Math.Exp(-(accuracy - 95.0))) + (1.0 - ALPHA);
 		}
 		else {
-			ret = (1.0 - ALPHA / 2.0) * Math.Exp(x * ALPHA / (4.0 - 2.0 * ALPHA));
+			ret = (1.0 - ALPHA / 2.0) * Math.Exp((accuracy - 95.0) * ALPHA / (4.0 - 2.0 * ALPHA));
 		}
 		return ret;
 	}
@@ -171,23 +181,50 @@ public class TypingPerformance {
 		return GetSentenceKPM(num) * FuncAcc(GetSentenceCorrectAndMistypeNum(num));
 	}
 
+
 	/// <summary>
-	/// スコアを計算する
+	/// センテンスごと音スコアを低い順にソートしたものを返す
 	/// </summary>
-	public int GetScore() {
+	private List<double> GetSortedScoreList() {
 		var sentenceScoreList = new List<double>();
-		var len = OriginSentenceList.Count();
-		int ignoreNum = len / PARAM_S;
-		var score = 0.0;
-		int ret;
-		for (int i = 0; i < len; ++i){
+		for (int i = 0; i < OriginSentenceList.Count(); ++i){
 			sentenceScoreList.Add(GetSentenceScore(i));
 		}
 		sentenceScoreList.Sort();
-		for (int i = ignoreNum; i < len - ignoreNum; ++i){
-			score += sentenceScoreList[i];
+		sentenceScoreList.Reverse();
+		return sentenceScoreList;
+	}
+
+	/// <summary>
+	/// スコアを計算する
+	/// </summary>
+	public int GetNormalScore() {
+		var sortedScoreList = GetSortedScoreList();
+		var len = OriginSentenceList.Count();
+		double numerator = 0.0;
+		double denominator = 0.0;
+		double weight = BETA;
+		for (int i = 0; i < len; ++i){
+			numerator += sortedScoreList[i] * weight;
+			denominator += weight;
+			weight *= BETA;
 		}
-		ret = Convert.ToInt32(Math.Floor(score / (len - 2 * ignoreNum)));
+		int ret = Convert.ToInt32(Math.Floor(numerator / denominator));
+		return ret;
+	}
+
+	/// <summary>
+	/// Fox スコア（上級者向け）を計算する
+	/// </summary>
+	public int GetFoxScore() {
+		var sortedScoreList = GetSortedScoreList();
+		var len = OriginSentenceList.Count();
+		int ignoreNum = len / PARAM_S;
+		double score = 0.0;
+		for (int i = ignoreNum; i < len - ignoreNum; ++i){
+			score += sortedScoreList[i];
+		}
+		int ret = Convert.ToInt32(Math.Floor(score / (len - 2 * ignoreNum)));
 		return ret;
 	}
 
@@ -216,5 +253,19 @@ public class TypingPerformance {
 		}
 		ret = 100.0 * correctTypeSum / (correctTypeSum + mistypeSum);
 		return ret;
+	}
+
+	/// <summary>
+	/// 全センテンスにおける kps を返す
+	/// </summary>
+	public double GetKPSAll() {
+		int correctTypeCount = 0;
+		double elapsedTime = GetElapsedTime();
+		for (int i = 0; i < OriginSentenceList.Count(); ++i){
+			var typeNum = GetSentenceCorrectAndMistypeNum(i);
+			correctTypeCount += typeNum.correctTypeNum;
+		}
+		double kps = correctTypeCount / elapsedTime;
+		return kps;
 	}
 }
