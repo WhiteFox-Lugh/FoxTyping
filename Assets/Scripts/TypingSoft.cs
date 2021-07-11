@@ -257,25 +257,6 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// キーが入力されたとき等の処理
-	/// </summary>
-	void OnGUI() {
-		double currentTime = Time.realtimeSinceStartup;
-    Event e = Event.current;
-		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
-		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
-			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
-			if (isFirstInput){
-				firstCharInputTime = currentTime;
-				isFirstInput = false;
-			}
-			queue.Enqueue(inputChar);
-			timeQueue.Enqueue(currentTime);
-		}
-  }
-
-	/// <summary>
 	/// タイピングの正誤判定部分
 	/// </summary>
 	void TypingCheck() {
@@ -291,16 +272,11 @@ public class TypingSoft : MonoBehaviour {
 			lastJudgeTime = keyDownTime;
 
 			// リザルト集積用
-			typedLetter.Append(inputChar);
+			typedLetter.Append(inputChar.ToString());
 			typeTimeList.Add(keyDownTime);
 
 			// まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
 			bool isMistype = true;
-			// Esc なら Config 画面に戻る
-			if (inputChar == ConvertKeyCodeToChar(KeyCode.Escape, false)){
-				ReturnConfig();
-				break;
-			}
 			// 全ての valid なセンテンスに対してチェックする
 			for (int i = 0; i < sentenceTyping[index].Count; ++i){
 				// invalid ならパス
@@ -532,6 +508,28 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// キーが入力されたとき等の処理
+	/// </summary>
+	void OnGUI() {
+		double currentTime = Time.realtimeSinceStartup;
+		Event e = Event.current;
+		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+		if (e.keyCode == KeyCode.Escape){
+			ReturnConfig();
+		}
+    else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
+		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
+			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
+			if (isFirstInput){
+				firstCharInputTime = currentTime;
+				isFirstInput = false;
+			}
+			queue.Enqueue(inputChar);
+			timeQueue.Enqueue(currentTime);
+		}
+	}
+
+	/// <summary>
 	/// キーコードから char への変換
 	/// </summary>
 	char ConvertKeyCodeToChar(KeyCode kc, bool isShift) {
@@ -613,8 +611,6 @@ public class TypingSoft : MonoBehaviour {
         return isShift ? '=' : '-';
       case KeyCode.Caret:
         return isShift ? '~' : '^';
-      case KeyCode.Backslash:
-        return isShift ? '|' : '\\';
       case KeyCode.At:
         return isShift ? '`' : '@';
       case KeyCode.LeftBracket:
@@ -635,11 +631,8 @@ public class TypingSoft : MonoBehaviour {
         return '_';
       case KeyCode.Space:
         return ' ';
-			// Esc も便宜的にバックスペースに割り当てる
-			case KeyCode.Escape:
-				return '\b';
-      default: // null
-        return '\0';
+      default: // backslash
+        return '\\';
 		}
 	}
 }

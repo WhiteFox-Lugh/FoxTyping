@@ -105,7 +105,6 @@ public class TypingPerformance {
 	/// </summary>
 	public string GetColoredTypedSentence(int num) {
 		var sb = new StringBuilder();
-		Debug.Log(TypedSentenceList[num]);
 		for (int i = 0; i < TypedSentenceList[num].Length; ++i){
 			char c = TypedSentenceList[num][i];
 			int judge = TypeJudgeList[num][i];

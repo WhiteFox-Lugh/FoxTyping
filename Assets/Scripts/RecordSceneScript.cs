@@ -51,7 +51,9 @@ public class RecordSceneScript : MonoBehaviour {
 		var perf = TypingSoft.Performance;
 		int len = perf.OriginSentenceList.Count();
 		for (int i = 0; i < len; ++i){
-			sb.Append(perf.ConvertDetailResult(i));
+			if(perf.isSentenceInfoValid(i)) {
+				sb.Append(perf.ConvertDetailResult(i));
+			}
 		}
 		UIResultDetailText.text = sb.ToString();
 	}

@@ -65,7 +65,6 @@ public class ConfigScript : MonoBehaviour {
 		UIGameMode.value = GameMode;
 		UIDataSetName.value = dataSetNameNum;
 		UILongDataSetName.value = longDataSetNameNum;
-		UISentenceNum.value = (Tasks == -1) ? TASK_NUM_OPTION_INIT : Tasks;
 		UISentenceNum.enabled = true;
 	}
 
