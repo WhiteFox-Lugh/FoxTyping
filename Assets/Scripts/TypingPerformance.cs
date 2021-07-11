@@ -73,28 +73,28 @@ public class TypingPerformance {
 	/// <summary>
 	/// num 番目 (0-index) のセンテンスの入力時間を取得する
 	/// </summary>
-	private double GetSentenceTypeTime(int num){
+	public double GetSentenceTypeTime(int num){
 		return TypeTimeList[num][TypeTimeList[num].Count() - 1] - TypeTimeList[num][0];
 	}
 
 	/// <summary>
 	/// num 番目の Sentence KPM を取得する
 	/// </summary>
-	private double GetSentenceKPM(int num){
+	public double GetSentenceKPM(int num){
 		return 60.0 * TypeJudgeList[num].Count(judge => judge == 1) / GetSentenceTypeTime(num);
 	}
 
 	/// <summary>
 	/// num 番目の Sentence の正解タイプ数、ミスタイプ数を取得
 	/// </summary>
-	private (int correctTypeNum, int mistypeNum) GetSentenceCorrectAndMistypeNum(int num){
+	public (int correctTypeNum, int mistypeNum) GetSentenceCorrectAndMistypeNum(int num){
 		return (TypeJudgeList[num].Count(judge => judge == 1), TypeJudgeList[num].Count(judge => judge == 0));
 	}
 
 	/// <summary>
 	/// num 番目のセンテンスに対してミスタイプを色付けした文を返す
 	/// </summary>
-	private string GetColoredTypedSentence(int num) {
+	public string GetColoredTypedSentence(int num) {
 		var sb = new StringBuilder();
 		for (int i = 0; i < TypedSentenceList[num].Length; ++i){
 			char c = TypedSentenceList[num][i];
