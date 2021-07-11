@@ -14,11 +14,11 @@ public class TypingPerfomanceTest
 	const int TEST_SENTENCE_NUM = 10;
 	private List<string> testSentenceOriginList = new List<string>() {
 		"あいうえお", "あいうえお", "あいうえお", "あいうえお", "あいうえお",
-		"あいうえお", "あいうえお", "あいうえお", "あいうえお", "あいうえお"
+		"あいうえお", "あいうえお", "12345", "12345", "あいうえお"
 	};
 	private List<string> testSentenceTypeList = new List<string>() {
 		"aiueo", "aitueo", "aiueao", "raiueo", "aaaaaaiueo",
-		"aiueeeeeeo", "qqqqqaiueo", "aiueo", "aiueo", "aiueo"
+		"aiueeeeeeo", "qqqqqaiueo", "12345", "abcde12345", "aiueo"
 	};
 	private List<List<int>> testJudgeList = new List<List<int>>() {
 		new List<int>() {1, 1, 1, 1, 1},
@@ -29,7 +29,7 @@ public class TypingPerfomanceTest
 		new List<int>() {1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
 		new List<int>() {0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
 		new List<int>() {1, 1, 1, 1, 1},
-		new List<int>() {1, 1, 1, 1, 1},
+		new List<int>() {0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
 		new List<int>() {1, 1, 1, 1, 1}
 	};
 	private List<List<double>> testTypeTimeList = new List<List<double>>() {
@@ -41,7 +41,7 @@ public class TypingPerfomanceTest
 		new List<double>() {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.65, 1.75, 1.85, 2.0},
 		new List<double>() {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.65, 1.75, 1.85, 2.0},
 		new List<double>() {1.0, 1.5, 2.0, 2.5, 3.0},
-		new List<double>() {1.0, 2.0, 3.0, 4.0, 6.0},
+		new List<double>() {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0},
 		new List<double>() {1.0, 3.0, 5.0, 8.0, 11.0},
 	};
 	private static TypingPerformance TP;
@@ -121,7 +121,7 @@ public class TypingPerfomanceTest
 	public void SentenceCorrectAndMistypeNumTest() {
 		var expectedNum = new List<(int correct, int mistype)>() {
 			(5, 0), (5, 1), (5, 1), (5, 1), (5, 5),
-			(5, 5), (5, 5), (5, 0), (5, 0), (5, 0)
+			(5, 5), (5, 5), (5, 0), (5, 5), (5, 0)
 		};
 		BeforeTest();
 		var type = TP.GetType();
@@ -131,5 +131,149 @@ public class TypingPerfomanceTest
 			Assert.AreEqual(value.correct, expectedNum[i].correct);
 			Assert.AreEqual(value.mistype, expectedNum[i].mistype);
 		}
+	}
+
+	[Test]
+	public void ColoredTypedSentenceTest() {
+		var expected = new List<string>() {
+			"aiueo",
+			"ai<color=red>t</color>ueo",
+			"aiue<color=red>a</color>o",
+			"<color=red>r</color>aiueo",
+			"a<color=red>aaaaa</color>iueo",
+			"aiue<color=red>eeeee</color>o",
+			"<color=red>qqqqq</color>aiueo",
+			"12345",
+			"<color=red>abcde</color>12345",
+			"aiueo"
+		};
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetColoredTypedSentence");
+		for (int i = 0; i < TEST_SENTENCE_NUM; ++i){
+			var value = (string) loader.Invoke(TP, new object[] {i});
+			Assert.AreEqual(value, expected[i]);
+		}
+	}
+
+	/// <summary>
+	/// FuncAcc のテスト用(共通処理)
+	/// </summary>
+	private bool CheckFuncAccValue(double expected, (int a, int b) val) {
+		var type = typeof(TypingPerformance);
+    Assert.IsNotNull(type);
+		MethodInfo method = type.GetMethod("FuncAcc", BindingFlags.NonPublic | BindingFlags.Static);
+		var value = (double) method.Invoke(TP, new object[] {(val.a, val.b)});
+		double diff = value - expected;
+		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
+		return isApproximatelyEqual;
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy100() {
+		Assert.IsTrue(CheckFuncAccValue(1.0, (100, 0)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy99p9() {
+		Assert.IsTrue(CheckFuncAccValue(0.99815211466, (999, 1)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy99p8() {
+		Assert.IsTrue(CheckFuncAccValue(0.99795935721, (998, 2)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy99() {
+		Assert.IsTrue(CheckFuncAccValue(0.99550344750, (99, 1)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy97p5() {
+		Assert.IsTrue(CheckFuncAccValue(0.98103545499, (975, 25)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy95() {
+		Assert.IsTrue(CheckFuncAccValue(0.875, (95, 5)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy94p9() {
+		Assert.IsTrue(CheckFuncAccValue(0.86877226837, (949, 51)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy94() {
+		Assert.IsTrue(CheckFuncAccValue(0.81467993224, (94, 6)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy90() {
+		Assert.IsTrue(CheckFuncAccValue(0.6122134702, (90, 10)));
+	}
+
+	[Test]
+	public void FuncAccTestAccuracy0() {
+		Assert.IsTrue(CheckFuncAccValue(0.00098857536, (0, 1)));
+	}
+
+	[Test]
+	public void NormalScoreTest() {
+		// 仕様に則って計算した結果
+		var expectedScore = 151;
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	public void FoxScoreTest() {
+		// 仕様に則って計算した結果
+		var expectedScore = 69;
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetFoxScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	public void GetElapsedTimeTest() {
+		double expected = 24.0;
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetElapsedTime");
+		var value = (double) loader.Invoke(TP, null);
+		double diff = value - expected;
+		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
+		Assert.IsTrue(isApproximatelyEqual);
+	}
+
+	[Test]
+	public void GetAccuracyTest() {
+		double expected = 68.4931506849315;
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetAccuracy");
+		var value = (double) loader.Invoke(TP, null);
+		double diff = value - expected;
+		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
+		Assert.IsTrue(isApproximatelyEqual);
+	}
+
+	[Test]
+	public void GetKPSAllTest() {
+		double expected = 2.083333333333333333;
+		BeforeTest();
+		var type = TP.GetType();
+		MethodInfo loader = type.GetMethod("GetKPSAll");
+		var value = (double) loader.Invoke(TP, null);
+		double diff = value - expected;
+		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
+		Assert.IsTrue(isApproximatelyEqual);
 	}
 }

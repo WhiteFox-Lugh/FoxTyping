@@ -71,6 +71,15 @@ public class TypingPerformance {
 	}
 
 	/// <summary>
+	/// n 番目の情報がすべて整合性が取れているかを判定する
+	/// </summary>
+	public bool isSentenceInfoValid(int i) {
+		bool isCountValid = (TypedSentenceList[i].Length == TypeJudgeList[i].Count())
+												&& (TypeJudgeList[i].Count() == TypeTimeList[i].Count());
+		return isCountValid;
+	}
+
+	/// <summary>
 	/// num 番目 (0-index) のセンテンスの入力時間を取得する
 	/// </summary>
 	public double GetSentenceTypeTime(int num){
@@ -96,10 +105,20 @@ public class TypingPerformance {
 	/// </summary>
 	public string GetColoredTypedSentence(int num) {
 		var sb = new StringBuilder();
+		Debug.Log(TypedSentenceList[num]);
 		for (int i = 0; i < TypedSentenceList[num].Length; ++i){
 			char c = TypedSentenceList[num][i];
 			int judge = TypeJudgeList[num][i];
-			sb.Append((judge == 1) ? c.ToString() : ("<color=red>" + c.ToString() + "</color>"));
+			int prevJudge = (i == 0) ? 1 : TypeJudgeList[num][i - 1];
+			if (prevJudge == 1 && judge == 0) {
+				sb.Append("<color=red>" + c.ToString());
+			}
+			else if(prevJudge == 0 && judge == 1){
+				sb.Append("</color>" + c.ToString());
+			}
+			else {
+				sb.Append(c.ToString());
+			}
 		}
 		return sb.ToString();
 	}
@@ -141,10 +160,10 @@ public class TypingPerformance {
 	/// <summary>
 	/// 正確さを倍率に換算する関数
 	/// </summary>
-	private double FuncAcc((int correct, int miss) typeInfo){
+	private static double FuncAcc((int correct, int miss) typeInfo){
 		double accuracy = 100.0 * typeInfo.correct / (typeInfo.correct + typeInfo.miss);
 		double ret;
-		if (accuracy >= 99.9){
+		if (accuracy >= 99.99){
 			ret = 1.0;
 		}
 		else if (accuracy >= 95.0){
