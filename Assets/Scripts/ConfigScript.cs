@@ -25,8 +25,8 @@ public class ConfigScript : MonoBehaviour {
 		LongSentence
 	}
 
-	private static string[] datasetFileName = new string[2] {
-		"FoxTypingOfficial", "FoxTypingOfficialEnglish"
+	private static string[] datasetFileName = new string[1] {
+		"FoxTypingOfficial"
 	};
 
 	private static string[] longDatasetFileName = new string[2] {
