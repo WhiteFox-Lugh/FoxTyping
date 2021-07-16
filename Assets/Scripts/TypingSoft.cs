@@ -52,14 +52,12 @@ public class TypingSoft : MonoBehaviour {
 	private static List<int> typeJudgeList = new List<int>();
 	private static List<double> typeTimeList = new List<double>();
 	// 色
-	private static Color colorGray = new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.6f);
 	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
 	private static Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
-	private static Color colorPurple = new Color(148f / 255f, 16f / 255f, 218f / 255f, 1f);
 	// UI たち
-	[SerializeField] Text UIJ;
-	[SerializeField] Text UIR;
-	[SerializeField] Text UII;
+	[SerializeField] Text UIOriginSentence;
+	[SerializeField] Text UIYomigana;
+	[SerializeField] Text UIType;
 	[SerializeField] Text UIKPM;
 	[SerializeField] Text UISTT;
 	[SerializeField] Text UITask;
@@ -160,10 +158,10 @@ public class TypingSoft : MonoBehaviour {
 	void TextColorChange() {
 		double currentTime = Time.realtimeSinceStartup;
 		if(isFirstInput && currentTime - lastSentenceUpdateTime <= INTERVAL){
-			UIJ.color = colorBlack;
+			UIOriginSentence.color = colorBlack;
 		}
 		else {
-			UIJ.color = colorBrown;
+			UIOriginSentence.color = colorBrown;
 		}
 	}
 
@@ -180,9 +178,9 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void GenerateNewSentence() {
 		// テキストUIを初期化する
-		UIJ.text = "";
-		UIR.text = "";
-		UII.text = "";
+		UIOriginSentence.text = "";
+		UIYomigana.text = "";
+		UIType.text = "";
 		// 正解した文字列を初期化
 		correctString = "";
 		// リザルト集積用の変数を初期化
@@ -220,8 +218,8 @@ public class TypingSoft : MonoBehaviour {
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
 		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
 		// テキスト変更
-		UIJ.text = nQJ;
-		UIR.text = nQR;
+		UIOriginSentence.text = nQJ;
+		UIYomigana.text = nQR;
 	}
 
 	/// <summary>
@@ -229,7 +227,7 @@ public class TypingSoft : MonoBehaviour {
 	/// 打ったか打ってないかわかりにくいため、アンダーバーを表示することで改善
 	/// </summary>
 	void ReplaceWhitespaceToUnderbar(string sentence) {
-		UII.text = sentence.Replace(' ', '_');
+		UIType.text = sentence.Replace(' ', '_');
 	}
 
 	/// <summary>
@@ -428,7 +426,7 @@ public class TypingSoft : MonoBehaviour {
 		// 正解した文字を表示するオプションの場合
 		// else {
 		// 	correctString += str;
-		// 	UII.text = correctString;
+		// 	UIType.text = correctString;
 		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
 		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
@@ -446,9 +444,9 @@ public class TypingSoft : MonoBehaviour {
 		UpdateUICorrectTypeRate();
 		// 打つべき文字を赤く表示
 		if(!isRecMistype){
-			string s = UII.text.ToString();
+			string s = UIType.text.ToString();
 			string rest = s.Substring(1);
-			UII.text = "<color=#ff0000ff>" + s[0].ToString() + "</color>" + rest;
+			UIType.text = "<color=#ff0000ff>" + s[0].ToString() + "</color>" + rest;
 		}
 		// color タグを多重で入れないようにする
 		isRecMistype = true;
@@ -475,36 +473,46 @@ public class TypingSoft : MonoBehaviour {
 	/// 正解率の UI 表示を更新
 	/// </summary>
 	void UpdateUICorrectTypeRate() {
-		UIAccuracy.text = "Accuracy : " + accuracyValue.ToString("0.00") + " %";
+		if (UIAccuracy != null){
+			UIAccuracy.text = "Accuracy : " + accuracyValue.ToString("0.00") + " %";
+		}
 	}
 
 	/// <summary>
 	/// 正解数、不正解数の UI 表示を更新
 	/// </summary>
 	void UpdateUITypeInfo() {
-		UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + " / Mistype : " + misTypeNum.ToString();
+		if (UITypeInfo != null){
+			UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + " / Mistype : " + misTypeNum.ToString();
+		}
 	}
 
 	/// <summary>
 	/// KPM 関連の UI 表示を更新
 	/// </summary>
 	void UpdateUIKeyPerMinute(int intKPM, int intSectionKPM) {
-		UIKPM.text = "Speed : " + intKPM.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
+		if (UIKPM != null){
+			UIKPM.text = "Speed : " + intKPM.ToString() + " kpm\n[Sentence:" + intSectionKPM.ToString() + " kpm]";
+		}
 	}
 
 	/// <summary>
 	/// 経過時間関連の UI 表示を更新
 	/// </summary>
 	void UpdateUIElapsedTime(double sentenceTypeTime) {
-		UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
-		+ totalTypingTime.ToString("0.00") + " sec";
+		if (UISTT != null){
+			UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
+			+ totalTypingTime.ToString("0.00") + " sec";
+		}
 	}
 
 	/// <summary>
 	/// 文章数関連の UI 表示を更新
 	/// </summary>
 	void UpdateUITask() {
-		UITask.text = "Tasks : " + tasksCompleted.ToString() + " / " + numOfTask.ToString();
+		if (UITask != null){
+			UITask.text = "Tasks : " + tasksCompleted.ToString() + " / " + numOfTask.ToString();
+		}
 	}
 
 	/// <summary>
