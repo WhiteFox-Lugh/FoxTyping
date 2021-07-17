@@ -37,8 +37,6 @@ public class TypingSoft : MonoBehaviour {
 	private static double lastSentenceUpdateTime;
 	private static double firstCharInputTime;
 	private static double lastJudgeTime;
-	// ゲームモード
-	private static int gameMode;
 	// タイピング情報表示関連
 	private static int tasksCompleted;
 	private static int correctTypeNum;
@@ -64,6 +62,30 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] Text UIAccuracy;
 	[SerializeField] Text UITypeInfo;
 	GenerateSentence gs = new GenerateSentence();
+
+	// エラーコードとエラータイプ
+	private enum errorType {
+		None,
+		QueueLengthNotMatch,
+		FailedLoadSentence
+	};
+
+	// ゲームの状況
+	private enum gameCondition {
+		Progress,
+		Finished,
+		Canceled,
+	};
+
+	public static int CurrentGameCondition {
+		private set;
+		get;
+	} = 0;
+
+	public static int ErrorCode {
+		private set;
+		get;
+	} = 0;
 
 	public static TypingPerformance Performance {
 		private set;
@@ -104,9 +126,11 @@ public class TypingSoft : MonoBehaviour {
 		// json
 		bool isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
 		if (!isLoadSuccess){
-			ReturnConfig();
+			ErrorCode = (int)errorType.FailedLoadSentence;
 		}
 		// データ関連の初期化
+		ErrorCode = (int)errorType.None;
+		CurrentGameCondition = (int)gameCondition.Progress;
 		correctTypeNum = 0;
 		misTypeNum = 0;
 		totalTypingTime = 0.0;
@@ -115,26 +139,11 @@ public class TypingSoft : MonoBehaviour {
 		tasksCompleted = 0;
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
-		gameMode = ConfigScript.GameMode;
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = true;
 		Performance = new TypingPerformance();
 		queue.Clear();
 		timeQueue.Clear();
-	}
-
-	/// <summary>
-	/// Config 画面へ戻る
-	/// </summary>
-	void ReturnConfig() {
-		SceneManager.LoadScene("SinglePlayConfigScene");
-	}
-
-	/// <summary>
-	/// 結果画面へ遷移
-	/// </summary>
-	void Finished() {
-		SceneManager.LoadScene("ResultScene");
 	}
 
 	/// <summary>
@@ -145,7 +154,7 @@ public class TypingSoft : MonoBehaviour {
 		if (queue.Count > 0 && timeQueue.Count > 0){
 			// キューの長さが一致しないなら Config へ戻す
 			if(queue.Count != timeQueue.Count){
-				ReturnConfig();
+				ErrorCode = (int)errorType.QueueLengthNotMatch;
 			}
 			TypingCheck();
 		}
@@ -204,7 +213,7 @@ public class TypingSoft : MonoBehaviour {
 	/// 課題文章の変更を行う
 	/// </summary>
 	void ChangeSentence() {
-		var t = gs.Generate(gameMode);
+		var t = gs.Generate();
 		nQJ = t.originSentence;
 		nQR = t.typeSentence;
 		sentenceHiragana = t.hiSep;
@@ -387,7 +396,7 @@ public class TypingSoft : MonoBehaviour {
 		isInputValid = false;
 		// 終了
 		if(tasksCompleted >= numOfTask){
-			Finished();
+			CurrentGameCondition = (int)gameCondition.Finished;
 		}
 		else {
 			StartCoroutine(DelayGenerateNewSentence());
@@ -522,8 +531,8 @@ public class TypingSoft : MonoBehaviour {
 		double currentTime = Time.realtimeSinceStartup;
 		Event e = Event.current;
 		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-		if (e.keyCode == KeyCode.Escape){
-			ReturnConfig();
+		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape){
+			CurrentGameCondition = (int)gameCondition.Canceled;
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
@@ -532,8 +541,12 @@ public class TypingSoft : MonoBehaviour {
 				firstCharInputTime = currentTime;
 				isFirstInput = false;
 			}
-			queue.Enqueue(inputChar);
-			timeQueue.Enqueue(currentTime);
+			// タイピングで使用する文字以外は受け付けない
+			// Esc など画面遷移などで使うキーと競合を避ける
+			if (inputChar != '\\'){
+				queue.Enqueue(inputChar);
+				timeQueue.Enqueue(currentTime);
+			}
 		}
 	}
 
