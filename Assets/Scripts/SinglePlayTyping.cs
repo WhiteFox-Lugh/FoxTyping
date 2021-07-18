@@ -13,12 +13,11 @@ public class SinglePlayTyping : MonoBehaviour
 	};
 
 	// Start is called before the first frame update
-	void Start(){
+	void Awake() {
 	}
 
 	// Update is called once per frame
-	void Update()
-	{
+	void Update() {
 		if (TypingSoft.CurrentGameCondition == (int)gameCondition.Finished){
 			StartCoroutine(FinishedEffect());
 		}
@@ -47,5 +46,15 @@ public class SinglePlayTyping : MonoBehaviour
 	/// </summary>
 	void Finished() {
 		SceneManager.LoadScene("ResultScene");
+	}
+
+	/// <summary>
+	/// キーが入力されたとき等の処理
+	/// </summary>
+	void OnGUI() {
+		Event e = Event.current;
+		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F1){
+			ConfigScript.InfoPanelMode = 1 - ConfigScript.InfoPanelMode;
+		}
 	}
 }

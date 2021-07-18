@@ -61,7 +61,11 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] Text UITask;
 	[SerializeField] Text UIAccuracy;
 	[SerializeField] Text UITypeInfo;
+	[SerializeField] GameObject DataPanel;
+	[SerializeField] GameObject AssistKeyboardPanel;
 	GenerateSentence gs = new GenerateSentence();
+	// Assist Keyboard JIS
+	AssistKeyboardJIS AKJIS;
 
 	// エラーコードとエラータイプ
 	private enum errorType {
@@ -88,6 +92,11 @@ public class TypingSoft : MonoBehaviour {
 	} = 0;
 
 	public static TypingPerformance Performance {
+		private set;
+		get;
+	}
+
+	public static string CurrentTypingSentence {
 		private set;
 		get;
 	}
@@ -141,6 +150,7 @@ public class TypingSoft : MonoBehaviour {
 		lastJudgeTime = -1.0;
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = true;
+		AKJIS = new AssistKeyboardJIS();
 		Performance = new TypingPerformance();
 		queue.Clear();
 		timeQueue.Clear();
@@ -151,12 +161,19 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void Update() {
 		TextColorChange();
+		ShowMiddlePanel(ConfigScript.InfoPanelMode);
 		if (queue.Count > 0 && timeQueue.Count > 0){
 			// キューの長さが一致しないなら Config へ戻す
 			if(queue.Count != timeQueue.Count){
 				ErrorCode = (int)errorType.QueueLengthNotMatch;
 			}
 			TypingCheck();
+		}
+		if (CurrentTypingSentence == ""){
+			AKJIS.SetAllKeyColorWhite();
+		}
+		else {
+			AKJIS.SetNextPushKeyColorBlue(CurrentTypingSentence[0]);
 		}
 	}
 
@@ -220,12 +237,13 @@ public class TypingSoft : MonoBehaviour {
 		sentenceTyping = t.ty;
 		// いろいろ初期化
 		InitSentenceData();
-		string tmpTypingSentence = "";
+		var nextTypingSentence = "";
 		for (int i = 0; i < sentenceTyping.Count; ++i){
-			tmpTypingSentence += sentenceTyping[i][0];
+			nextTypingSentence += sentenceTyping[i][0];
 		}
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
+		ReplaceWhitespaceToUnderbar(nextTypingSentence);
+		CurrentTypingSentence = nextTypingSentence;
 		// テキスト変更
 		UIOriginSentence.text = nQJ;
 		UIYomigana.text = nQR;
@@ -408,7 +426,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void UpdateSentence(string str) {
 		// 打った文字を消去するオプションの場合
-		string tmpTypingSentence = "";
+		var nextTypingSentence = "";
 		for (int i = 0; i < sentenceTyping.Count; ++i){
 			if(i < index){
 				continue;
@@ -420,13 +438,13 @@ public class TypingSoft : MonoBehaviour {
 				else if(index == i && sentenceValid[index][j] == 1){
 					for (int k = 0; k < sentenceTyping[index][j].Length; ++k){
 						if(k >= sentenceIndex[index][j]){
-							tmpTypingSentence += sentenceTyping[index][j][k].ToString();
+							nextTypingSentence += sentenceTyping[index][j][k].ToString();
 						}
 					}
 					break;
 				}
 				else if(index != i && sentenceValid[i][j] == 1){
-					tmpTypingSentence += sentenceTyping[i][j];
+					nextTypingSentence += sentenceTyping[i][j];
 					break;
 				}
 			}
@@ -438,7 +456,8 @@ public class TypingSoft : MonoBehaviour {
 		// 	UIType.text = correctString;
 		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar(tmpTypingSentence);
+		ReplaceWhitespaceToUnderbar(nextTypingSentence);
+		CurrentTypingSentence = nextTypingSentence;
 	}
 
 	/// <summary>
@@ -521,6 +540,20 @@ public class TypingSoft : MonoBehaviour {
 	void UpdateUITask() {
 		if (UITask != null){
 			UITask.text = "Tasks : " + tasksCompleted.ToString() + " / " + numOfTask.ToString();
+		}
+	}
+
+	/// <summary>
+	/// 文章数関連の UI 表示を更新
+	/// </summary>
+	void ShowMiddlePanel(int val) {
+		if (val == 0){
+			DataPanel.SetActive(true);
+			AssistKeyboardPanel.SetActive(false);
+		}
+		else if(val == 1){
+			DataPanel.SetActive(false);
+			AssistKeyboardPanel.SetActive(true);
 		}
 	}
 
