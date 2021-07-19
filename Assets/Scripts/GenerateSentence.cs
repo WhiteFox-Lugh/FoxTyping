@@ -1049,7 +1049,7 @@ public class GenerateSentence {
 	/// <summary>
 	/// 例文を生成する
 	/// </summary>
-	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(int g){
+	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(){
 		bool isOK = false;
 		string originSentenceStr = "";
 		string typeSentenceStr = "";

@@ -39,10 +39,18 @@ public class ConfigScript : MonoBehaviour {
 	} = -1;
 
 	// ゲームモード
-	// 0 : 短文を打つモード
-	// 1 : 長文を打つモード
+	// 0 : 短文
+	// 1 : 長文
 	public static int GameMode {
 		private set;
+		get;
+	} = 0;
+
+	// 画面中部に表示するもの
+	// 0 : タイピングパフォーマンス情報
+	// 1 : アシストキーボード
+	public static int InfoPanelMode {
+		set;
 		get;
 	} = 0;
 
@@ -116,7 +124,7 @@ public class ConfigScript : MonoBehaviour {
 			SetGameMode();
 			if (GameMode == (int)GameModeNumber.ShortSentence){
 				SetShortModeConfig();
-				SceneManager.LoadScene("CountDownScene");
+				SceneManager.LoadScene("TypingScene");
 			}
 			else if(GameMode == (int)GameModeNumber.LongSentence){
 				SetLongDataSet();
