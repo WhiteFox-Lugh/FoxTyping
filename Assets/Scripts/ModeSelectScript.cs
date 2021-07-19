@@ -18,15 +18,15 @@ public class ModeSelectScript : MonoBehaviour
     if(KeyCode.S == k){
       LoadSinglePlayScene();
     }
-    else if(KeyCode.B == k){
-      LoadBeginnerModeScene();
-    }
-    else if(KeyCode.U == k){
-      LoadUserSettingsScene();
-    }
-    else if(KeyCode.O == k){
-      LoadOtherScene();
-    }
+    // else if(KeyCode.B == k){
+    //   LoadBeginnerModeScene();
+    // }
+    // else if(KeyCode.U == k){
+    //   LoadUserSettingsScene();
+    // }
+    // else if(KeyCode.O == k){
+    //   LoadOtherScene();
+    // }
     else if(KeyCode.Escape == k){
       LoadTitleScene();
     }
