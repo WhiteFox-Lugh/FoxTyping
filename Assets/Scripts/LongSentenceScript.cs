@@ -52,6 +52,8 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject TaskPanel;
 	[SerializeField] GameObject InfoPanel;
 	[SerializeField] GameObject ScorePanel;
+	[SerializeField] GameObject OperationPanel;
+	[SerializeField] GameObject ResultOperationPanel;
 	// 課題文章
 	private string taskText;
 	// スコア表示
@@ -89,6 +91,8 @@ public class LongSentenceScript : MonoBehaviour {
 		InfoPanel.SetActive(true);
 		ResultPanel.SetActive(false);
 		ScorePanel.SetActive(false);
+		OperationPanel.SetActive(true);
+		ResultOperationPanel.SetActive(false);
 		taskText = LoadSentenceData(ConfigScript.LongSentenceTaskName);
 		StartCoroutine(CountDown());
 	}
@@ -174,6 +178,8 @@ public class LongSentenceScript : MonoBehaviour {
 		InfoPanel.SetActive(false);
 		InputPanel.SetActive(false);
 		TaskPanel.SetActive(false);
+		OperationPanel.SetActive(false);
+		ResultOperationPanel.SetActive(true);
 		UIResultTextField.text = UIInputField.text;
 		UIInputField.interactable = false;
 		isFinished = true;
@@ -546,7 +552,7 @@ public class LongSentenceScript : MonoBehaviour {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape){
-			if (!isFinished){
+			if (!isFinished && isShowInfo){
 				Finish();
 			}
 			else {
