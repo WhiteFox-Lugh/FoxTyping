@@ -124,7 +124,7 @@ public class ConfigScript : MonoBehaviour {
 			SetGameMode();
 			if (GameMode == (int)GameModeNumber.ShortSentence){
 				SetShortModeConfig();
-				SceneManager.LoadScene("CountDownScene");
+				SceneManager.LoadScene("TypingScene");
 			}
 			else if(GameMode == (int)GameModeNumber.LongSentence){
 				SetLongDataSet();

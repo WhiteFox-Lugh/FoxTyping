@@ -61,6 +61,7 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] Text UITask;
 	[SerializeField] Text UIAccuracy;
 	[SerializeField] Text UITypeInfo;
+	[SerializeField] Text countdownText;
 	[SerializeField] GameObject DataPanel;
 	[SerializeField] GameObject AssistKeyboardPanel;
 	GenerateSentence gs = new GenerateSentence();
@@ -99,7 +100,7 @@ public class TypingSoft : MonoBehaviour {
 	public static string CurrentTypingSentence {
 		private set;
 		get;
-	}
+	} = "";
 
 	/// <summary>
 	/// Update() 前に読み込み
@@ -114,7 +115,7 @@ public class TypingSoft : MonoBehaviour {
 	void InitGame() {
 		InitData();
 		InitText();
-		GenerateNewSentence();
+		StartCoroutine(CountDown());
 	}
 
 	/// <summary>
@@ -149,9 +150,13 @@ public class TypingSoft : MonoBehaviour {
 		isRecMistype = false;
 		lastJudgeTime = -1.0;
 		numOfTask = ConfigScript.Tasks;
-		isInputValid = true;
+		isInputValid = false;
 		AKJIS = new AssistKeyboardJIS();
 		Performance = new TypingPerformance();
+		CurrentTypingSentence = "";
+		UIOriginSentence.text = "";
+		UIYomigana.text = "";
+		UIType.text = "";
 		queue.Clear();
 		timeQueue.Clear();
 	}
@@ -176,6 +181,20 @@ public class TypingSoft : MonoBehaviour {
 			AKJIS.SetNextPushKeyColorBlue(CurrentTypingSentence[0]);
 		}
 	}
+
+	/// <summary>
+	/// カウントダウン演出
+	/// </summary>
+	private IEnumerator CountDown() {
+    countdownText.text = "3";
+		yield return new WaitForSeconds(1f);
+		countdownText.text = "2";
+		yield return new WaitForSeconds(1f);
+		countdownText.text = "1";
+		yield return new WaitForSeconds(1f);
+		countdownText.text = "";
+		GenerateNewSentence();
+  }
 
 	/// <summary>
 	/// 課題文の文字色を変更
@@ -570,7 +589,7 @@ public class TypingSoft : MonoBehaviour {
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
 			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
-			if (isFirstInput){
+			if (isFirstInput && inputChar != '\\'){
 				firstCharInputTime = currentTime;
 				isFirstInput = false;
 			}
