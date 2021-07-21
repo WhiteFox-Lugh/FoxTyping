@@ -530,7 +530,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void UpdateUITypeInfo() {
 		if (UITypeInfo != null){
-			UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + " / Mistype : " + misTypeNum.ToString();
+			UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + "\nMistype : " + misTypeNum.ToString();
 		}
 	}
 
