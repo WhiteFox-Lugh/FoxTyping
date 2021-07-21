@@ -551,7 +551,7 @@ public class LongSentenceScript : MonoBehaviour {
 	void OnGUI() {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape){
+		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.D && isPushedCtrlKey){
 			if (!isFinished && isShowInfo){
 				Finish();
 			}

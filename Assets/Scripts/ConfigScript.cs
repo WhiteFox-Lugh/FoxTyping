@@ -131,7 +131,7 @@ public class ConfigScript : MonoBehaviour {
 				SceneManager.LoadScene("LongSentenceTypingScene");
 			}
 		}
-		else if(KeyCode.Escape == kc){
+		else if(KeyCode.Backspace == kc){
 			SceneManager.LoadScene("ModeSelectScene");
 		}
 	}

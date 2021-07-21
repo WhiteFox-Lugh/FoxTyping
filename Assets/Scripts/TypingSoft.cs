@@ -583,7 +583,7 @@ public class TypingSoft : MonoBehaviour {
 		double currentTime = Time.realtimeSinceStartup;
 		Event e = Event.current;
 		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape){
+		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Backspace){
 			CurrentGameCondition = (int)gameCondition.Canceled;
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
