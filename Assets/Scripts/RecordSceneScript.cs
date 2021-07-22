@@ -62,7 +62,7 @@ public class RecordSceneScript : MonoBehaviour {
 	/// キー入力に対応する処理を実行
 	/// </summary>
 	void KeyCheck(KeyCode k){
-		if(KeyCode.Escape == k){
+		if(KeyCode.Backspace == k){
 			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
 	}
