@@ -178,7 +178,7 @@ public class TypingSoft : MonoBehaviour {
 			AKJIS.SetAllKeyColorWhite();
 		}
 		else {
-			AKJIS.SetNextPushKeyColorBlue(CurrentTypingSentence[0]);
+			AKJIS.SetNextPushKeyColorHighlight(CurrentTypingSentence[0]);
 		}
 	}
 
