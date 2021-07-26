@@ -176,9 +176,10 @@ public class TypingSoft : MonoBehaviour {
 		}
 		if (CurrentTypingSentence == ""){
 			AKJIS.SetAllKeyColorWhite();
+			AKJIS.SetAllFingerColorWhite();
 		}
 		else {
-			AKJIS.SetNextPushKeyColorHighlight(CurrentTypingSentence[0]);
+			AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
 		}
 	}
 

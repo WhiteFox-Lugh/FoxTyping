@@ -10,8 +10,12 @@ using UnityEngine.SceneManagement;
 
 public class AssistKeyboardJIS : MonoBehaviour {
 	[SerializeField] GameObject AKParent;
+	[SerializeField] GameObject AFLParent;
+	[SerializeField] GameObject AFRParent;
 	// key_name -> GameObject のマップ
 	private static Dictionary<string, GameObject> AKKeys = new Dictionary<string, GameObject>();
+	// finger_name -> GameObject のマップ
+	private static Dictionary<string, GameObject> AFingers = new Dictionary<string, GameObject>();
 	// string -> key_name[]
 	private static Dictionary<char, string[]> keyMapping = new Dictionary<char, string[]>() {
 		{'0', new string[1] {"Key_0"}},
@@ -91,55 +95,55 @@ public class AssistKeyboardJIS : MonoBehaviour {
 	};
 
 	// string -> key_name[]
-	private static Dictionary<string, int> keyFingering = new Dictionary<string, int>() {
-		{"Key_1", 5},
-		{"Key_Q", 5},
-		{"Key_A", 5},
-		{"Key_Z", 5},
-		{"Key_2", 4},
-		{"Key_W", 4},
-		{"Key_S", 4},
-		{"Key_X", 4},
-		{"Key_3", 3},
-		{"Key_E", 3},
-		{"Key_D", 3},
-		{"Key_C", 3},
-		{"Key_4", 2},
-		{"Key_R", 2},
-		{"Key_F", 2},
-		{"Key_V", 2},
-		{"Key_5", 2},
-		{"Key_T", 2},
-		{"Key_G", 2},
-		{"Key_B", 2},
-		{"Key_6", 2},
-		{"Key_Y", 2},
-		{"Key_H", 2},
-		{"Key_N", 2},
-		{"Key_7", 2},
-		{"Key_U", 2},
-		{"Key_J", 2},
-		{"Key_M", 2},
-		{"Key_8", 3},
-		{"Key_I", 3},
-		{"Key_K", 3},
-		{"Key_Comma", 3},
-		{"Key_9", 4},
-		{"Key_O", 4},
-		{"Key_L", 4},
-		{"Key_Period", 4},
-		{"Key_0", 5},
-		{"Key_P", 5},
-		{"Key_Semicolon", 5},
-		{"Key_Slash", 5},
-		{"Key_Hyphen", 5},
-		{"Key_At", 5},
-		{"Key_Colon", 5},
-		{"Key_LBracket", 5},
-		{"Key_RBracket", 5},
-		{"Key_Space", 1},
-		{"Key_RShift", 5},
-		{"Key_LShift", 5}
+	private static Dictionary<string, (int, char)> keyFingering = new Dictionary<string, (int, char)>() {
+		{"Key_1", (5, 'L')},
+		{"Key_Q", (5, 'L')},
+		{"Key_A", (5, 'L')},
+		{"Key_Z", (5, 'L')},
+		{"Key_2", (4, 'L')},
+		{"Key_W", (4, 'L')},
+		{"Key_S", (4, 'L')},
+		{"Key_X", (4, 'L')},
+		{"Key_3", (3, 'L')},
+		{"Key_E", (3, 'L')},
+		{"Key_D", (3, 'L')},
+		{"Key_C", (3, 'L')},
+		{"Key_4", (2, 'L')},
+		{"Key_R", (2, 'L')},
+		{"Key_F", (2, 'L')},
+		{"Key_V", (2, 'L')},
+		{"Key_5", (2, 'L')},
+		{"Key_T", (2, 'L')},
+		{"Key_G", (2, 'L')},
+		{"Key_B", (2, 'L')},
+		{"Key_6", (2, 'R')},
+		{"Key_Y", (2, 'R')},
+		{"Key_H", (2, 'R')},
+		{"Key_N", (2, 'R')},
+		{"Key_7", (2, 'R')},
+		{"Key_U", (2, 'R')},
+		{"Key_J", (2, 'R')},
+		{"Key_M", (2, 'R')},
+		{"Key_8", (3, 'R')},
+		{"Key_I", (3, 'R')},
+		{"Key_K", (3, 'R')},
+		{"Key_Comma", (3, 'R')},
+		{"Key_9", (4, 'R')},
+		{"Key_O", (4, 'R')},
+		{"Key_L", (4, 'R')},
+		{"Key_Period", (4, 'R')},
+		{"Key_0", (5, 'R')},
+		{"Key_P", (5, 'R')},
+		{"Key_Semicolon", (5, 'R')},
+		{"Key_Slash", (5, 'R')},
+		{"Key_Hyphen", (5, 'R')},
+		{"Key_At", (5, 'R')},
+		{"Key_Colon", (5, 'R')},
+		{"Key_LBracket", (5, 'R')},
+		{"Key_RBracket", (5, 'R')},
+		{"Key_Space", (1, 'B')},
+		{"Key_RShift", (5, 'R')},
+		{"Key_LShift", (5, 'R')}
 	};
 	// キーの色
 	private static Color colorGray = new Color(180f / 255f, 180f / 255f, 180f / 255f, 1);
@@ -160,7 +164,9 @@ public class AssistKeyboardJIS : MonoBehaviour {
 	/// </summary>
 	void Awake() {
 		GetAllKeys();
+		GetAllFingers();
 		SetAllKeyColorWhite();
+		SetAllFingerColorWhite();
   }
 
 	/// <summary>
@@ -177,6 +183,21 @@ public class AssistKeyboardJIS : MonoBehaviour {
 		}
 	}
 
+		/// <summary>
+	/// 指のオブジェクトを取得する
+	/// </summary>
+	private void GetAllFingers() {
+		AFingers = new Dictionary<string, GameObject>();
+		for (int i = 0; i < AFLParent.transform.childCount; ++i){
+			var obj = AFLParent.transform.GetChild(i).gameObject;
+			AFingers.Add(obj.name, obj);
+		}
+		for (int i = 0; i < AFRParent.transform.childCount; ++i){
+			var obj = AFRParent.transform.GetChild(i).gameObject;
+			AFingers.Add(obj.name, obj);
+		}
+	}
+
 	/// <summary>
 	/// 指定したキーの色を白に設定する
 	/// </summary>
@@ -187,11 +208,11 @@ public class AssistKeyboardJIS : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 指定したキーの色を青色に変更する
+	/// 指定したキーの色を変更する
 	/// </summary>
 	private void SetKeyColorHighlight(string keyName){
 		var shape = AKKeys[keyName].GetComponent<Shape>();
-		switch(keyFingering[keyName]){
+		switch(keyFingering[keyName].Item1){
 			case 1:
 				shape.settings.outlineColor = colorViolet;
 				shape.settings.fillColor = colorLightViolet;
@@ -216,6 +237,45 @@ public class AssistKeyboardJIS : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// 指定した指の色を変更する
+	/// </summary>
+	private void SetFingerColorHighlight(string keyName){
+		var fingering = keyFingering[keyName];
+		if (fingering.Item2 == 'B') {
+			var obj = AFingers["L1"].GetComponent<Shape>();
+			obj.settings.fillColor = colorViolet;
+			obj = AFingers["R1"].GetComponent<Shape>();
+			obj.settings.fillColor = colorViolet;
+		}
+		else {
+			var objName = fingering.Item2.ToString() + fingering.Item1.ToString();
+			var obj = AFingers[objName].GetComponent<Shape>();
+			switch(fingering.Item1){
+				case 1:
+					obj.settings.outlineColor = colorViolet;
+					obj.settings.fillColor = colorLightViolet;
+					break;
+				case 2:
+					obj.settings.outlineColor = colorBlue;
+					obj.settings.fillColor = colorLightBlue;
+					break;
+				case 3:
+					obj.settings.outlineColor = colorGreen;
+					obj.settings.fillColor = colorLightGreen;
+					break;
+				case 4:
+					obj.settings.outlineColor = colorOrange;
+					obj.settings.fillColor = colorLightOrange;
+					break;
+				case 5:
+					obj.settings.outlineColor = colorPink;
+					obj.settings.fillColor = colorLightPink;
+					break;
+			}
+		}
+	}
+
+	/// <summary>
 	/// 全てのキーの色を白にする
 	/// </summary>
 	public void SetAllKeyColorWhite(){
@@ -228,13 +288,25 @@ public class AssistKeyboardJIS : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 次に打つべき文字をハイライトする
+	/// 全ての指の色を白にする
 	/// </summary>
-	public void SetNextPushKeyColorHighlight(char ch){
+	public void SetAllFingerColorWhite(){
+		foreach (var kvp in AFingers){
+			var obj = kvp.Value.GetComponent<Shape>();
+			obj.settings.fillColor = colorWhite;
+		}
+	}
+
+	/// <summary>
+	/// 次に打つべき文字と指をハイライトする
+	/// </summary>
+	public void SetNextHighlight(char ch){
 		SetAllKeyColorWhite();
+		SetAllFingerColorWhite();
 		var keyList = new List<string>(keyMapping[ch]);
 		foreach (var keyName in keyList){
 			SetKeyColorHighlight(keyName);
+			SetFingerColorHighlight(keyName);
 		}
 	}
 }
