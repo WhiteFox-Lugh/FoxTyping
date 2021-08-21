@@ -169,7 +169,9 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void Update() {
 		TextColorChange();
-		ShowMiddlePanel(ConfigScript.InfoPanelMode);
+		if (DataPanel != null && AssistKeyboardPanel != null){
+			ShowMiddlePanel(ConfigScript.InfoPanelMode);
+		}
 		if (queue.Count > 0 && timeQueue.Count > 0){
 			// キューの長さが一致しないなら Config へ戻す
 			if(queue.Count != timeQueue.Count){
@@ -438,7 +440,8 @@ public class TypingSoft : MonoBehaviour {
 		timeQueue.Clear();
 		isInputValid = false;
 		// 終了
-		if(tasksCompleted >= numOfTask){
+		// numOfTask <= 0 の時は練習モード用で無限にできるようにするため
+		if(tasksCompleted >= numOfTask && numOfTask > 0){
 			CurrentGameCondition = (int)gameCondition.Finished;
 		}
 		else {
