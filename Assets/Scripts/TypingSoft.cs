@@ -7,8 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const double INTERVAL = 3.0F;
-	private const double TYPE_HIDDEN_THRESHOLD = 500F;
+	private const double INTERVAL = 1.0F;
 	// 入力された文字の queue
 	private static Queue<char> queue = new Queue<char>();
 	// 時刻の queue

@@ -9,13 +9,7 @@ using UnityEngine.SceneManagement;
 public class BeginnerModeOperate : MonoBehaviour {
 	private const int MODE_NUM = 0; // 短文練習モード固定
 	private static int prevChapterNum = 1;
-	private static int prevSectionNum = 1;
-	[SerializeField] private TMP_Dropdown UIGameMode;
-	[SerializeField] private TMP_Dropdown UIDataSetName;
-	[SerializeField] private TMP_Dropdown UILongDataSetName;
-	[SerializeField] private TMP_Dropdown UISentenceNum;
-	[SerializeField] private GameObject ConfigPanel;
-	[SerializeField] private GameObject LongSentenceConfigPanel;
+	[SerializeField] private GameObject chapterSelect;
 
 	private static string[] practiceDataset = new string[2] {
 		"FoxTypingOfficial", "FoxTypingOfficialEnglish"
@@ -35,7 +29,11 @@ public class BeginnerModeOperate : MonoBehaviour {
 	/// 直前の練習内容を選択肢にセット
 	/// </summary>
 	void SetPreviousSettings(){
-
+		for (int i = 1; i <= chapterSelect.transform.childCount; ++i){
+			var toggle = transform.Find("ChapterSelect/Chapter" + i.ToString() + "Toggle").GetComponent<Toggle>();
+			toggle.isOn = !toggle.isOn; // OnValueChanged を強制動作させることで Panel を取得しなくて済む
+			toggle.isOn = prevChapterNum == i;
+		}
 	}
 
 	/// <summary>
