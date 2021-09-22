@@ -597,6 +597,10 @@ public class TypingSoft : MonoBehaviour {
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
+			// F2 キーならリトライ
+			if (e.keyCode == KeyCode.F2){
+				InitGame();
+			}
 			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
 			if (isFirstInput && inputChar != '\\'){
 				firstCharInputTime = currentTime;
