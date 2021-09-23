@@ -231,14 +231,18 @@ public class TypingPerfomanceTest
 	}
 
 	[Test]
-	public void FoxScoreTest() {
+	public void StdDevTest() {
 		// 仕様に則って計算した結果
-		var expectedScore = 69;
+		var expectedAvg = 3.9;
+		var expectedStdDev = 1.74355957742;
 		BeforeTest();
 		var type = TP.GetType();
-		MethodInfo loader = type.GetMethod("GetFoxScore");
-		var value = (int) loader.Invoke(TP, null);
-		Assert.AreEqual(value, expectedScore);
+		MethodInfo loader = type.GetMethod("GetKpmAverageAndStdDev");
+		var value = ((double kpsAvg, double kpsStdDev)) loader.Invoke(TP, null);
+		bool isAvgApproximatelyEqual = Math.Abs(value.kpsAvg - expectedAvg) < EPS;
+		bool isStdDevApproximatelyEqual = Math.Abs(value.kpsStdDev - expectedStdDev) < EPS;
+		Assert.IsTrue(isAvgApproximatelyEqual);
+		Assert.IsTrue(isStdDevApproximatelyEqual);
 	}
 
 	[Test]
@@ -259,18 +263,6 @@ public class TypingPerfomanceTest
 		BeforeTest();
 		var type = TP.GetType();
 		MethodInfo loader = type.GetMethod("GetAccuracy");
-		var value = (double) loader.Invoke(TP, null);
-		double diff = value - expected;
-		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
-		Assert.IsTrue(isApproximatelyEqual);
-	}
-
-	[Test]
-	public void GetKPSAllTest() {
-		double expected = 2.083333333333333333;
-		BeforeTest();
-		var type = TP.GetType();
-		MethodInfo loader = type.GetMethod("GetKPSAll");
 		var value = (double) loader.Invoke(TP, null);
 		double diff = value - expected;
 		bool isApproximatelyEqual = Math.Abs(diff) < EPS;

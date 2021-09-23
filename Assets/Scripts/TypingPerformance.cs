@@ -10,7 +10,6 @@ public class TypingPerformance {
 	const double ALPHA = 0.25;
 	// BETA: ノーマルスコアの加重平均の重み
 	const double BETA = 0.75;
-	const int PARAM_S = 10;
 	// 原文のリスト
 	public List<string> OriginSentenceList {
 		private set;
@@ -183,7 +182,7 @@ public class TypingPerformance {
 
 
 	/// <summary>
-	/// センテンスごと音スコアを低い順にソートしたものを返す
+	/// センテンスごとにスコアを低い順にソートしたものを返す
 	/// </summary>
 	private List<double> GetSortedScoreList() {
 		var sentenceScoreList = new List<double>();
@@ -214,18 +213,19 @@ public class TypingPerformance {
 	}
 
 	/// <summary>
-	/// Fox スコア（上級者向け）を計算する
+	/// kpm の平均と標準偏差を求める
 	/// </summary>
-	public int GetFoxScore() {
-		var sortedScoreList = GetSortedScoreList();
+	public (double kpsAvg, double kpsStdDev) GetKpmAverageAndStdDev() {
 		var len = OriginSentenceList.Count();
-		int ignoreNum = len / PARAM_S;
-		double score = 0.0;
-		for (int i = ignoreNum; i < len - ignoreNum; ++i){
-			score += sortedScoreList[i];
+		var kpsList = new List<double>();
+		for (int i = 0; i < len; ++i){
+			kpsList.Add(GetSentenceKPM(i) / 60.0);
 		}
-		int ret = Convert.ToInt32(Math.Floor(score / (len - 2 * ignoreNum)));
-		return ret;
+		var avg = kpsList.Average();
+		var sumPower = kpsList.Select(x => x * x).Sum();
+		var variance = sumPower / kpsList.Count - avg * avg;
+		var stdDev = Math.Sqrt(variance);
+		return (avg, stdDev);
 	}
 
 	/// <summary>
@@ -253,19 +253,5 @@ public class TypingPerformance {
 		}
 		ret = 100.0 * correctTypeSum / (correctTypeSum + mistypeSum);
 		return ret;
-	}
-
-	/// <summary>
-	/// 全センテンスにおける kps を返す
-	/// </summary>
-	public double GetKPSAll() {
-		int correctTypeCount = 0;
-		double elapsedTime = GetElapsedTime();
-		for (int i = 0; i < OriginSentenceList.Count(); ++i){
-			var typeNum = GetSentenceCorrectAndMistypeNum(i);
-			correctTypeCount += typeNum.correctTypeNum;
-		}
-		double kps = correctTypeCount / elapsedTime;
-		return kps;
 	}
 }
