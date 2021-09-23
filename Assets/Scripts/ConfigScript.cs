@@ -39,4 +39,10 @@ public class ConfigScript : MonoBehaviour {
 		set;
 		get;
 	} = "Long_Constitution";
+
+	// 長文モードでの制限時間
+	public static int LongSentenceTimeLimit {
+		set;
+		get;
+	} = 300;
 }

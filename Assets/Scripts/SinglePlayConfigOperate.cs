@@ -8,16 +8,21 @@ using UnityEngine.SceneManagement;
 
 public class SinglePlayConfigOperate : MonoBehaviour {
 	private const int TASK_UNIT = 5;
+	private const int LONG_MAX_TIME_LIMIT = 60 * 60;
+	private const int LONG_MIN_TIME_LIMIT = 1;
 	private static int prevDropdownGameMode = 0;
 	private static int prevDropdownTaskNum = 5;
 	private static int prevDropdownShortDataset = 0;
 	private static int prevDropdownLongDataset = 0;
+	private static int longSentenceTimeLimitVal = 0;
 	[SerializeField] private TMP_Dropdown UIGameMode;
 	[SerializeField] private TMP_Dropdown UIDataSetName;
 	[SerializeField] private TMP_Dropdown UILongDataSetName;
 	[SerializeField] private TMP_Dropdown UISentenceNum;
 	[SerializeField] private GameObject ConfigPanel;
 	[SerializeField] private GameObject LongSentenceConfigPanel;
+	[SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
+	[SerializeField] private TMP_InputField LongSentenceTimeLimitSecond;
 
 	private static string[] shortDatasetFileName = new string[2] {
 		"FoxTypingOfficial", "FoxTypingOfficialEnglish"
@@ -50,6 +55,8 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		UIDataSetName.value = prevDropdownShortDataset;
 		UILongDataSetName.value = prevDropdownLongDataset;
 		UISentenceNum.value = prevDropdownTaskNum;
+		longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
+		SetLongSentenceTimeLimitUI();
 	}
 
 	/// <summary>
@@ -64,6 +71,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		ConfigScript.DataSetName = shortDatasetFileName[UIDataSetName.value];
 		ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
 		ConfigScript.LongSentenceTaskName = longDatasetFileName[UILongDataSetName.value];
+		ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
 	}
 
 	/// <summary>
@@ -103,4 +111,42 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 			KeyCheck(e.keyCode);
 		}
   }
+
+	/// <summary>
+	/// val 秒を n分 m秒 に直す
+	/// </summary>
+	private (int minute, int second) GetTimeMSExpr(int val){
+		return (val / 60, val % 60);
+	}
+
+	/// <summary>
+	/// 制限時間表示をセット
+	/// </summary>
+	private void SetLongSentenceTimeLimitUI(){
+		var timeLimit = GetTimeMSExpr(longSentenceTimeLimitVal);
+		LongSentenceTimeLimitMinute.text = timeLimit.minute.ToString();
+		LongSentenceTimeLimitSecond.text = timeLimit.second.ToString();
+	}
+
+	/// <summary>
+	/// プラスボタンを押したときの挙動
+	/// </sumamry>
+	public void OnClickPlusButton(int num){
+		longSentenceTimeLimitVal += (num == 0) ? 60 : 1;
+		if (longSentenceTimeLimitVal > LONG_MAX_TIME_LIMIT){
+			longSentenceTimeLimitVal = LONG_MAX_TIME_LIMIT;
+		}
+		SetLongSentenceTimeLimitUI();
+	}
+
+	/// <summary>
+	/// マイナスボタンを押したときの挙動
+	/// </sumamry>
+	public void OnClickMinusButton(int num){
+		longSentenceTimeLimitVal -= (num == 0) ? 60 : 1;
+		if (longSentenceTimeLimitVal < LONG_MIN_TIME_LIMIT){
+			longSentenceTimeLimitVal = LONG_MIN_TIME_LIMIT;
+		}
+		SetLongSentenceTimeLimitUI();
+	}
 }
