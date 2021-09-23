@@ -66,6 +66,9 @@ public class RecordSceneScript : MonoBehaviour {
 		if(KeyCode.Backspace == k){
 			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
+		else if(KeyCode.F2 == k){
+			SceneManager.LoadScene("TypingScene");
+		}
 	}
 
 	/// <summary>
