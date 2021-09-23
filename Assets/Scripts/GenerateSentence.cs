@@ -1086,6 +1086,7 @@ public class GenerateSentence {
 	/// </summary>
 	public bool LoadSentenceData (string dataName){
 		try {
+			wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 			var file = Resources.Load(dataName);
 			var jsonStr = file.ToString();
 			var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);

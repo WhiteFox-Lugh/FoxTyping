@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const double INTERVAL = 3.0F;
+	private const double INTERVAL = 1.0F;
 	// 入力された文字の queue
 	private static Queue<char> queue = new Queue<char>();
 	// 時刻の queue
@@ -23,6 +23,7 @@ public class TypingSoft : MonoBehaviour {
 	private static int sentenceLength;
 	// ミスタイプ記録
 	private static bool isRecMistype;
+	private static bool isSentenceMistyped;
 	// 文章の読み
 	private static List<string> sentenceHiragana;
 	// 文章タイピング読み
@@ -53,20 +54,20 @@ public class TypingSoft : MonoBehaviour {
 	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
 	private static Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
 	// UI たち
-	[SerializeField] Text UIOriginSentence;
-	[SerializeField] Text UIYomigana;
-	[SerializeField] Text UIType;
-	[SerializeField] Text UIKPM;
-	[SerializeField] Text UISTT;
-	[SerializeField] Text UITask;
-	[SerializeField] Text UIAccuracy;
-	[SerializeField] Text UITypeInfo;
-	[SerializeField] Text countdownText;
-	[SerializeField] GameObject DataPanel;
-	[SerializeField] GameObject AssistKeyboardPanel;
-	GenerateSentence gs = new GenerateSentence();
+	[SerializeField] private Text UIOriginSentence;
+	[SerializeField] private Text UIYomigana;
+	[SerializeField] private Text UIType;
+	[SerializeField] private Text UIKPM;
+	[SerializeField] private Text UISTT;
+	[SerializeField] private Text UITask;
+	[SerializeField] private Text UIAccuracy;
+	[SerializeField] private Text UITypeInfo;
+	[SerializeField] private Text countdownText;
+	[SerializeField] private GameObject DataPanel;
+	[SerializeField] private GameObject AssistKeyboardPanel;
+	private static GenerateSentence gs = new GenerateSentence();
 	// Assist Keyboard JIS
-	AssistKeyboardJIS AKJIS;
+	private static AssistKeyboardJIS AKJIS;
 
 	// エラーコードとエラータイプ
 	private enum errorType {
@@ -151,6 +152,7 @@ public class TypingSoft : MonoBehaviour {
 		lastJudgeTime = -1.0;
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = false;
+		isSentenceMistyped = false;
 		AKJIS = new AssistKeyboardJIS();
 		Performance = new TypingPerformance();
 		CurrentTypingSentence = "";
@@ -166,7 +168,9 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	void Update() {
 		TextColorChange();
-		ShowMiddlePanel(ConfigScript.InfoPanelMode);
+		if (DataPanel != null && AssistKeyboardPanel != null){
+			ShowMiddlePanel(ConfigScript.InfoPanelMode);
+		}
 		if (queue.Count > 0 && timeQueue.Count > 0){
 			// キューの長さが一致しないなら Config へ戻す
 			if(queue.Count != timeQueue.Count){
@@ -235,6 +239,8 @@ public class TypingSoft : MonoBehaviour {
 		typeTimeList = new List<double>();
 		// 変数等の初期化
 		isFirstInput = true;
+		isRecMistype = false;
+		isSentenceMistyped = false;
 		index = 0;
 		sentenceLength = 0;
 		// 問題文生成
@@ -262,7 +268,7 @@ public class TypingSoft : MonoBehaviour {
 			nextTypingSentence += sentenceTyping[i][0];
 		}
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar(nextTypingSentence);
+		// SetUITypeText(nextTypingSentence);
 		CurrentTypingSentence = nextTypingSentence;
 		// テキスト変更
 		UIOriginSentence.text = nQJ;
@@ -270,10 +276,10 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// タイピング文の半角スペースをアンダーバーに置換
+	/// タイピング文の半角スペースをアンダーバーに置換して表示
 	/// 打ったか打ってないかわかりにくいため、アンダーバーを表示することで改善
 	/// </summary>
-	void ReplaceWhitespaceToUnderbar(string sentence) {
+	void SetUITypeText(string sentence) {
 		UIType.text = sentence.Replace(' ', '_');
 	}
 
@@ -433,7 +439,8 @@ public class TypingSoft : MonoBehaviour {
 		timeQueue.Clear();
 		isInputValid = false;
 		// 終了
-		if(tasksCompleted >= numOfTask){
+		// numOfTask <= 0 の時は練習モード用で無限にできるようにするため
+		if(tasksCompleted >= numOfTask && numOfTask > 0){
 			CurrentGameCondition = (int)gameCondition.Finished;
 		}
 		else {
@@ -472,11 +479,12 @@ public class TypingSoft : MonoBehaviour {
 		// }
 		// 正解した文字を表示するオプションの場合
 		// else {
-		// 	correctString += str;
-		// 	UIType.text = correctString;
+		correctString += str;
+		UIType.text = correctString;
 		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		ReplaceWhitespaceToUnderbar(nextTypingSentence);
+		var UIStr = correctString + (isSentenceMistyped ? ("<color=#ff0000ff>" + nextTypingSentence + "</color>") : "");
+		SetUITypeText(UIStr);
 		CurrentTypingSentence = nextTypingSentence;
 	}
 
@@ -484,6 +492,7 @@ public class TypingSoft : MonoBehaviour {
 	/// ミスタイプ時の処理
 	/// </summary>
 	void Mistype() {
+		isSentenceMistyped = true;
 		// ミスタイプ数を増やす
 		misTypeNum++;
 		UpdateUITypeInfo();
@@ -492,9 +501,8 @@ public class TypingSoft : MonoBehaviour {
 		UpdateUICorrectTypeRate();
 		// 打つべき文字を赤く表示
 		if(!isRecMistype){
-			string s = UIType.text.ToString();
-			string rest = s.Substring(1);
-			UIType.text = "<color=#ff0000ff>" + s[0].ToString() + "</color>" + rest;
+			string UIStr = correctString + "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+			SetUITypeText(UIStr);
 		}
 		// color タグを多重で入れないようにする
 		isRecMistype = true;
@@ -589,6 +597,10 @@ public class TypingSoft : MonoBehaviour {
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
+			// F2 キーならリトライ
+			if (e.keyCode == KeyCode.F2){
+				InitGame();
+			}
 			var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
 			if (isFirstInput && inputChar != '\\'){
 				firstCharInputTime = currentTime;
