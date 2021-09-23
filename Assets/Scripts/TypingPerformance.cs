@@ -9,7 +9,7 @@ public class TypingPerformance {
 	// ALPHA: 正確さから倍率への関数の定数
 	const double ALPHA = 0.25;
 	// BETA: ノーマルスコアの加重平均の重み
-	const double BETA = 0.75;
+	const double BETA = 0.85;
 	// 原文のリスト
 	public List<string> OriginSentenceList {
 		private set;
