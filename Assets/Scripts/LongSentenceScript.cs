@@ -33,7 +33,7 @@ public class LongSentenceScript : MonoBehaviour {
 	const string COLOR_REPLACE = "blue";
 	// 正解、不正解の重み
 	const int CORRECT_SCORE = 1;
-	const int MISS_COST = 10;
+	const int MISS_COST = 30;
 	const int MISS_COST_MP = 1;
 	private double startTime;
 	private bool isShowInfo;
@@ -86,6 +86,7 @@ public class LongSentenceScript : MonoBehaviour {
 		UIInputField.text = "";
 		UIRestTime.text = "";
 		UIInputCounter.text = "";
+		LimitSec = ConfigScript.LongSentenceTimeLimit;
 		InputPanel.SetActive(true);
 		TaskPanel.SetActive(true);
 		InfoPanel.SetActive(true);
@@ -558,6 +559,9 @@ public class LongSentenceScript : MonoBehaviour {
 			else {
 				ReturnConfig();
 			}
+		}
+		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F2 && isShowInfo){
+			Init();
 		}
 		else if (!isFinished && e.type == EventType.KeyDown && e.keyCode == KeyCode.V && isPushedCtrlKey){
 			Debug.Log("Copy detected");
