@@ -45,4 +45,16 @@ public class ConfigScript : MonoBehaviour {
 		set;
 		get;
 	} = 300;
+
+	// CPU 対戦をオンにするか
+	public static bool UseCPU {
+		set;
+		get;
+	} = true;
+
+	// CPU の kpm 設定
+	public static int CPUKpm {
+		set;
+		get;
+	} = 1000;
 }

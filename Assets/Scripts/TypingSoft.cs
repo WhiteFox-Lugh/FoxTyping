@@ -46,6 +46,7 @@ public class TypingSoft : MonoBehaviour {
 	private static double accuracyValue;
 	private static double totalTypingTime;
 	private static int numOfTask;
+	private static string cpuTypeString;
 	// リザルト集計用
 	private static StringBuilder typedLetter = new StringBuilder();
 	private static List<int> typeJudgeList = new List<int>();
@@ -61,10 +62,12 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] private Text UISTT;
 	[SerializeField] private Text UITask;
 	[SerializeField] private Text UIAccuracy;
+	[SerializeField] private Text UICPUText;
 	[SerializeField] private Text UITypeInfo;
 	[SerializeField] private Text countdownText;
 	[SerializeField] private GameObject DataPanel;
 	[SerializeField] private GameObject AssistKeyboardPanel;
+	[SerializeField] private GameObject CPUPanel;
 	private static GenerateSentence gs = new GenerateSentence();
 	// Assist Keyboard JIS
 	private static AssistKeyboardJIS AKJIS;
@@ -156,9 +159,11 @@ public class TypingSoft : MonoBehaviour {
 		AKJIS = new AssistKeyboardJIS();
 		Performance = new TypingPerformance();
 		CurrentTypingSentence = "";
+		cpuTypeString = "";
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
+		UICPUText.text = "";
 		queue.Clear();
 		timeQueue.Clear();
 	}
@@ -231,6 +236,7 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
+		UICPUText.text = "";
 		// 正解した文字列を初期化
 		correctString = "";
 		// リザルト集積用の変数を初期化
@@ -243,11 +249,11 @@ public class TypingSoft : MonoBehaviour {
 		isSentenceMistyped = false;
 		index = 0;
 		sentenceLength = 0;
+		// 入力受け付け状態にする
+		isInputValid = true;
 		// 問題文生成
 		ChangeSentence();
 		UpdateUITask();
-		// 入力受け付け状態にする
-		isInputValid = true;
 		// 時刻を取得
 		lastSentenceUpdateTime = Time.realtimeSinceStartup;
 	}
@@ -270,9 +276,37 @@ public class TypingSoft : MonoBehaviour {
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
 		// SetUITypeText(nextTypingSentence);
 		CurrentTypingSentence = nextTypingSentence;
+		cpuTypeString = nextTypingSentence;
 		// テキスト変更
 		UIOriginSentence.text = nQJ;
 		UIYomigana.text = nQR;
+		// CPU Start
+		StartCoroutine("CPUType");
+	}
+
+	/// <summary>
+	/// CPU のタイピング処理
+	/// </summary>
+	private IEnumerator CPUType(){
+		var idx = 0;
+		float waitTime = (float)(60.0 / ConfigScript.CPUKpm);
+		// 最初の1文字目の反応時間
+		yield return new WaitForSeconds(CPULatency());
+		// 残りの文字列処理
+		while (isInputValid && idx < cpuTypeString.Length) {
+			UICPUText.text += cpuTypeString[idx].ToString();
+			idx++;
+			yield return new WaitForSeconds(waitTime);
+		}
+		yield return null;
+	}
+
+	/// <summary>
+	/// CPU の反応時間を設定
+	/// </summary>
+	private float CPULatency(){
+		float ret = 0.5f;
+		return ret;
 	}
 
 	/// <summary>
