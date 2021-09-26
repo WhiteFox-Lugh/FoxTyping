@@ -13,12 +13,13 @@ public class ModeSelectScript : MonoBehaviour
 
   /// <summary>
   /// 押されたキーのチェックと対応する操作への移行
+  /// <param name="kc">keycode</param>
   /// </summary>
-  void KeyCheck(KeyCode k){
-    if(KeyCode.S == k){
+  private void KeyCheck(KeyCode kc){
+    if(KeyCode.S == kc){
       LoadSinglePlayScene();
     }
-    else if(KeyCode.B == k){
+    else if(KeyCode.B == kc){
       LoadBeginnerModeScene();
     }
     // else if(KeyCode.U == k){
@@ -27,7 +28,7 @@ public class ModeSelectScript : MonoBehaviour
     // else if(KeyCode.O == k){
     //   LoadOtherScene();
     // }
-    else if(KeyCode.Backspace == k){
+    else if(KeyCode.Backspace == kc){
       LoadTitleScene();
     }
   }

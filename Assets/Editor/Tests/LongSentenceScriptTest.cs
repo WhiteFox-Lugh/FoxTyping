@@ -8,10 +8,12 @@ using Assert = UnityEngine.Assertions.Assert;
 
 public class LongSentenceScriptTest
 {
-    const string REP = "replace";
-    const string DEL = "delete";
-    const string INS = "insert";
-    const string EQ = "equal";
+    private enum judgeType {
+        insert,
+        delete,
+        replace,
+        correct
+    };
     const string FILE_CONSTITUTION = "long_constitution";
     const string COLORFUL_MAKIGAMI = "あかまきがみあおまきがみきまきがみ";
 
@@ -59,7 +61,7 @@ public class LongSentenceScriptTest
         var taskStr = "きつね";
         var inputStr = "きつね";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "きつね", "")
+            new Diff((int)judgeType.correct, "きつね", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -70,7 +72,7 @@ public class LongSentenceScriptTest
         var taskStr = LoadTaskData(FILE_CONSTITUTION);
         var inputStr = taskStr;
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, taskStr, "")
+            new Diff((int)judgeType.correct, taskStr, "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -81,7 +83,7 @@ public class LongSentenceScriptTest
         var taskStr = "きつねこんこん";
         var inputStr = "きつね";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "きつね", "")
+            new Diff((int)judgeType.correct, "きつね", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -92,7 +94,7 @@ public class LongSentenceScriptTest
         var taskStr = LoadTaskData(FILE_CONSTITUTION);
         var inputStr = "日本国民は、正当に選挙された国会における代表者を通じて行動し";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "日本国民は、正当に選挙された国会における代表者を通じて行動し", "")
+            new Diff((int)judgeType.correct, "日本国民は、正当に選挙された国会における代表者を通じて行動し", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -103,8 +105,8 @@ public class LongSentenceScriptTest
         var taskStr = "きつねこんこん";
         var inputStr = "こんこん";
         var expectedDiffs = new List<Diff> () {
-            new Diff(DEL, "きつね", ""),
-            new Diff(EQ, "こんこん", "")
+            new Diff((int)judgeType.delete, "きつね", ""),
+            new Diff((int)judgeType.correct, "こんこん", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -115,7 +117,7 @@ public class LongSentenceScriptTest
         var taskStr = "きつねこんこん";
         var inputStr = "んこん";
         var expectedDiffs = new List<Diff> () {
-            new Diff(INS, "", "んこん")
+            new Diff((int)judgeType.insert, "", "んこん")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -126,8 +128,8 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "まきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(DEL, "あか", ""),
-            new Diff(EQ, "まきがみ", ""),
+            new Diff((int)judgeType.delete, "あか", ""),
+            new Diff((int)judgeType.correct, "まきがみ", ""),
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -138,8 +140,8 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "あおまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "あ", ""),
-            new Diff(INS, "", "おまきがみ"),
+            new Diff((int)judgeType.correct, "あ", ""),
+            new Diff((int)judgeType.insert, "", "おまきがみ"),
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -150,9 +152,9 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "あかあおまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "あか", ""),
-            new Diff(DEL, "まきがみ", ""),
-            new Diff(EQ, "あおまきがみ", ""),
+            new Diff((int)judgeType.correct, "あか", ""),
+            new Diff((int)judgeType.delete, "まきがみ", ""),
+            new Diff((int)judgeType.correct, "あおまきがみ", ""),
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -163,7 +165,7 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "", "")
+            new Diff((int)judgeType.correct, "", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -174,7 +176,7 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "いろはにほへと";
         var expectedDiffs = new List<Diff> () {
-            new Diff(INS, "", "いろはにほへと")
+            new Diff((int)judgeType.insert, "", "いろはにほへと")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -185,8 +187,8 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = COLORFUL_MAKIGAMI + "あ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, COLORFUL_MAKIGAMI, ""),
-            new Diff(INS, "", "あ")
+            new Diff((int)judgeType.correct, COLORFUL_MAKIGAMI, ""),
+            new Diff((int)judgeType.insert, "", "あ")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -197,10 +199,10 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "あかまきがみあおまきがみあかまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "あかまきがみあおまきがみ", ""),
-            new Diff(REP, "き", "あ"),
-            new Diff(INS, "", "か"),
-            new Diff(EQ, "まきがみ", "")
+            new Diff((int)judgeType.correct, "あかまきがみあおまきがみ", ""),
+            new Diff((int)judgeType.replace, "き", "あ"),
+            new Diff((int)judgeType.insert, "", "か"),
+            new Diff((int)judgeType.correct, "まきがみ", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -211,11 +213,11 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "まきがみまきがみまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(REP, "あか", "まき"),
-            new Diff(INS, "", "がみ"),
-            new Diff(EQ, "まきがみ", ""),
-            new Diff(DEL, "あお", ""),
-            new Diff(EQ, "まきがみ", "")
+            new Diff((int)judgeType.replace, "あか", "まき"),
+            new Diff((int)judgeType.insert, "", "がみ"),
+            new Diff((int)judgeType.correct, "まきがみ", ""),
+            new Diff((int)judgeType.delete, "あお", ""),
+            new Diff((int)judgeType.correct, "まきがみ", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -226,13 +228,13 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "まきがみまきがみまきがみまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(REP, "あか", "まき"),
-            new Diff(INS, "", "がみ"),
-            new Diff(EQ, "まきがみ", ""),
-            new Diff(DEL, "あお", ""),
-            new Diff(EQ, "まきがみ", ""),
-            new Diff(DEL, "き", ""),
-            new Diff(EQ, "まきがみ", "")
+            new Diff((int)judgeType.replace, "あか", "まき"),
+            new Diff((int)judgeType.insert, "", "がみ"),
+            new Diff((int)judgeType.correct, "まきがみ", ""),
+            new Diff((int)judgeType.delete, "あお", ""),
+            new Diff((int)judgeType.correct, "まきがみ", ""),
+            new Diff((int)judgeType.delete, "き", ""),
+            new Diff((int)judgeType.correct, "まきがみ", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -243,11 +245,11 @@ public class LongSentenceScriptTest
         var taskStr = LoadTaskData(FILE_CONSTITUTION);
         var inputStr = "日本国民国民国民";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "日本国民", ""),
-            new Diff(DEL, "は、正当に選挙された", ""),
-            new Diff(EQ, "国", ""),
-            new Diff(REP, "会", "民"),
-            new Diff(INS, "", "国民"),
+            new Diff((int)judgeType.correct, "日本国民", ""),
+            new Diff((int)judgeType.delete, "は、正当に選挙された", ""),
+            new Diff((int)judgeType.correct, "国", ""),
+            new Diff((int)judgeType.replace, "会", "民"),
+            new Diff((int)judgeType.insert, "", "国民"),
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -258,9 +260,9 @@ public class LongSentenceScriptTest
         var taskStr = COLORFUL_MAKIGAMI;
         var inputStr = "あかまきがみあまきがみ";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "あかまきがみあ", ""),
-            new Diff(DEL, "お", ""),
-            new Diff(EQ, "まきがみ", "")
+            new Diff((int)judgeType.correct, "あかまきがみあ", ""),
+            new Diff((int)judgeType.delete, "お", ""),
+            new Diff((int)judgeType.correct, "まきがみ", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -271,13 +273,13 @@ public class LongSentenceScriptTest
         var taskStr = LoadTaskData(FILE_CONSTITUTION);
         var inputStr = "日本国民は、正答に占拠された国会における代表者を通じて行動しろよ、";
         var expectedDiffs = new List<Diff> () {
-            new Diff(EQ, "日本国民は、正", ""),
-            new Diff(REP, "当", "答"),
-            new Diff(EQ, "に", ""),
-            new Diff(REP, "選挙", "占拠"),
-            new Diff(EQ, "された国会における代表者を通じて行動し", ""),
-            new Diff(INS, "", "ろよ"),
-            new Diff(EQ, "、", "")
+            new Diff((int)judgeType.correct, "日本国民は、正", ""),
+            new Diff((int)judgeType.replace, "当", "答"),
+            new Diff((int)judgeType.correct, "に", ""),
+            new Diff((int)judgeType.replace, "選挙", "占拠"),
+            new Diff((int)judgeType.correct, "された国会における代表者を通じて行動し", ""),
+            new Diff((int)judgeType.insert, "", "ろよ"),
+            new Diff((int)judgeType.correct, "、", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -288,14 +290,14 @@ public class LongSentenceScriptTest
         var taskStr = LoadTaskData(FILE_CONSTITUTION);
         var inputStr = "国民は、正当に選挙されれた国会における代表者を通て行動しわれら";
         var expectedDiffs = new List<Diff> () {
-            new Diff(DEL, "日本", ""),
-            new Diff(EQ, "国民は、正当に選挙され", ""),
-            new Diff(INS, "", "れ"),
-            new Diff(EQ, "た国会における代表者を通", ""),
-            new Diff(DEL, "じ", ""),
-            new Diff(EQ, "て行動し", ""),
-            new Diff(DEL, "、", ""),
-            new Diff(EQ, "われら", "")
+            new Diff((int)judgeType.delete, "日本", ""),
+            new Diff((int)judgeType.correct, "国民は、正当に選挙され", ""),
+            new Diff((int)judgeType.insert, "", "れ"),
+            new Diff((int)judgeType.correct, "た国会における代表者を通", ""),
+            new Diff((int)judgeType.delete, "じ", ""),
+            new Diff((int)judgeType.correct, "て行動し", ""),
+            new Diff((int)judgeType.delete, "、", ""),
+            new Diff((int)judgeType.correct, "われら", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }

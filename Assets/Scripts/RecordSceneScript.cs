@@ -34,7 +34,7 @@ public class RecordSceneScript : MonoBehaviour {
 	/// <summary>
 	/// 簡易リザルトの表示処理
 	/// </summary>
-	void SetResult() {
+	private void SetResult() {
 		var perf = TypingSoft.Performance;
 		var kpsPerf = perf.GetKpmAverageAndStdDev();
 		UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " key/s";
@@ -47,7 +47,7 @@ public class RecordSceneScript : MonoBehaviour {
 	/// <summary>
 	/// 詳細リザルトの表示処理
 	/// </summary>
-	void SetResultDetail() {
+	private void SetResultDetail() {
 		var sb = new StringBuilder();
 		var perf = TypingSoft.Performance;
 		int len = perf.OriginSentenceList.Count();
@@ -61,12 +61,13 @@ public class RecordSceneScript : MonoBehaviour {
 
 	/// <summary>
 	/// キー入力に対応する処理を実行
+	/// <param name="kc">keycode</param>
 	/// </summary>
-	void KeyCheck(KeyCode k){
-		if(KeyCode.Backspace == k){
+	private void KeyCheck(KeyCode kc){
+		if(KeyCode.Backspace == kc){
 			SceneManager.LoadScene("SinglePlayConfigScene");
 		}
-		else if(KeyCode.F2 == k){
+		else if(KeyCode.F2 == kc){
 			SceneManager.LoadScene("TypingScene");
 		}
 	}

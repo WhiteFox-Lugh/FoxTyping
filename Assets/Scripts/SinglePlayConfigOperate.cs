@@ -52,7 +52,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	/// <summary>
 	/// 直前の練習内容を選択肢にセット
 	/// </summary>
-	void SetPreviousSettings(){
+	private void SetPreviousSettings(){
 		UIGameMode.value = prevDropdownGameMode;
 		UIDataSetName.value = prevDropdownShortDataset;
 		UILongDataSetName.value = prevDropdownLongDataset;
@@ -67,7 +67,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	/// <summary>
 	/// 今回の練習内容を設定に反映させる
 	/// </summary>
-	void SetCurrentSettings(){
+	private void SetCurrentSettings(){
 		CheckKpmSettings();
 		prevDropdownGameMode = UIGameMode.value;
 		prevDropdownShortDataset = UIDataSetName.value;
@@ -85,7 +85,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	/// <summary>
 	/// 選択されているゲームモードにより表示パネルを変更
 	/// </summary>
-	void ChangeConfigPanel(){
+	private void ChangeConfigPanel(){
 		ConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.ShortSentence);
     LongSentenceConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.LongSentence);
 	}
@@ -107,8 +107,9 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	/// <summary>
 	/// Keycode と対応する操作
+	/// <param name="kc">keycode</param>
 	/// </summary>
-	void KeyCheck(KeyCode kc){
+	private void KeyCheck(KeyCode kc){
 		if(KeyCode.Space == kc){
 			var selectedMode = UIGameMode.value;
 			SetCurrentSettings();
@@ -136,10 +137,12 @@ public class SinglePlayConfigOperate : MonoBehaviour {
   }
 
 	/// <summary>
-	/// val 秒を n分 m秒 に直す
+	/// timeSecond 秒を n分 m秒 に直す
+	/// <param name="timeSecond">時間(秒単位)</param>
+	/// <returns>(分, 秒)に直したもの</returns>
 	/// </summary>
-	private (int minute, int second) GetTimeMSExpr(int val){
-		return (val / 60, val % 60);
+	private (int minute, int second) GetTimeMSExpr(int timeSecond){
+		return (timeSecond / 60, timeSecond % 60);
 	}
 
 	/// <summary>
@@ -153,6 +156,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	/// <summary>
 	/// プラスボタンを押したときの挙動
+	/// <param name="num">分のボタンか秒のボタンか区別する引数</param>
 	/// </sumamry>
 	public void OnClickPlusButton(int num){
 		longSentenceTimeLimitVal += (num == 0) ? 60 : 1;
@@ -164,6 +168,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	/// <summary>
 	/// マイナスボタンを押したときの挙動
+	/// <param name="num">分のボタンか秒のボタンか区別する引数</param>
 	/// </sumamry>
 	public void OnClickMinusButton(int num){
 		longSentenceTimeLimitVal -= (num == 0) ? 60 : 1;

@@ -200,6 +200,7 @@ public class AssistKeyboardJIS : MonoBehaviour {
 
 	/// <summary>
 	/// 指定したキーの色を白に設定する
+	/// <param name="keyName">キー名</param>
 	/// </summary>
 	private void SetKeyColorWhite(string keyName){
 		var shape = AKKeys[keyName].GetComponent<Shape>();
@@ -209,6 +210,7 @@ public class AssistKeyboardJIS : MonoBehaviour {
 
 	/// <summary>
 	/// 指定したキーの色を変更する
+	/// <param name="keyName">キー名</param>
 	/// </summary>
 	private void SetKeyColorHighlight(string keyName){
 		var shape = AKKeys[keyName].GetComponent<Shape>();
@@ -238,6 +240,7 @@ public class AssistKeyboardJIS : MonoBehaviour {
 
 	/// <summary>
 	/// 指定した指の色を変更する
+	/// <param name="keyName">キー名</param>
 	/// </summary>
 	private void SetFingerColorHighlight(string keyName){
 		var fingering = keyFingering[keyName];
@@ -299,11 +302,12 @@ public class AssistKeyboardJIS : MonoBehaviour {
 
 	/// <summary>
 	/// 次に打つべき文字と指をハイライトする
+	/// <param name="nextHighlightChar">次に打つ文字</param>
 	/// </summary>
-	public void SetNextHighlight(char ch){
+	public void SetNextHighlight(char nextHighlightChar){
 		SetAllKeyColorWhite();
 		SetAllFingerColorWhite();
-		var keyList = new List<string>(keyMapping[ch]);
+		var keyList = new List<string>(keyMapping[nextHighlightChar]);
 		foreach (var keyName in keyList){
 			SetKeyColorHighlight(keyName);
 			SetFingerColorHighlight(keyName);

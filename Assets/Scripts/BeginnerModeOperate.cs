@@ -8,9 +8,11 @@ using UnityEngine.SceneManagement;
 
 public class BeginnerModeOperate : MonoBehaviour {
 	private const int MODE_NUM = 0; // 短文練習モード固定
-	private static int prevChapterNum = 1;
+	private static int prevChapterNum = 1; // 前回の練習章を維持
 	[SerializeField] private GameObject chapterSelect;
 
+	// 練習データセット
+	// 先頭が章番号、下2桁がナンバリング
 	private static Dictionary<int, string> beginnerDatasetFileName = new Dictionary<int, string> {
 		{101, "keyboardMiddle"},
 		{102, "keyboardUpper"},
@@ -58,27 +60,29 @@ public class BeginnerModeOperate : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 直前の練習内容を選択肢にセット
+	/// 直前の練習内容を画面に反映させる
 	/// </summary>
-	void SetPreviousSettings(){
+	private void SetPreviousSettings(){
 		for (int i = 1; i <= chapterSelect.transform.childCount; ++i){
 			var toggle = transform.Find("ChapterSelect/Chapter" + i.ToString() + "Toggle").GetComponent<Toggle>();
-			toggle.isOn = !toggle.isOn; // OnValueChanged を強制動作させることで Panel を取得しなくて済む
+			// OnValueChanged を強制動作させることで Panel を取得しなくて済む
+			toggle.isOn = !toggle.isOn;
 			toggle.isOn = prevChapterNum == i;
 		}
 	}
 
 	/// <summary>
 	/// Keycode と対応する操作
+	/// <param name="kc">KeyCode</param>
 	/// </summary>
-	void KeyCheck(KeyCode kc){
+	private void KeyCheck(KeyCode kc){
 		if(KeyCode.Backspace == kc){
 			SceneManager.LoadScene("ModeSelectScene");
 		}
 	}
 
 	/// <summary>
-	/// キーボードの入力などの受付
+	/// キーボードの入力などの受付処理
 	/// </summary>
 	void OnGUI() {
 		Event e = Event.current;
@@ -88,10 +92,14 @@ public class BeginnerModeOperate : MonoBehaviour {
 		}
   }
 
-	public void OnClickButton(int number){
+	/// <summary>
+	/// 各練習ボタンを押したときの動作
+	/// <param name="buttonNumber">押したボタンに割り当てられた番号</param>
+	/// </summary>
+	public void OnClickButton(int buttonNumber){
 		ConfigScript.GameMode = 0; // 短文モード固定
-		ConfigScript.DataSetName = beginnerDatasetFileName[number];
-		ConfigScript.Tasks = -1; // 無限回
-		Debug.Log(number);
+		ConfigScript.DataSetName = beginnerDatasetFileName[buttonNumber];
+		ConfigScript.Tasks = -1; // 無限回練習できるようにするため、-1
+		Debug.Log(buttonNumber);
 	}
 }

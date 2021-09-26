@@ -18,9 +18,10 @@ public class TitleSelect : MonoBehaviour {
 
   /// <summary>
   /// 押されたキーのチェックと対応する操作への移行
+  /// <param name="kc">keycode</param>
   /// </summary>
-  void KeyCheck(KeyCode k){
-    if(KeyCode.P == k){
+  void KeyCheck(KeyCode kc){
+    if(KeyCode.P == kc){
       LoadModeSelectScene();
     }
   }
