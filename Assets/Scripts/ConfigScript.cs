@@ -46,8 +46,8 @@ public class ConfigScript : MonoBehaviour {
 		get;
 	} = 300;
 
-	// CPU 対戦をオンにするか
-	public static bool UseCPU {
+	// CPU Speed Guide の利用をするか
+	public static bool UseCPUGuide {
 		set;
 		get;
 	} = true;
@@ -56,5 +56,5 @@ public class ConfigScript : MonoBehaviour {
 	public static int CPUKpm {
 		set;
 		get;
-	} = 1000;
+	} = 300;
 }

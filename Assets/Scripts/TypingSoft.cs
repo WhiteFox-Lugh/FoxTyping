@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
-	private const double INTERVAL = 1.0F;
+	private const double INTERVAL = 2.0F;
 	// 入力された文字の queue
 	private static Queue<char> queue = new Queue<char>();
 	// 時刻の queue
@@ -35,6 +35,7 @@ public class TypingSoft : MonoBehaviour {
 	private static List<List<int>> sentenceValid = new List<List<int>>();
 	// 時間計測関連
 	private static bool isFirstInput;
+	private static bool isIntervalEnded;
 	private static double lastSentenceUpdateTime;
 	private static double firstCharInputTime;
 	private static double lastJudgeTime;
@@ -54,6 +55,8 @@ public class TypingSoft : MonoBehaviour {
 	// 色
 	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
 	private static Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
+	private static Color colorCpuPanelDisable = new Color(128f / 255f, 128f / 255f, 128f / 255f, 100f / 255f);
+	private static Color colorCpuPanelAble = new Color(1, 1, 1, 100f/ 255f);
 	// UI たち
 	[SerializeField] private Text UIOriginSentence;
 	[SerializeField] private Text UIYomigana;
@@ -155,6 +158,7 @@ public class TypingSoft : MonoBehaviour {
 		lastJudgeTime = -1.0;
 		numOfTask = ConfigScript.Tasks;
 		isInputValid = false;
+		isIntervalEnded = false;
 		isSentenceMistyped = false;
 		AKJIS = new AssistKeyboardJIS();
 		Performance = new TypingPerformance();
@@ -164,6 +168,7 @@ public class TypingSoft : MonoBehaviour {
 		UIYomigana.text = "";
 		UIType.text = "";
 		UICPUText.text = "";
+		CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
 		queue.Clear();
 		timeQueue.Clear();
 	}
@@ -217,6 +222,7 @@ public class TypingSoft : MonoBehaviour {
 		}
 		else {
 			UIOriginSentence.color = colorBrown;
+			isIntervalEnded = true;
 		}
 	}
 
@@ -245,15 +251,16 @@ public class TypingSoft : MonoBehaviour {
 		typeTimeList = new List<double>();
 		// 変数等の初期化
 		isFirstInput = true;
+		isIntervalEnded = false;
 		isRecMistype = false;
 		isSentenceMistyped = false;
 		index = 0;
 		sentenceLength = 0;
-		// 入力受け付け状態にする
-		isInputValid = true;
 		// 問題文生成
 		ChangeSentence();
 		UpdateUITask();
+		// 入力受け付け状態にする
+		isInputValid = true;
 		// 時刻を取得
 		lastSentenceUpdateTime = Time.realtimeSinceStartup;
 	}
@@ -281,7 +288,9 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = nQJ;
 		UIYomigana.text = nQR;
 		// CPU Start
-		StartCoroutine("CPUType");
+		if (ConfigScript.UseCPUGuide){
+			StartCoroutine("CPUType");
+		}
 	}
 
 	/// <summary>
@@ -290,8 +299,10 @@ public class TypingSoft : MonoBehaviour {
 	private IEnumerator CPUType(){
 		var idx = 0;
 		float waitTime = (float)(60.0 / ConfigScript.CPUKpm);
-		// 最初の1文字目の反応時間
-		yield return new WaitForSeconds(CPULatency());
+		// 1文字目を打つまでは待機
+		while (isFirstInput && !isIntervalEnded){
+			yield return null;
+		}
 		// 残りの文字列処理
 		while (isInputValid && idx < cpuTypeString.Length) {
 			UICPUText.text += cpuTypeString[idx].ToString();
@@ -299,14 +310,6 @@ public class TypingSoft : MonoBehaviour {
 			yield return new WaitForSeconds(waitTime);
 		}
 		yield return null;
-	}
-
-	/// <summary>
-	/// CPU の反応時間を設定
-	/// </summary>
-	private float CPULatency(){
-		float ret = 0.5f;
-		return ret;
 	}
 
 	/// <summary>
