@@ -1,13 +1,35 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | FoxTyping</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="”robots”" content="”noindex,nofollow,noarchive”" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@Arthur_Lugh" />
+  <meta name="twitter:creator" content="@Arthur_Lugh" />
+  <meta property="og:url" content="https://whitefox-lugh.github.io/" />
+  <meta property="og:title" content="FoxTyping" />
+  <meta property="og:description" content="FoxTyping" />
+  <meta property="og:image"
+    content="https://raw.githubusercontent.com/WhiteFox-Lugh/WhiteFox-Lugh.github.io/master/assets/img/illust_1.png" />
+  <title>FoxTyping</title>
+  <link rel="stylesheet" href="./assets/css/bootstrap.css" />
+  <link rel="stylesheet" href="./assets/css/avantui.css" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css"
+    integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous" />
+  <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+  <script src="./assets/js/bootstrap.bundle.js"></script>
+  <script src="./assets/js/avantui.js"></script>
+  <script src="%UNITY_WEBGL_LOADER_URL%"></script>
+  <script>
+    var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%");
+  </script>
+</head>
+
+<body>
+  <!-- main content -->
+  <div class="container-fluid mx-auto text-center" style="margin-top: 100px">
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=1280 height=720></canvas>
       <div id="unity-loading-bar">
@@ -47,7 +69,7 @@
         if (type == 'error') div.style = 'background: red; padding: 10px;';
         else {
           if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
+          setTimeout(function () {
             warningBanner.removeChild(div);
             updateBannerVisibility();
           }, 5000);
@@ -117,5 +139,47 @@
       };
       document.body.appendChild(script);
     </script>
-  </body>
+  </div>
+
+  <div class="container-fluid bg-light py-2">
+    <div class="container py-2">
+      <h3><i class="fas fa-wrench"></i> 素材</h3>
+      <ul>
+        <li>
+          <a href="https://fonts.google.com/noto#sans-jpan" target="_blank">Noto Fonts</a>
+        </li>
+        <li>
+          <a href="https://github.com/IBM/plex" target="_blank">IBM Plex Sans JP</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="bg-linkedin text-center text-white-50 py-2">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-4 mb-3 mb-md-0 text-md-left">
+          <a href="#" class="footer-brand d-inline-block text-white">
+            <h5 class="m-0">FoxTyping<span class="text-primary">.</span></h5>
+          </a>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+          <p class="m-0">
+            All Rights Reserved
+          </p>
+        </div>
+        <div class="col-md-4">
+          <ul class="nav justify-content-center justify-content-md-end">
+            <li class="nav-item">
+              <a class="nav-link text-white-50" href="https://twitter.com/Arthur_Lugh">
+                <i class="fab fa-twitter"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+
 </html>
