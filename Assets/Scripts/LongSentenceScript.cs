@@ -10,11 +10,11 @@ using UnityEngine.SceneManagement;
 
 // 差分表示用
 public struct Diff {
-	public string op;
+	public int op;
 	public string before;
 	public string after;
 
-	public Diff(string op, string before, string after) {
+	public Diff(int op, string before, string after) {
 		this.op = op;
 		this.before = before;
 		this.after = after;
@@ -22,11 +22,13 @@ public struct Diff {
 }
 
 public class LongSentenceScript : MonoBehaviour {
-	// diff の タイプ
-	const string OP_INSERT = "insert";
-	const string OP_DELETE = "delete";
-	const string OP_REPLACE = "replace";
-	const string OP_EQUAL = "equal";
+	private enum judgeType {
+		insert,
+		delete,
+		replace,
+		correct
+	};
+	private const string ABPath = "AssetBundleData/wordset_long";
 	// diff の表示色
 	const string COLOR_INSERT = "orange";
 	const string COLOR_DELETE = "red";
@@ -40,7 +42,7 @@ public class LongSentenceScript : MonoBehaviour {
 	private bool isFinished;
 	// UI
 	[SerializeField] Text UIResultTextField;
-	[SerializeField] Text UITextField;
+	[SerializeField] RubyTextMeshProUGUI UITextField;
 	[SerializeField] Text UIRestTime;
 	[SerializeField] Text UICountDownText;
 	[SerializeField] Text UIInputCounter;
@@ -55,7 +57,7 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject OperationPanel;
 	[SerializeField] GameObject ResultOperationPanel;
 	// 課題文章
-	private string taskText;
+	private static string taskText;
 	// スコア表示
 	private int correctCount = 0;
 	private int deleteCount = 0;
@@ -71,13 +73,19 @@ public class LongSentenceScript : MonoBehaviour {
 	/// Update() 前の処理
 	/// </summary>
 	void Awake(){
+		var isLoadSuccess = LoadSentenceData(ConfigScript.LongSentenceTaskName);
+		if (!isLoadSuccess){
+			ReturnConfig();
+		}
+		else {
 			Init();
+		}
 	}
 
 	/// <summary>
 	/// 各種初期化
 	/// </summary>
-	void Init(){
+	private void Init(){
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
@@ -94,14 +102,13 @@ public class LongSentenceScript : MonoBehaviour {
 		ScorePanel.SetActive(false);
 		OperationPanel.SetActive(true);
 		ResultOperationPanel.SetActive(false);
-		taskText = LoadSentenceData(ConfigScript.LongSentenceTaskName);
 		StartCoroutine(CountDown());
 	}
 
 	/// <summary>
 	/// カウントダウンの処理
 	/// </summary>
-	IEnumerator CountDown(){
+	private IEnumerator CountDown(){
 		UICountDownText.text = "3";
 		yield return new WaitForSeconds(1.0f);
 		UICountDownText.text = "2";
@@ -157,7 +164,7 @@ public class LongSentenceScript : MonoBehaviour {
 		}
 		var restMin = (LimitSec - elapsedTimeInt) / 60;
 		var restSec = (LimitSec - elapsedTimeInt) % 60;
-		UIRestTime.text = "残り時間: " + restMin.ToString() + " 分 " + restSec.ToString() + " 秒";
+		UIRestTime.text = $"残り時間: {restMin.ToString()}分 {restSec.ToString()}秒";
 	}
 
 	/// <summary>
@@ -166,7 +173,7 @@ public class LongSentenceScript : MonoBehaviour {
 	private void CheckInputStr(){
 		var inputText = UIInputField.text;
 		int inputCount = inputText.Length;
-		UIInputCounter.text = "入力文字数: " + inputCount.ToString();
+		UIInputCounter.text = $"入力文字数: {inputCount.ToString()}";
 	}
 
 	/// <summary>
@@ -210,57 +217,29 @@ public class LongSentenceScript : MonoBehaviour {
 		int score = GetOriginalScore();
 		var sbScore = new StringBuilder();
 		var sbDetail = new StringBuilder();
-		sbScore.Append("スコア(F)：").Append(score.ToString());
-		sbDetail.Append("正解数：" + correctCount.ToString() + " x " + CORRECT_SCORE.ToString() +"点\n")
-						.Append("<color=\"" + COLOR_DELETE + "\">削除：" + deleteCount.ToString())
-						.Append(" x (-" + MISS_COST.ToString() + "点)</color> / ")
-						.Append("<color=\"" + COLOR_INSERT + "\">余分：" + insertCount.ToString())
-						.Append(" x (-" + MISS_COST.ToString() + "点)</color>\n")
-						.Append("<color=\"" + COLOR_REPLACE + "\">置換：" + replaceCount.ToString())
-						.Append(" x (-" + MISS_COST.ToString() + "点)</color>");
+		sbScore.Append($"スコア(F)： {score.ToString()}");
+		sbDetail.Append($"正解数：{correctCount.ToString()} x {CORRECT_SCORE.ToString()}点\n")
+						.Append($"<color=\"{COLOR_DELETE}\">削除：{deleteCount.ToString()}")
+						.Append($" x (-{MISS_COST.ToString()}点</color> / ")
+						.Append($"<color=\"{COLOR_INSERT}\">余分：{insertCount.ToString()}")
+						.Append($" x (-{MISS_COST.ToString()}点)</color>\n")
+						.Append($"<color=\"{COLOR_REPLACE}\">置換：{replaceCount.ToString()}")
+						.Append($" x (-{MISS_COST.ToString()}点)</color>");
 		UIScoreText.text = sbScore.ToString();
 		UIDetailText.text = sbDetail.ToString();
 	}
 
 	/// <summary>
 	/// オリジナルスコアの値取得
+	/// <returns>オリジナルスコア</returns>
 	/// </summary>
 	private int GetOriginalScore(){
 			return correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
 	}
 
 	/// <summary>
-	/// maipaso 形式のスコアの表示切替
-	/// </summary>
-	private void ShowMpScore(){
-		(int score, int spScore) = GetMpScore();
-		var sbScore = new StringBuilder();
-		var sbDetail = new StringBuilder();
-		sbScore.Append("スコア(M)：").Append(score.ToString());
-		sbDetail.Append("正解数：" + correctCount.ToString() + " x " + CORRECT_SCORE.ToString() +"点 / ")
-						.Append("特別点：" + spScore.ToString() + "\n")
-						.Append("<color=\"" + COLOR_DELETE + "\">削除：" + deleteCount.ToString())
-						.Append(" x (-" + MISS_COST_MP.ToString() + "点)</color> / ")
-						.Append("<color=\"" + COLOR_INSERT + "\">余分：" + insertCount.ToString())
-						.Append(" x (-" + MISS_COST_MP.ToString() + "点)</color>\n")
-						.Append("<color=\"" + COLOR_REPLACE + "\">置換：" + replaceCount.ToString())
-						.Append(" x (-" + MISS_COST_MP.ToString() + "点)</color>");
-		UIScoreText.text = sbScore.ToString();
-		UIDetailText.text = sbDetail.ToString();
-	}
-
-	/// <summary>
-	/// maipaso 形式のスコア取得。特別点も取得する。
-	/// </summary>
-	private (int score, int spScore) GetMpScore(){
-		int missCount = deleteCount + insertCount + replaceCount;
-		int retSpScore = (missCount <= 3) ? Convert.ToInt32(Math.Ceiling(correctCount * (0.20 - 0.05 * missCount))) : 0;
-		int retScore = correctCount - missCount * MISS_COST_MP + retSpScore;
-		return (retScore, retSpScore);
-	}
-
-	/// <summary>
 	/// 正解数、不正解数と不正解の内訳を Diff からカウント
+	/// <param name="diffs">Diff のリスト</param>
 	/// </summary>
 	private void SetScoreDetail(List<Diff> diffs){
 		correctCount = 0;
@@ -268,19 +247,19 @@ public class LongSentenceScript : MonoBehaviour {
 		insertCount = 0;
 		replaceCount = 0;
 		foreach (Diff diff in diffs){
-			string op = diff.op;
+			int op = diff.op;
 			string beforeText = diff.before;
 			string afterText = diff.after;
-			if (op.Equals(OP_EQUAL)){
+			if (op == (int)judgeType.correct){
 				correctCount += beforeText.Length;
 			}
-			else if (op.Equals(OP_DELETE)){
+			else if (op == (int)judgeType.delete){
 				deleteCount += beforeText.Length;
 			}
-			else if (op.Equals(OP_INSERT)){
+			else if (op == (int)judgeType.insert){
 				insertCount += afterText.Length;
 			}
-			else if (op.Equals(OP_REPLACE)){
+			else if (op == (int)judgeType.replace){
 				replaceCount += beforeText.Length;
 			}
 		}
@@ -288,6 +267,9 @@ public class LongSentenceScript : MonoBehaviour {
 
 	/// <summary>
 	/// strA (原文) から strB (入力文) への Diff を取得
+	/// <param name="strA">原文</param>
+	/// <param name="strB">入力された文章</param>
+	/// <returns>Diff のリスト</returns>
 	/// </summary>
 	private static List<Diff> GetDiff(string strA, string strB){
 		var retBackTrace = new List<Diff>() { };
@@ -308,7 +290,7 @@ public class LongSentenceScript : MonoBehaviour {
 		string restStrB = (commonPrefixIndex == -1) ? strB : strB.Substring(commonPrefixIndex + 1, strB.Length - commonPrefixIndex - 1);
 		// restB が空 -> そこまで全部正解
 		if (restStrB.Equals("")){
-			retBackTrace.Add(new Diff(OP_EQUAL, commonPrefix, ""));
+			retBackTrace.Add(new Diff((int)judgeType.correct, commonPrefix, ""));
 			return retBackTrace;
 		}
 
@@ -349,7 +331,6 @@ public class LongSentenceScript : MonoBehaviour {
 			int diffAbsMin = Int32.MaxValue;
 			var middleStrB = restStrB.Substring(0, commonSuffixIndex);
 			foreach (int trimIdx in suffixIndexList){
-				Debug.Log("trimidx:" + trimIdx.ToString());
 				var middleStrA = restStrA.Substring(0, trimIdx);
 				int diff = Math.Abs(middleStrA.Length - middleStrB.Length);
 				if (diff <= diffAbsMin){
@@ -390,9 +371,9 @@ public class LongSentenceScript : MonoBehaviour {
 
 		// prefix, suffix と統合
 		var prefixTrace = (commonPrefix.Equals("")) ? new List<Diff>() { }
-												: new List<Diff>() {(new Diff (OP_EQUAL, commonPrefix, ""))};
+												: new List<Diff>() {(new Diff ((int)judgeType.correct, commonPrefix, ""))};
 		var suffixTrace = (commonSuffix.Equals("")) ? new List<Diff>() { }
-												: new List<Diff>() {(new Diff (OP_EQUAL, commonSuffix, ""))};
+												: new List<Diff>() {(new Diff ((int)judgeType.correct, commonSuffix, ""))};
 		var trace = ConvertDiff(tmpBackTrace, restStrA, restStrB);
 		retBackTrace.AddRange(prefixTrace);
 		retBackTrace.AddRange(trace);
@@ -402,7 +383,7 @@ public class LongSentenceScript : MonoBehaviour {
 
 		// delete, equal だった場合
 		var len = retBackTrace.Count;
-		if (len >= 2 && (retBackTrace[len - 2].op).Equals(OP_DELETE) && (retBackTrace[len - 1].op).Equals(OP_EQUAL)){
+		if (len >= 2 && (retBackTrace[len - 2].op == (int)judgeType.delete) && (retBackTrace[len - 1].op == (int)judgeType.correct)){
 			var diff2 = retBackTrace[len - 2];
 			var diff1 = retBackTrace[len - 1];
 			var delLen = diff2.before.Length;
@@ -410,28 +391,30 @@ public class LongSentenceScript : MonoBehaviour {
 			// 脱字文字コスト + 正解数 よりも 余分文字コストのみの方がスコアが高くなる時置き換え
 			if (MISS_COST * delLen > (MISS_COST + 1) * eqLen){
 				retBackTrace.RemoveRange(len - 2, 2);
-				retBackTrace.Add(new Diff(OP_INSERT, "", diff1.before));
+				retBackTrace.Add(new Diff((int)judgeType.insert, "", diff1.before));
 			}
 		}
 		// replace, delete だった場合は置き換えて削除より余分文字として減点したほうが必ず得点が高い
-		else if (len >= 2 && (retBackTrace[len - 2].op).Equals(OP_REPLACE) && (retBackTrace[len - 1].op).Equals(OP_DELETE)){
+		else if (len >= 2 && (retBackTrace[len - 2].op == (int)judgeType.replace) && (retBackTrace[len - 1].op == (int)judgeType.delete)){
 			var diff2 = retBackTrace[len - 2];
 			retBackTrace.RemoveRange(len - 2, 2);
-			retBackTrace.Add(new Diff(OP_INSERT, "", diff2.after));
+			retBackTrace.Add(new Diff((int)judgeType.insert, "", diff2.after));
 		}
 		return retBackTrace;
 	}
 
 	/// <summary>
 	/// 編集グラフをバックトレース
+	/// <param name="matrix">編集行列</param>
+	/// <returns>バックトレース結果</returns>
 	/// </summary>
-	private static List<(string, (int, int))> BackTrace(string strA, string strB, int[ , ] matrix){
+	private static List<(int, (int, int))> BackTrace(string strA, string strB, int[ , ] matrix){
 		const int INF = -1000;
 		var ALen = strA.Length;
 		var BLen = strB.Length;
 		int row = ALen;
 		int col = BLen;
-		var trace = new List<(string, (int, int))>();
+		var trace = new List<(int, (int, int))>();
 		while (row > 0 || col > 0){
 			int cost = (row > 0 && col > 0 && (strA[row - 1] == strB[col - 1])) ? 0 : 1;
 			int current = matrix[row, col];
@@ -441,27 +424,27 @@ public class LongSentenceScript : MonoBehaviour {
 			// 置換 or 一致
 			if (costB != INF && current == costB + cost){
 				if (strA[row - 1] == strB[col - 1]){
-					trace.Add((OP_EQUAL, (row - 1, col - 1)));
+					trace.Add(((int)judgeType.correct, (row - 1, col - 1)));
 				}
 				else {
-					trace.Add((OP_REPLACE, (row - 1, col - 1)));
+					trace.Add(((int)judgeType.replace, (row - 1, col - 1)));
 				}
 				row--;
 				col--;
 			}
 			// 挿入
 			else if (costC != INF && current == costC + 1){
-				trace.Add((OP_INSERT, (row, col - 1)));
+				trace.Add(((int)judgeType.insert, (row, col - 1)));
 				col--;
 			}
 			// 削除
 			else if (costA != INF && current == costA + 1){
-				trace.Add((OP_DELETE, (row - 1, col)));
+				trace.Add(((int)judgeType.delete, (row - 1, col)));
 				row--;
 			}
 		}
 		// リバースした文字列のトレースをしたのでインデックスを変更
-		var ret = new List<(string, (int, int))>();
+		var ret = new List<(int, (int, int))>();
 		foreach (var p in trace){
 				ret.Add((p.Item1, (ALen - p.Item2.Item1 - 1, BLen - p.Item2.Item2 - 1)));
 		}
@@ -470,46 +453,50 @@ public class LongSentenceScript : MonoBehaviour {
 
 	/// <summary>
 	/// バックトレースした行列の座標から Diff へ変換
+	/// <param name="opList">文字列操作のリスト</param>
+	/// <param name="compStrA">元の文</param>
+	/// <param name="compStrB">編集後の文</param>
+	/// <returns>Diff のリスト</returns>
 	/// </summary>
-	private static List<Diff> ConvertDiff(List<(string op, (int idxA, int idxB))> opList, string compStrA, string compStrB){
+	private static List<Diff> ConvertDiff(List<(int op, (int idxA, int idxB))> opList, string compStrA, string compStrB){
 		var ret = new List<Diff>() { };
 		int i = 0;
 		if (compStrA == ""){
-			ret.Add(new Diff(OP_INSERT, "", compStrB));
+			ret.Add(new Diff((int)judgeType.insert, "", compStrB));
 			return ret;
 		}
 		else if(compStrB == ""){
-			ret.Add(new Diff(OP_DELETE, compStrA, ""));
+			ret.Add(new Diff((int)judgeType.delete, compStrA, ""));
 			return ret;
 		}
 		while (i < opList.Count){
 			var current = opList[i];
 			var currentOp = current.op;
-			var targetStrA = (current.op).Equals(OP_INSERT) ? "" : compStrA[current.Item2.idxA].ToString();
-			var targetStrB = (current.op).Equals(OP_DELETE) ? "" : compStrB[current.Item2.idxB].ToString();
+			var targetStrA = (current.op == (int)judgeType.insert) ? "" : compStrA[current.Item2.idxA].ToString();
+			var targetStrB = (current.op == (int)judgeType.delete) ? "" : compStrB[current.Item2.idxB].ToString();
 			int j = 0;
 			while (i + j + 1 < opList.Count){
 				var next = opList[i + j + 1];
 				var nextOp = next.op;
 				if (nextOp == currentOp){
 					j++;
-					targetStrA += nextOp.Equals(OP_INSERT) ? "" : compStrA[next.Item2.idxA].ToString();
-					targetStrB += nextOp.Equals(OP_DELETE) ? "" : compStrB[next.Item2.idxB].ToString();
+					targetStrA += (nextOp == (int)judgeType.insert) ? "" : compStrA[next.Item2.idxA].ToString();
+					targetStrB += (nextOp == (int)judgeType.delete) ? "" : compStrB[next.Item2.idxB].ToString();
 				}
 				else {
 					break;
 				}
 			}
-			if (currentOp.Equals(OP_DELETE)){
+			if (currentOp == (int)judgeType.delete){
 				ret.Add(new Diff(currentOp, targetStrA, ""));
 			}
-			else if (currentOp.Equals(OP_INSERT)){
+			else if (currentOp == (int)judgeType.insert){
 				ret.Add(new Diff(currentOp, "", targetStrB));
 			}
-			else if (currentOp.Equals(OP_REPLACE)){
+			else if (currentOp == (int)judgeType.replace){
 				ret.Add(new Diff(currentOp, targetStrA, targetStrB));
 			}
-			else if (currentOp.Equals(OP_EQUAL)){
+			else if (currentOp == (int)judgeType.correct){
 				ret.Add(new Diff(currentOp, targetStrA, ""));
 			}
 			i += 1 + j;
@@ -520,6 +507,8 @@ public class LongSentenceScript : MonoBehaviour {
 	/// <summary>
 	/// Diff から Html を生成
 	/// 文字に色を付けて強調表示を行う
+	/// <param name="diffs">diff のリスト</param>
+	/// <returns>html 化された入力文章</returns>
 	/// </summary>
 	private static string ConvertDiffToHtml (List<Diff> diffs){
 		var sb = new StringBuilder();
@@ -528,16 +517,16 @@ public class LongSentenceScript : MonoBehaviour {
 			.Replace(">", "&gt;").Replace("\n", "&para;<br>");
 			string afterText = diff.after.Replace("&", "&amp;").Replace("<", "&lt;")
 			.Replace(">", "&gt;").Replace("\n", "&para;<br>");
-			if ((diff.op).Equals(OP_EQUAL)){
+			if (diff.op == (int)judgeType.correct){
 				sb.Append(beforeText);
 			}
-			else if((diff.op).Equals(OP_INSERT)){
+			else if(diff.op == (int)judgeType.insert){
 				sb.Append("<color=\"" + COLOR_INSERT + "\">").Append(afterText).Append("</color>");
 			}
-			else if((diff.op).Equals(OP_DELETE)){
+			else if(diff.op == (int)judgeType.delete){
 				sb.Append("<color=\"" + COLOR_DELETE + "\">").Append(beforeText).Append("</color>");
 			}
-			else if((diff.op).Equals(OP_REPLACE)){
+			else if(diff.op == (int)judgeType.replace){
 				sb.Append("<color=\"" + COLOR_REPLACE + "\">[").Append(beforeText).Append(",").Append(afterText).Append("]</color>");
 			}
 		}
@@ -567,13 +556,7 @@ public class LongSentenceScript : MonoBehaviour {
 			Debug.Log("Copy detected");
 		}
 		else if (isFinished && e.type == EventType.KeyDown){
-			if (e.keyCode == KeyCode.M){
-				ShowMpScore();
-			}
-			else if(e.keyCode == KeyCode.F){
-				ShowOriginalScore();
-			}
-			else if(e.keyCode == KeyCode.R){
+			if(e.keyCode == KeyCode.R){
 				Init();
 			}
 		}
@@ -588,16 +571,22 @@ public class LongSentenceScript : MonoBehaviour {
 
 	/// <summary>
 	/// 文書データの読み込み
+	/// <param name="dataName">データセット名</param>
 	/// </summary>
-	private static string LoadSentenceData (string dataName){
-		var str = "";
+	private static bool LoadSentenceData (string dataName){
 		try {
-			var file = Resources.Load(dataName);
-			str = file.ToString();
+			var ab = AssetBundle.LoadFromFile(ABPath);
+			if (ab == null){
+				Debug.Log("Error: AssetBundle Load failed");
+				return false;
+			}
+			taskText = ab.LoadAsset<TextAsset>(dataName).ToString();
+			ab.Unload(false);
 		}
 		catch {
-			return str;
+			Debug.Log("Error: Document data load failed");
+			return false;
 		}
-		return str;
+		return true;
 	}
 }

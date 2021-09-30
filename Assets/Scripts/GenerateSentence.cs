@@ -10,15 +10,16 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
 public class GenerateSentence {
-
 	private const int minLength = 1;
 	private const int maxLength = 50;
+	private const string ABPath = "AssetBundleData/wordset_short";
 	private static int inputType;
 	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
 		{"English", 1},
 		{"Kana", 2}
 	};
+
 	// ひらがな -> ローマ字マッピング
 	private static Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
 		{"あ", new string[1] {"a"}},
@@ -995,45 +996,49 @@ public class GenerateSentence {
 
 	/// <summary>
 	/// ひらがなの読みをパースして、1～3文字ごとに区切る
+	/// <param name="sentenceHiragana">パースされるひらがな文字列</param>
+	/// <returns>1～3文字ごとに区切られたひらがなのList</returns>
 	/// </summary>
-	private	static List<string> ParseHiraganaSentence(string str){
-		var ret = new List<string>();
+	private	static List<string> ParseHiraganaSentence(string sentenceHiragana){
+		var separatedSentence = new List<string>();
 		int i = 0;
 		string uni = "";
 		string bi = "";
 		string tri = "";
-		while (i < str.Length){
-			uni = str[i].ToString();
-			bi = (i + 1 < str.Length) ? str.Substring(i, 2) : "";
-			tri = (i + 2 < str.Length) ? str.Substring(i, 3) : "";
+		while (i < sentenceHiragana.Length){
+			uni = sentenceHiragana[i].ToString();
+			bi = (i + 1 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 2) : "";
+			tri = (i + 2 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 3) : "";
 			if(mp.ContainsKey(tri)){
 				i += 3;
-				ret.Add(tri);
+				separatedSentence.Add(tri);
 			}
 			else if(mp.ContainsKey(bi)){
 				i += 2;
-				ret.Add(bi);
+				separatedSentence.Add(bi);
 			}
 			else {
 				i++;
-				ret.Add(uni);
+				separatedSentence.Add(uni);
 			}
 		}
-		return ret;
+		return separatedSentence;
 	}
 
 	/// <summary>
 	/// ParseHiraganaSentence で区切った文字をもとにして
 	/// タイピング入力判定器を作成
+	/// <param name="separatedSentence">区切られた文字列（リスト）</param>
+	/// <returns>タイピングの判定器(オートマトンのようなもの)</returns>
 	/// </summary>
-	private static List<List<string>> ConstructTypeSentence(List<string> str){
-		var ret = new List<List<string>>();
+	private static List<List<string>> ConstructTypeSentence(List<string> separatedSentence){
+		var judge = new List<List<string>>();
 		string s;
-		for (int i = 0; i < str.Count; ++i){
-			s = str[i];
+		for (int i = 0; i < separatedSentence.Count; ++i){
+			s = separatedSentence[i];
 			var validTypeList = new List<string>();
 			// 文末「ん」の処理
-			if (s.Equals("ん") && str.Count - 1 == i){
+			if (s.Equals("ん") && separatedSentence.Count - 1 == i){
 				var nList = new List<string>(mp[s]);
 				nList.Remove("n");
 				validTypeList = nList;
@@ -1041,21 +1046,25 @@ public class GenerateSentence {
 			else {
 				validTypeList = mp[s].ToList();
 			}
-			ret.Add(validTypeList);
+			judge.Add(validTypeList);
 		}
-		return ret;
+		return judge;
 	}
 
 	/// <summary>
-	/// 例文を生成する
+	/// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
+	/// <returns>(原文, ひらがな文, タイピング判定器)</returns>
 	/// </summary>
-	public (string originSentence, string typeSentence, List<string> hiSep, List<List<string>> ty) Generate(){
+	public (bool isGenerateSuccess, string originSentence, string typeSentence, List<List<string>> typeJudge) Generate(){
 		bool isOK = false;
+		const int retryLimit = 100;
+		int loopCount = 0;
 		string originSentenceStr = "";
 		string typeSentenceStr = "";
 		var hiraganaSeparated = new List<string>();
-		var typing = new List<List<string>>();
-		while(!isOK){
+		var retTypeJudge = new List<List<string>>();
+		while(!isOK && loopCount < retryLimit){
+			// ワードデータセットに欠陥がある可能性も含めて try で動かす
 			try {
 				int r1 = UnityEngine.Random.Range(0, wordSetDict[0].Count);
 				string tmpOriginSentenceStr = wordSetDict[0][r1].originSentence;
@@ -1066,11 +1075,13 @@ public class GenerateSentence {
 					tmpOriginSentenceStr = tmpOriginSentenceStr.Replace(replaceStr, wordSetDict[key][r2].originSentence);
 					tmpTypeSentenceStr = tmpTypeSentenceStr.Replace(replaceStr, wordSetDict[key][r2].typeSentence);
 				}
+				// 一定文字数に収まっていることをチェック
+				// 短かったり長かったりする場合は再度生成
 				if(minLength <= tmpTypeSentenceStr.Length && tmpTypeSentenceStr.Length <= maxLength){
 					originSentenceStr = tmpOriginSentenceStr;
 					typeSentenceStr = tmpTypeSentenceStr;
 					hiraganaSeparated = ParseHiraganaSentence(typeSentenceStr);
-					typing = ConstructTypeSentence(hiraganaSeparated);
+					retTypeJudge = ConstructTypeSentence(hiraganaSeparated);
 					isOK = true;
 				}
 			}
@@ -1078,17 +1089,24 @@ public class GenerateSentence {
 				isOK = false;
 			}
 		}
-		return (originSentenceStr, typeSentenceStr, hiraganaSeparated, typing);
+		return (isOK, originSentenceStr, typeSentenceStr, retTypeJudge);
 	}
 
 	/// <summary>
 	/// ワードセットのデータを読み込む
+	/// <param name="dataName">データセットのファイル名</param>
+	/// <returns>読み込みが成功すれば true、さもなくば false</returns>
 	/// </summary>
 	public bool LoadSentenceData (string dataName){
 		try {
 			wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
-			var file = Resources.Load(dataName);
-			var jsonStr = file.ToString();
+			var ab = AssetBundle.LoadFromFile(ABPath);
+			if (ab == null){
+				Debug.Log("Error: AssetBundle Load failed");
+				return false;
+			}
+			var jsonStr = ab.LoadAsset<TextAsset>(dataName).ToString();
+			ab.Unload(false);
 			var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
 			DataSetName = problemData.sentenceDatasetScreenName;
 			inputType = inputTypeMap[problemData.inputType];
@@ -1103,7 +1121,8 @@ public class GenerateSentence {
 				}
 			}
 		}
-		catch {
+		catch (Exception e){
+			Debug.Log(e);
 			return false;
 		}
 		return true;

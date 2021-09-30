@@ -19,6 +19,8 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	[SerializeField] private TMP_Dropdown UIDataSetName;
 	[SerializeField] private TMP_Dropdown UILongDataSetName;
 	[SerializeField] private TMP_Dropdown UISentenceNum;
+	[SerializeField] private TMP_Dropdown UIUseCPUKpmGuide;
+	[SerializeField] private TMP_InputField InputCPUSpeed;
 	[SerializeField] private GameObject ConfigPanel;
 	[SerializeField] private GameObject LongSentenceConfigPanel;
 	[SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
@@ -50,19 +52,23 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	/// <summary>
 	/// 直前の練習内容を選択肢にセット
 	/// </summary>
-	void SetPreviousSettings(){
+	private void SetPreviousSettings(){
 		UIGameMode.value = prevDropdownGameMode;
 		UIDataSetName.value = prevDropdownShortDataset;
 		UILongDataSetName.value = prevDropdownLongDataset;
 		UISentenceNum.value = prevDropdownTaskNum;
 		longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
+		UIUseCPUKpmGuide.value = (ConfigScript.UseCPUGuide ? 1 : 0);
+		InputCPUSpeed.interactable = UIUseCPUKpmGuide.value == 1;
+		InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
 		SetLongSentenceTimeLimitUI();
 	}
 
 	/// <summary>
 	/// 今回の練習内容を設定に反映させる
 	/// </summary>
-	void SetCurrentSettings(){
+	private void SetCurrentSettings(){
+		CheckKpmSettings();
 		prevDropdownGameMode = UIGameMode.value;
 		prevDropdownShortDataset = UIDataSetName.value;
 		prevDropdownLongDataset = UILongDataSetName.value;
@@ -72,21 +78,39 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
 		ConfigScript.LongSentenceTaskName = longDatasetFileName[UILongDataSetName.value];
 		ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
+		ConfigScript.UseCPUGuide = UIUseCPUKpmGuide.value == 1;
+		ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
 	}
 
 	/// <summary>
 	/// 選択されているゲームモードにより表示パネルを変更
 	/// </summary>
-	void ChangeConfigPanel(){
+	private void ChangeConfigPanel(){
 		ConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.ShortSentence);
     LongSentenceConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.LongSentence);
 	}
 
 	/// <summary>
-	/// Keycode と対応する操作
+	/// kpm 設定が正しいかチェック
 	/// </summary>
-	void KeyCheck(KeyCode kc){
-		if(KeyCode.Return == kc || KeyCode.KeypadEnter == kc){
+	public void CheckKpmSettings(){
+		int kpm;
+		if (int.TryParse(InputCPUSpeed.text, out kpm)) {
+			if (kpm <= 0){
+				InputCPUSpeed.text = "1";
+			}
+		}
+		else {
+			InputCPUSpeed.text = "300";
+		}
+	}
+
+	/// <summary>
+	/// Keycode と対応する操作
+	/// <param name="kc">keycode</param>
+	/// </summary>
+	private void KeyCheck(KeyCode kc){
+		if(KeyCode.Space == kc){
 			var selectedMode = UIGameMode.value;
 			SetCurrentSettings();
 			if (selectedMode == (int)GameModeNumber.ShortSentence){
@@ -96,7 +120,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 				SceneManager.LoadScene("LongSentenceTypingScene");
 			}
 		}
-		else if(KeyCode.Backspace == kc){
+		else if(KeyCode.Escape == kc){
 			SceneManager.LoadScene("ModeSelectScene");
 		}
 	}
@@ -113,10 +137,12 @@ public class SinglePlayConfigOperate : MonoBehaviour {
   }
 
 	/// <summary>
-	/// val 秒を n分 m秒 に直す
+	/// timeSecond 秒を n分 m秒 に直す
+	/// <param name="timeSecond">時間(秒単位)</param>
+	/// <returns>(分, 秒)に直したもの</returns>
 	/// </summary>
-	private (int minute, int second) GetTimeMSExpr(int val){
-		return (val / 60, val % 60);
+	private (int minute, int second) GetTimeMSExpr(int timeSecond){
+		return (timeSecond / 60, timeSecond % 60);
 	}
 
 	/// <summary>
@@ -130,6 +156,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	/// <summary>
 	/// プラスボタンを押したときの挙動
+	/// <param name="num">分のボタンか秒のボタンか区別する引数</param>
 	/// </sumamry>
 	public void OnClickPlusButton(int num){
 		longSentenceTimeLimitVal += (num == 0) ? 60 : 1;
@@ -141,6 +168,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	/// <summary>
 	/// マイナスボタンを押したときの挙動
+	/// <param name="num">分のボタンか秒のボタンか区別する引数</param>
 	/// </sumamry>
 	public void OnClickMinusButton(int num){
 		longSentenceTimeLimitVal -= (num == 0) ? 60 : 1;
@@ -148,5 +176,12 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 			longSentenceTimeLimitVal = LONG_MIN_TIME_LIMIT;
 		}
 		SetLongSentenceTimeLimitUI();
+	}
+
+	/// <summary>
+	/// CPU 速度ガイドの設定変更時の挙動
+	/// </summary>
+	public void OnUseCPUGuideValueChanged(){
+		InputCPUSpeed.interactable = UIUseCPUKpmGuide.value == 1;
 	}
 }

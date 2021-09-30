@@ -222,7 +222,7 @@ public class TypingPerfomanceTest
 	[Test]
 	public void NormalScoreTest() {
 		// 仕様に則って計算した結果
-		var expectedScore = 151;
+		var expectedScore = 123;
 		BeforeTest();
 		var type = TP.GetType();
 		MethodInfo loader = type.GetMethod("GetNormalScore");

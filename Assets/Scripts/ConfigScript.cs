@@ -45,4 +45,16 @@ public class ConfigScript : MonoBehaviour {
 		set;
 		get;
 	} = 300;
+
+	// CPU Speed Guide の利用をするか
+	public static bool UseCPUGuide {
+		set;
+		get;
+	} = true;
+
+	// CPU の kpm 設定
+	public static int CPUKpm {
+		set;
+		get;
+	} = 300;
 }
