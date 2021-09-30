@@ -28,6 +28,7 @@ public class LongSentenceScript : MonoBehaviour {
 		replace,
 		correct
 	};
+	private const string ABPath = "AssetBundleData/wordset_long";
 	// diff の表示色
 	const string COLOR_INSERT = "orange";
 	const string COLOR_DELETE = "red";
@@ -41,7 +42,7 @@ public class LongSentenceScript : MonoBehaviour {
 	private bool isFinished;
 	// UI
 	[SerializeField] Text UIResultTextField;
-	[SerializeField] Text UITextField;
+	[SerializeField] RubyTextMeshProUGUI UITextField;
 	[SerializeField] Text UIRestTime;
 	[SerializeField] Text UICountDownText;
 	[SerializeField] Text UIInputCounter;
@@ -56,7 +57,7 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject OperationPanel;
 	[SerializeField] GameObject ResultOperationPanel;
 	// 課題文章
-	private string taskText;
+	private static string taskText;
 	// スコア表示
 	private int correctCount = 0;
 	private int deleteCount = 0;
@@ -72,7 +73,13 @@ public class LongSentenceScript : MonoBehaviour {
 	/// Update() 前の処理
 	/// </summary>
 	void Awake(){
+		var isLoadSuccess = LoadSentenceData(ConfigScript.LongSentenceTaskName);
+		if (!isLoadSuccess){
+			ReturnConfig();
+		}
+		else {
 			Init();
+		}
 	}
 
 	/// <summary>
@@ -95,7 +102,6 @@ public class LongSentenceScript : MonoBehaviour {
 		ScorePanel.SetActive(false);
 		OperationPanel.SetActive(true);
 		ResultOperationPanel.SetActive(false);
-		taskText = LoadSentenceData(ConfigScript.LongSentenceTaskName);
 		StartCoroutine(CountDown());
 	}
 
@@ -567,15 +573,20 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 文書データの読み込み
 	/// <param name="dataName">データセット名</param>
 	/// </summary>
-	private static string LoadSentenceData (string dataName){
-		var str = "";
+	private static bool LoadSentenceData (string dataName){
 		try {
-			var file = Resources.Load(dataName);
-			str = file.ToString();
+			var ab = AssetBundle.LoadFromFile(ABPath);
+			if (ab == null){
+				Debug.Log("Error: AssetBundle Load failed");
+				return false;
+			}
+			taskText = ab.LoadAsset<TextAsset>(dataName).ToString();
+			ab.Unload(false);
 		}
 		catch {
-			return str;
+			Debug.Log("Error: Document data load failed");
+			return false;
 		}
-		return str;
+		return true;
 	}
 }

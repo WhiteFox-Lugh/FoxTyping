@@ -111,6 +111,7 @@ public class TypingSoft : MonoBehaviour {
 	/// Update() 前に読み込み
 	/// </summary>
 	void Awake() {
+		LoadWordDataset();
 		InitGame();
 	}
 
@@ -135,14 +136,21 @@ public class TypingSoft : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 内部データの初期化
+	/// データセット読み込み
 	/// </summary>
-	private void InitData() {
+	private void LoadWordDataset(){
 		// json の読み込み
 		bool isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
 		if (!isLoadSuccess){
 			ErrorCode = (int)errorType.FailedLoadSentence;
+			CurrentGameCondition = (int)gameCondition.Canceled;
 		}
+	}
+
+	/// <summary>
+	/// 内部データの初期化
+	/// </summary>
+	private void InitData() {
 		// データ関連の初期化
 		ErrorCode = (int)errorType.None;
 		CurrentGameCondition = (int)gameCondition.Progress;
@@ -269,6 +277,9 @@ public class TypingSoft : MonoBehaviour {
 	private void ChangeSentence() {
 		// 例文生成
 		var t = gs.Generate();
+		if (!t.isGenerateSuccess){
+			CurrentGameCondition = (int)gameCondition.Canceled;
+		}
 		originSentence = t.originSentence;
 		typeSentence = t.typeSentence;
 		typingJudge = t.typeJudge;

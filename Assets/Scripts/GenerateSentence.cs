@@ -12,6 +12,7 @@ using System.Runtime.Serialization.Json;
 public class GenerateSentence {
 	private const int minLength = 1;
 	private const int maxLength = 50;
+	private const string ABPath = "AssetBundleData/wordset_short";
 	private static int inputType;
 	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
@@ -1054,13 +1055,15 @@ public class GenerateSentence {
 	/// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
 	/// <returns>(原文, ひらがな文, タイピング判定器)</returns>
 	/// </summary>
-	public (string originSentence, string typeSentence, List<List<string>> typeJudge) Generate(){
+	public (bool isGenerateSuccess, string originSentence, string typeSentence, List<List<string>> typeJudge) Generate(){
 		bool isOK = false;
+		const int retryLimit = 100;
+		int loopCount = 0;
 		string originSentenceStr = "";
 		string typeSentenceStr = "";
 		var hiraganaSeparated = new List<string>();
 		var retTypeJudge = new List<List<string>>();
-		while(!isOK){
+		while(!isOK && loopCount < retryLimit){
 			// ワードデータセットに欠陥がある可能性も含めて try で動かす
 			try {
 				int r1 = UnityEngine.Random.Range(0, wordSetDict[0].Count);
@@ -1086,7 +1089,7 @@ public class GenerateSentence {
 				isOK = false;
 			}
 		}
-		return (originSentenceStr, typeSentenceStr, retTypeJudge);
+		return (isOK, originSentenceStr, typeSentenceStr, retTypeJudge);
 	}
 
 	/// <summary>
@@ -1097,8 +1100,13 @@ public class GenerateSentence {
 	public bool LoadSentenceData (string dataName){
 		try {
 			wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
-			var file = Resources.Load(dataName);
-			var jsonStr = file.ToString();
+			var ab = AssetBundle.LoadFromFile(ABPath);
+			if (ab == null){
+				Debug.Log("Error: AssetBundle Load failed");
+				return false;
+			}
+			var jsonStr = ab.LoadAsset<TextAsset>(dataName).ToString();
+			ab.Unload(false);
 			var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
 			DataSetName = problemData.sentenceDatasetScreenName;
 			inputType = inputTypeMap[problemData.inputType];
@@ -1113,7 +1121,8 @@ public class GenerateSentence {
 				}
 			}
 		}
-		catch {
+		catch (Exception e){
+			Debug.Log(e);
 			return false;
 		}
 		return true;
