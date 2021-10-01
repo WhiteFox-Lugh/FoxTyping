@@ -1,12 +1,15 @@
 using System;
+using System.IO;
 using System.Text;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 
 // 差分表示用
 public struct Diff {
@@ -28,7 +31,8 @@ public class LongSentenceScript : MonoBehaviour {
 		replace,
 		correct
 	};
-	private const string ABPath = "AssetBundleData/wordset_long";
+	private const string ABPathLocal = "AssetBundleData/wordset_long";
+	private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
 	// diff の表示色
 	const string COLOR_INSERT = "orange";
 	const string COLOR_DELETE = "red";
@@ -40,6 +44,9 @@ public class LongSentenceScript : MonoBehaviour {
 	private double startTime;
 	private bool isShowInfo;
 	private bool isFinished;
+	// AssetBundle
+	private static AssetBundle abLongData;
+	private static bool isABLoaded = false;
 	// UI
 	[SerializeField] Text UIResultTextField;
 	[SerializeField] RubyTextMeshProUGUI UITextField;
@@ -73,19 +80,81 @@ public class LongSentenceScript : MonoBehaviour {
 	/// Update() 前の処理
 	/// </summary>
 	void Awake(){
-		var isLoadSuccess = LoadSentenceData(ConfigScript.LongSentenceTaskName);
-		if (!isLoadSuccess){
-			ReturnConfig();
-		}
-		else {
+		InitUIPanel();
+		StartCoroutine(LoadAssetBundle(CanStart));
+	}
+
+	/// <summary>
+	/// パネルの表示を設定
+	/// </summary>
+	private void InitUIPanel(){
+		InputPanel.SetActive(true);
+		TaskPanel.SetActive(true);
+		InfoPanel.SetActive(true);
+		ResultPanel.SetActive(false);
+		ScorePanel.SetActive(false);
+		OperationPanel.SetActive(true);
+		ResultOperationPanel.SetActive(false);
+	}
+
+	/// <summary>
+	/// スタートできるかどうかをチェック
+	/// </summary>
+	private void CanStart(){
+		if (abLongData != null){
 			Init();
 		}
+		else {
+			ReturnConfig();
+		}
+	}
+
+	/// <summary>
+	/// AssetBundle の読み込み
+	/// <param name="callback">callback 関数</param>
+	/// </summary>
+	private IEnumerator LoadAssetBundle (UnityAction callback){
+		var networkState = Application.internetReachability;
+		// すでに AssetBundle が読み込まれているか、
+		// そうでないときにネットワークに接続していないときはリクエストを送信しない
+		// ネットワーク接続していないときは何かしらエラーを出すとよさそう
+		if (abLongData != null){
+			callback();
+			yield break;
+		}
+
+		// WebGL 時は WebRequest によって AssetBundle を取得
+		#if UNITY_WEBGL && !UNITY_EDITOR
+		if (networkState == NetworkReachability.NotReachable){
+			Debug.Log("ネットワークに接続していません");
+			callback();
+			yield break;
+		}
+		UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(ABPath);
+		yield return request.SendWebRequest();
+		if (request.isNetworkError || request.isHttpError){
+			Debug.LogError(request.error);
+		}
+		else {
+			abLongData = DownloadHandlerAssetBundle.GetContent(request);
+			Debug.Log("load successfully");
+		}
+		#else
+		abLongData = AssetBundle.LoadFromFile(ABPathLocal);
+		if (abLongData == null){
+			Debug.Log("Error: AssetBundle Load failed");
+		}
+		#endif
+
+		callback();
+		yield break;
 	}
 
 	/// <summary>
 	/// 各種初期化
 	/// </summary>
 	private void Init(){
+		taskText = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
@@ -95,13 +164,6 @@ public class LongSentenceScript : MonoBehaviour {
 		UIRestTime.text = "";
 		UIInputCounter.text = "";
 		LimitSec = ConfigScript.LongSentenceTimeLimit;
-		InputPanel.SetActive(true);
-		TaskPanel.SetActive(true);
-		InfoPanel.SetActive(true);
-		ResultPanel.SetActive(false);
-		ScorePanel.SetActive(false);
-		OperationPanel.SetActive(true);
-		ResultOperationPanel.SetActive(false);
 		StartCoroutine(CountDown());
 	}
 
@@ -567,26 +629,5 @@ public class LongSentenceScript : MonoBehaviour {
 	/// </summary>
 	private static void ReturnConfig(){
 		SceneManager.LoadScene("SinglePlayConfigScene");
-	}
-
-	/// <summary>
-	/// 文書データの読み込み
-	/// <param name="dataName">データセット名</param>
-	/// </summary>
-	private static bool LoadSentenceData (string dataName){
-		try {
-			var ab = AssetBundle.LoadFromFile(ABPath);
-			if (ab == null){
-				Debug.Log("Error: AssetBundle Load failed");
-				return false;
-			}
-			taskText = ab.LoadAsset<TextAsset>(dataName).ToString();
-			ab.Unload(false);
-		}
-		catch {
-			Debug.Log("Error: Document data load failed");
-			return false;
-		}
-		return true;
 	}
 }
