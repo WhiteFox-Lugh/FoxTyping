@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class TypingSoft : MonoBehaviour {
@@ -26,6 +27,8 @@ public class TypingSoft : MonoBehaviour {
 	private static bool isSentenceMistyped;
 	// タイピングの正誤判定器
 	private static List<List<string>> typingJudge;
+	// load 関係
+	private static bool isLoadSuccess = false;
 	// index 類
 	private static int index;
 	private static List<List<int>> indexAdd = new List<List<int>>();
@@ -69,6 +72,7 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] private GameObject DataPanel;
 	[SerializeField] private GameObject AssistKeyboardPanel;
 	[SerializeField] private GameObject CPUPanel;
+	[SerializeField] private GameObject NowLoadingPanel;
 	private static GenerateSentence gs = new GenerateSentence();
 	// Assist Keyboard JIS
 	private static AssistKeyboardJIS AKJIS;
@@ -111,8 +115,23 @@ public class TypingSoft : MonoBehaviour {
 	/// Update() 前に読み込み
 	/// </summary>
 	void Awake() {
-		LoadWordDataset();
-		InitGame();
+		NowLoadingPanel.SetActive(true);
+		isLoadSuccess = false;
+		CurrentGameCondition = (int)gameCondition.Progress;
+		StartCoroutine(LoadWordDataset(CanStart));
+	}
+
+	/// <summary>
+	/// スタートできるかの確認
+	/// </summary>
+	private void CanStart(){
+		if (isLoadSuccess){
+			InitGame();
+		}
+		else {
+			ErrorCode = (int)errorType.FailedLoadSentence;
+			CurrentGameCondition = (int)gameCondition.Canceled;
+		}
 	}
 
 	/// <summary>
@@ -121,6 +140,7 @@ public class TypingSoft : MonoBehaviour {
 	private void InitGame() {
 		InitData();
 		InitText();
+		NowLoadingPanel.SetActive(false);
 		StartCoroutine(CountDown());
 	}
 
@@ -138,13 +158,11 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// データセット読み込み
 	/// </summary>
-	private void LoadWordDataset(){
-		// json の読み込み
-		bool isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
-		if (!isLoadSuccess){
-			ErrorCode = (int)errorType.FailedLoadSentence;
-			CurrentGameCondition = (int)gameCondition.Canceled;
-		}
+	private IEnumerator LoadWordDataset(UnityAction callback){
+		yield return StartCoroutine(gs.LoadAssetBundle(
+			() => isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName))
+			);
+		callback();
 	}
 
 	/// <summary>
@@ -194,12 +212,14 @@ public class TypingSoft : MonoBehaviour {
 			}
 			TypingCheck();
 		}
-		if (CurrentTypingSentence == ""){
-			AKJIS.SetAllKeyColorWhite();
-			AKJIS.SetAllFingerColorWhite();
-		}
-		else {
-			AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
+		if (AKJIS != null){
+			if (CurrentTypingSentence == ""){
+				AKJIS.SetAllKeyColorWhite();
+				AKJIS.SetAllFingerColorWhite();
+			}
+			else {
+				AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
+			}
 		}
 	}
 

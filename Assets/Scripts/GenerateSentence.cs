@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Networking;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -12,7 +13,10 @@ using System.Runtime.Serialization.Json;
 public class GenerateSentence {
 	private const int minLength = 1;
 	private const int maxLength = 50;
-	private const string ABPath = "AssetBundleData/wordset_short";
+	// AssetBundle
+	private static AssetBundle abData;
+	private const string ABPathLocal = "AssetBundleData/wordset_short";
+	private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_short";
 	private static int inputType;
 	private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
 		{"Roman", 0},
@@ -1093,20 +1097,58 @@ public class GenerateSentence {
 	}
 
 	/// <summary>
+	/// AssetBundle の読み込み
+	/// <param name="callback">callback 関数</param>
+	/// </summary>
+	public IEnumerator LoadAssetBundle (UnityAction callback){
+		var networkState = Application.internetReachability;
+		// すでに AssetBundle が読み込まれているか、
+		// そうでないときにネットワークに接続していないときはリクエストを送信しない
+		// ネットワーク接続していないときは何かしらエラーを出すとよさそう
+		if (abData != null){
+			callback();
+			yield break;
+		}
+
+		// WebGL 時は WebRequest によって AssetBundle を取得
+		#if UNITY_WEBGL && !UNITY_EDITOR
+		if (networkState == NetworkReachability.NotReachable){
+			Debug.Log("ネットワークに接続していません");
+			callback();
+			yield break;
+		}
+		UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(ABPath);
+		yield return request.SendWebRequest();
+		if (request.isNetworkError || request.isHttpError){
+			Debug.LogError(request.error);
+		}
+		else {
+			abData = DownloadHandlerAssetBundle.GetContent(request);
+			Debug.Log("load successfully");
+		}
+		#else
+		abData = AssetBundle.LoadFromFile(ABPathLocal);
+		if (abData == null){
+			Debug.Log("Error: AssetBundle Load failed");
+		}
+		#endif
+
+		callback();
+		yield break;
+	}
+
+	/// <summary>
 	/// ワードセットのデータを読み込む
 	/// <param name="dataName">データセットのファイル名</param>
 	/// <returns>読み込みが成功すれば true、さもなくば false</returns>
 	/// </summary>
 	public bool LoadSentenceData (string dataName){
+		if (abData == null){
+			return false;
+		}
 		try {
 			wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
-			var ab = AssetBundle.LoadFromFile(ABPath);
-			if (ab == null){
-				Debug.Log("Error: AssetBundle Load failed");
-				return false;
-			}
-			var jsonStr = ab.LoadAsset<TextAsset>(dataName).ToString();
-			ab.Unload(false);
+			var jsonStr = abData.LoadAsset<TextAsset>(dataName).ToString();
 			var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
 			DataSetName = problemData.sentenceDatasetScreenName;
 			inputType = inputTypeMap[problemData.inputType];
