@@ -48,14 +48,14 @@ public class LongSentenceScript : MonoBehaviour {
 	private static AssetBundle abLongData;
 	private static bool isABLoaded = false;
 	// UI
-	[SerializeField] Text UIResultTextField;
+	[SerializeField] TextMeshProUGUI UIResultTextField;
 	[SerializeField] RubyTextMeshProUGUI UITextField;
 	[SerializeField] Text UIRestTime;
 	[SerializeField] Text UICountDownText;
 	[SerializeField] Text UIInputCounter;
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UIDetailText;
-	[SerializeField] InputField UIInputField;
+	[SerializeField] TMP_InputField UIInputField;
 	[SerializeField] GameObject InputPanel;
 	[SerializeField] GameObject ResultPanel;
 	[SerializeField] GameObject TaskPanel;
@@ -282,7 +282,7 @@ public class LongSentenceScript : MonoBehaviour {
 		sbScore.Append($"スコア(F)： {score.ToString()}");
 		sbDetail.Append($"正解数：{correctCount.ToString()} x {CORRECT_SCORE.ToString()}点\n")
 						.Append($"<color=\"{COLOR_DELETE}\">削除：{deleteCount.ToString()}")
-						.Append($" x (-{MISS_COST.ToString()}点</color> / ")
+						.Append($" x (-{MISS_COST.ToString()}点)</color> / ")
 						.Append($"<color=\"{COLOR_INSERT}\">余分：{insertCount.ToString()}")
 						.Append($" x (-{MISS_COST.ToString()}点)</color>\n")
 						.Append($"<color=\"{COLOR_REPLACE}\">置換：{replaceCount.ToString()}")
