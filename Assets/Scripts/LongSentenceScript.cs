@@ -4,6 +4,7 @@ using System.Text;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -63,7 +64,14 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject ScorePanel;
 	[SerializeField] GameObject OperationPanel;
 	[SerializeField] GameObject ResultOperationPanel;
-	// 課題文章
+	// 課題文章関係
+	// ルビ利用するかどうか
+	private static bool isUseRuby;
+	// 表示している文章
+	private static string displayText;
+	// ルビ付き
+	private static string taskWithRuby;
+	// オリジナル
 	private static string taskText;
 	// スコア表示
 	private int correctCount = 0;
@@ -154,7 +162,8 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 各種初期化
 	/// </summary>
 	private void Init(){
-		taskText = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+		isUseRuby = ConfigScript.UseRuby;
+		GenerateTaskText();
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
@@ -190,7 +199,7 @@ public class LongSentenceScript : MonoBehaviour {
 		// 経過時間と入力文字数の表示
 		isShowInfo = true;
 		// 課題文表示
-		UITextField.text = taskText;
+		UITextField.UnditedText = displayText;
 		// 入力フィールドアクティブ化
 		UIInputField.interactable = true;
 		UIInputField.ActivateInputField();
@@ -213,6 +222,38 @@ public class LongSentenceScript : MonoBehaviour {
 				CheckTimer();
 				CheckInputStr();
 		}
+	}
+
+	/// <summary>
+	/// 表示文章の生成
+	/// </summary>
+	private void GenerateTaskText(){
+		string pattern = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+		string replacement = "<r=$2>$1</r>";
+		string newlinePattern = "(\n|\r\n|\r)";
+		var docData = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+		taskText = Regex.Replace(docData, pattern, "$1");
+		var convertedText = Regex.Replace(docData, pattern, replacement);
+		taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
+		displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
+	}
+
+	/// <summary>
+	/// ルビを消す
+	/// </summary>
+	private void HideRuby(){
+		displayText = taskText + "\n\n\n\n\n";
+		isUseRuby = false;
+		UITextField.UnditedText = displayText;
+	}
+
+	/// <summary>
+	/// ルビを表示
+	/// </summary>
+	private void ShowRuby(){
+		displayText = taskWithRuby + "\n\n\n\n\n";
+		isUseRuby = true;
+		UITextField.UnditedText = displayText;
 	}
 
 	/// <summary>
@@ -603,7 +644,7 @@ public class LongSentenceScript : MonoBehaviour {
 	void OnGUI() {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.D && isPushedCtrlKey){
+		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F3){
 			if (!isFinished && isShowInfo){
 				Finish();
 			}
@@ -611,16 +652,20 @@ public class LongSentenceScript : MonoBehaviour {
 				ReturnConfig();
 			}
 		}
-		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F2 && isShowInfo){
+		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F1 && isShowInfo){
+			InitUIPanel();
 			Init();
+		}
+		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F5 && !isFinished && isShowInfo){
+			if (isUseRuby) {
+				HideRuby();
+			}
+			else {
+				ShowRuby();
+			}
 		}
 		else if (!isFinished && e.type == EventType.KeyDown && e.keyCode == KeyCode.V && isPushedCtrlKey){
 			Debug.Log("Copy detected");
-		}
-		else if (isFinished && e.type == EventType.KeyDown){
-			if(e.keyCode == KeyCode.R){
-				Init();
-			}
 		}
 	}
 

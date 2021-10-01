@@ -46,6 +46,12 @@ public class ConfigScript : MonoBehaviour {
 		get;
 	} = 300;
 
+	// 長文モードでルビを使用するか
+	public static bool UseRuby {
+		set;
+		get;
+	} = true;
+
 	// CPU Speed Guide の利用をするか
 	public static bool UseCPUGuide {
 		set;

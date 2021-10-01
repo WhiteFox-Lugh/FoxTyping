@@ -14,12 +14,14 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	private static int prevDropdownTaskNum = 5;
 	private static int prevDropdownShortDataset = 0;
 	private static int prevDropdownLongDataset = 0;
+	private static int prevDropdownUseYomigana = 0;
 	private static int longSentenceTimeLimitVal = 0;
 	[SerializeField] private TMP_Dropdown UIGameMode;
 	[SerializeField] private TMP_Dropdown UIDataSetName;
 	[SerializeField] private TMP_Dropdown UILongDataSetName;
 	[SerializeField] private TMP_Dropdown UISentenceNum;
 	[SerializeField] private TMP_Dropdown UIUseCPUKpmGuide;
+	[SerializeField] private TMP_Dropdown UIUseYomigana;
 	[SerializeField] private TMP_InputField InputCPUSpeed;
 	[SerializeField] private GameObject ConfigPanel;
 	[SerializeField] private GameObject LongSentenceConfigPanel;
@@ -56,6 +58,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		UIGameMode.value = prevDropdownGameMode;
 		UIDataSetName.value = prevDropdownShortDataset;
 		UILongDataSetName.value = prevDropdownLongDataset;
+		UIUseYomigana.value = prevDropdownUseYomigana;
 		UISentenceNum.value = prevDropdownTaskNum;
 		longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
 		UIUseCPUKpmGuide.value = (ConfigScript.UseCPUGuide ? 1 : 0);
@@ -73,6 +76,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		prevDropdownShortDataset = UIDataSetName.value;
 		prevDropdownLongDataset = UILongDataSetName.value;
 		prevDropdownTaskNum = UISentenceNum.value;
+		prevDropdownUseYomigana = UIUseYomigana.value;
 		ConfigScript.GameMode = UIGameMode.value;
 		ConfigScript.DataSetName = shortDatasetFileName[UIDataSetName.value];
 		ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
@@ -80,6 +84,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
 		ConfigScript.UseCPUGuide = UIUseCPUKpmGuide.value == 1;
 		ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
+		ConfigScript.UseRuby = UIUseYomigana.value == 1;
 	}
 
 	/// <summary>
