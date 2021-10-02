@@ -73,6 +73,9 @@ public class LongSentenceScript : MonoBehaviour {
 	private static string taskWithRuby;
 	// オリジナル
 	private static string taskText;
+	// 打鍵記録
+	private static string currentTypedSentence;
+	private static List<KeyCode> typeKeyCodeHistory;
 	// スコア表示
 	private int correctCount = 0;
 	private int deleteCount = 0;
@@ -162,11 +165,16 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 各種初期化
 	/// </summary>
 	private void Init(){
+		// クリップボードの中身を消去
+		GUIUtility.systemCopyBuffer = "";
+		// その他の初期化
 		isUseRuby = ConfigScript.UseRuby;
 		GenerateTaskText();
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
+		currentTypedSentence = "";
+		typeKeyCodeHistory = new List<KeyCode>();
 		UIInputField.interactable = false;
 		UITextField.text = "";
 		UIInputField.text = "";
@@ -214,9 +222,8 @@ public class LongSentenceScript : MonoBehaviour {
 		if (!UIInputField.isFocused){
 				UIInputField.Select();
 		}
-		// 必ず文末からしか編集できないようにする
-		// インテルステノ方式
-		UIInputField.MoveTextEnd(false);
+		// クリップボードの中身を消去
+		GUIUtility.systemCopyBuffer = "";
 		// 入力中はタイマーを更新
 		if (isShowInfo && !isFinished){
 				CheckTimer();
@@ -644,28 +651,30 @@ public class LongSentenceScript : MonoBehaviour {
 	void OnGUI() {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F3){
-			if (!isFinished && isShowInfo){
-				Finish();
+		if (e.type == EventType.KeyDown){
+			// F3: 終了か設定画面に戻るか
+			if (e.keyCode == KeyCode.F3){
+				if (!isFinished && isShowInfo){
+					Finish();
+				}
+				else {
+					ReturnConfig();
+				}
 			}
-			else {
-				ReturnConfig();
+			// F1: リトライ
+			else if (e.keyCode == KeyCode.F1 && isShowInfo){
+				InitUIPanel();
+				Init();
 			}
-		}
-		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F1 && isShowInfo){
-			InitUIPanel();
-			Init();
-		}
-		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F5 && !isFinished && isShowInfo){
-			if (isUseRuby) {
-				HideRuby();
+			// F5: ルビの表示切り替え
+			else if (e.keyCode == KeyCode.F5 && !isFinished && isShowInfo){
+				if (isUseRuby) {
+					HideRuby();
+				}
+				else {
+					ShowRuby();
+				}
 			}
-			else {
-				ShowRuby();
-			}
-		}
-		else if (!isFinished && e.type == EventType.KeyDown && e.keyCode == KeyCode.V && isPushedCtrlKey){
-			Debug.Log("Copy detected");
 		}
 	}
 
