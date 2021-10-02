@@ -274,9 +274,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 0.6
-  m_Text: "\u2191 or Ctrl+U : \u4E0A\u306B\u30B9\u30AF\u30ED\u30FC\u30EB / \u3000\u2193
-    or Ctrl + D\nF1 \u30AD\u30FC : \u30EA\u30C8\u30E9\u30A4 / \u3000F3 \u30AD\u30FC
-    : \u7D42\u4E86\nF5 \u30AD\u30FC : \u8AB2\u984C\u6587\u30EB\u30D3\u8868\u793A\u5207\u308A\u66FF\u3048"
+  m_Text: "Ctrl+E : \u8AB2\u984C\u65871\u884C\u524D\u3078 /  Ctrl+U : \u8AB2\u984C\u65875\u884C\u524D\u3078\nCtrl+Y
+    : \u8AB2\u984C\u65871\u884C\u6B21\u3078 /  Ctrl+D : \u8AB2\u984C\u65875\u884C\u6B21\u3078\nF1
+    : \u30EA\u30C8\u30E9\u30A4 /  F3 \u30AD\u30FC : \u7D42\u4E86 / F5 : \u8AB2\u984C\u6587\u30EB\u30D3\u8868\u793A\u5207\u308A\u66FF\u3048"
 --- !u!222 &102383809
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -538,7 +538,7 @@ GameObject:
   - component: {fileID: 153104933}
   - component: {fileID: 153104932}
   m_Layer: 5
-  m_Name: Scrollbar Vertical
+  m_Name: Scrollbar Vertical (Task)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -664,7 +664,7 @@ GameObject:
   - component: {fileID: 283487687}
   - component: {fileID: 283487686}
   m_Layer: 5
-  m_Name: Viewport
+  m_Name: TaskViewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2084,6 +2084,8 @@ MonoBehaviour:
   UIInputCounter: {fileID: 1916925598}
   UIScoreText: {fileID: 1781618392}
   UIDetailText: {fileID: 1911140218}
+  TaskTextContent: {fileID: 2008176161}
+  TaskViewport: {fileID: 283487684}
   UIInputField: {fileID: 672462507}
   InputPanel: {fileID: 1477052439}
   ResultPanel: {fileID: 1133939102}
@@ -2092,6 +2094,7 @@ MonoBehaviour:
   ScorePanel: {fileID: 1793940625}
   OperationPanel: {fileID: 1508218503}
   ResultOperationPanel: {fileID: 1266188706}
+  TaskVerticalBar: {fileID: 153104930}
 --- !u!1 &1266188706
 GameObject:
   m_ObjectHideFlags: 0

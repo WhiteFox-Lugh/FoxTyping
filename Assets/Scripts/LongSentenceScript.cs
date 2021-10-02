@@ -56,6 +56,8 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] Text UIInputCounter;
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UIDetailText;
+	[SerializeField] TextMeshProUGUI TaskTextContent;
+	[SerializeField] GameObject TaskViewport;
 	[SerializeField] TMP_InputField UIInputField;
 	[SerializeField] GameObject InputPanel;
 	[SerializeField] GameObject ResultPanel;
@@ -64,6 +66,7 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject ScorePanel;
 	[SerializeField] GameObject OperationPanel;
 	[SerializeField] GameObject ResultOperationPanel;
+	[SerializeField] GameObject TaskVerticalBar;
 	// 課題文章関係
 	// ルビ利用するかどうか
 	private static bool isUseRuby;
@@ -243,6 +246,34 @@ public class LongSentenceScript : MonoBehaviour {
 		var convertedText = Regex.Replace(docData, pattern, replacement);
 		taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
 		displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
+	}
+
+	/// <summary>
+	/// 課題文をスクロールする
+	/// <param name="numOfLine">スクロールする行数</param>
+	/// </summary>
+	private void ScrollTask(int numOfLine){
+		var scrollBar = TaskVerticalBar.GetComponent<Scrollbar>();
+		// 現在のバーの位置を取得(0-1)
+		var currentBarPos = scrollBar.value;
+		// 表示ウィンドウの高さを取得
+		var windowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+		// 課題文のコンテンツの高さと行数を取得
+		var taskHeight = TaskTextContent.preferredHeight;
+		var lineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
+		// 現在表示している下限のy座標
+		var currentPosY = currentBarPos * (Math.Max(taskHeight, windowHeight) - windowHeight);
+		// スクロール後の位置座標
+		var setPosY = currentPosY - numOfLine * lineHeight;
+		// スクロール後のバーの位置
+		var setBarPos = setPosY / (Math.Max(taskHeight, windowHeight) - windowHeight);
+		if (setBarPos > 1f){
+			setBarPos = 1f;
+		}
+		else if (setBarPos < 0f){
+			setBarPos = 0f;
+		}
+		scrollBar.value = setBarPos;
 	}
 
 	/// <summary>
@@ -651,6 +682,7 @@ public class LongSentenceScript : MonoBehaviour {
 	void OnGUI() {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+		var isPracticing = !isFinished && isShowInfo;
 		if (e.type == EventType.KeyDown){
 			// F3: 終了か設定画面に戻るか
 			if (e.keyCode == KeyCode.F3){
@@ -667,13 +699,29 @@ public class LongSentenceScript : MonoBehaviour {
 				Init();
 			}
 			// F5: ルビの表示切り替え
-			else if (e.keyCode == KeyCode.F5 && !isFinished && isShowInfo){
+			else if (e.keyCode == KeyCode.F5 && isPracticing){
 				if (isUseRuby) {
 					HideRuby();
 				}
 				else {
 					ShowRuby();
 				}
+			}
+			// 課題文1行戻る
+			else if (e.keyCode == KeyCode.E && isPushedCtrlKey && isPracticing){
+				ScrollTask(-1);
+			}
+			// 課題文1行次へ
+			else if (e.keyCode == KeyCode.Y && isPushedCtrlKey && isPracticing){
+				ScrollTask(1);
+			}
+			// 課題文5行戻る
+			else if (e.keyCode == KeyCode.U && isPushedCtrlKey && isPracticing){
+				ScrollTask(-5);
+			}
+			// 課題文5行次へ
+			else if (e.keyCode == KeyCode.D && isPushedCtrlKey && isPracticing){
+				ScrollTask(5);
 			}
 		}
 	}
