@@ -67,34 +67,12 @@ public class LongSentenceScriptTest
     }
 
     [Test]
-    [Category("CompleteMatch")]
-    public void CompleteMatchTest02() {
-        var taskStr = LoadTaskData(FILE_CONSTITUTION);
-        var inputStr = taskStr;
-        var expectedDiffs = new List<Diff> () {
-            new Diff((int)judgeType.correct, taskStr, "")
-        };
-        DiffChecker(taskStr, inputStr, expectedDiffs);
-    }
-
-    [Test]
     [Category("PrefixMatch")]
     public void PrefixMatchTest01() {
         var taskStr = "きつねこんこん";
         var inputStr = "きつね";
         var expectedDiffs = new List<Diff> () {
             new Diff((int)judgeType.correct, "きつね", "")
-        };
-        DiffChecker(taskStr, inputStr, expectedDiffs);
-    }
-
-    [Test]
-    [Category("PrefixMatch")]
-    public void PrefixMatchTest02() {
-        var taskStr = LoadTaskData(FILE_CONSTITUTION);
-        var inputStr = "日本国民は、正当に選挙された国会における代表者を通じて行動し";
-        var expectedDiffs = new List<Diff> () {
-            new Diff((int)judgeType.correct, "日本国民は、正当に選挙された国会における代表者を通じて行動し", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
@@ -240,21 +218,6 @@ public class LongSentenceScriptTest
     }
 
     [Test]
-    [Category("ExtremeCases")]
-    public void PrefixSuffixMiddleMatchTest01() {
-        var taskStr = LoadTaskData(FILE_CONSTITUTION);
-        var inputStr = "日本国民国民国民";
-        var expectedDiffs = new List<Diff> () {
-            new Diff((int)judgeType.correct, "日本国民", ""),
-            new Diff((int)judgeType.delete, "は、正当に選挙された", ""),
-            new Diff((int)judgeType.correct, "国", ""),
-            new Diff((int)judgeType.replace, "会", "民"),
-            new Diff((int)judgeType.insert, "", "国民"),
-        };
-        DiffChecker(taskStr, inputStr, expectedDiffs);
-    }
-
-    [Test]
     [Category("OrdinalCases")]
     public void OrdinalCaseTest01() {
         var taskStr = COLORFUL_MAKIGAMI;
@@ -263,41 +226,6 @@ public class LongSentenceScriptTest
             new Diff((int)judgeType.correct, "あかまきがみあ", ""),
             new Diff((int)judgeType.delete, "お", ""),
             new Diff((int)judgeType.correct, "まきがみ", "")
-        };
-        DiffChecker(taskStr, inputStr, expectedDiffs);
-    }
-
-    [Test]
-    [Category("OrdinalCases")]
-    public void OrdinalCaseTest02() {
-        var taskStr = LoadTaskData(FILE_CONSTITUTION);
-        var inputStr = "日本国民は、正答に占拠された国会における代表者を通じて行動しろよ、";
-        var expectedDiffs = new List<Diff> () {
-            new Diff((int)judgeType.correct, "日本国民は、正", ""),
-            new Diff((int)judgeType.replace, "当", "答"),
-            new Diff((int)judgeType.correct, "に", ""),
-            new Diff((int)judgeType.replace, "選挙", "占拠"),
-            new Diff((int)judgeType.correct, "された国会における代表者を通じて行動し", ""),
-            new Diff((int)judgeType.insert, "", "ろよ"),
-            new Diff((int)judgeType.correct, "、", "")
-        };
-        DiffChecker(taskStr, inputStr, expectedDiffs);
-    }
-
-    [Test]
-    [Category("OrdinalCases")]
-    public void OrdinalCaseTest03() {
-        var taskStr = LoadTaskData(FILE_CONSTITUTION);
-        var inputStr = "国民は、正当に選挙されれた国会における代表者を通て行動しわれら";
-        var expectedDiffs = new List<Diff> () {
-            new Diff((int)judgeType.delete, "日本", ""),
-            new Diff((int)judgeType.correct, "国民は、正当に選挙され", ""),
-            new Diff((int)judgeType.insert, "", "れ"),
-            new Diff((int)judgeType.correct, "た国会における代表者を通", ""),
-            new Diff((int)judgeType.delete, "じ", ""),
-            new Diff((int)judgeType.correct, "て行動し", ""),
-            new Diff((int)judgeType.delete, "、", ""),
-            new Diff((int)judgeType.correct, "われら", "")
         };
         DiffChecker(taskStr, inputStr, expectedDiffs);
     }
