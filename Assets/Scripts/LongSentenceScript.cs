@@ -50,6 +50,7 @@ public class LongSentenceScript : MonoBehaviour {
 	private static bool isABLoaded = false;
 	// UI
 	[SerializeField] TextMeshProUGUI UIResultTextField;
+	[SerializeField] TextMeshProUGUI UIResultElapsedTime;
 	[SerializeField] RubyTextMeshProUGUI UITextField;
 	[SerializeField] Text UIRestTime;
 	[SerializeField] Text UICountDownText;
@@ -205,8 +206,6 @@ public class LongSentenceScript : MonoBehaviour {
 	/// カウントダウン後の処理
 	/// </summary>
 	private void AfterCountDown(){
-		// 開始時刻取得
-		startTime = Time.realtimeSinceStartup;
 		// 経過時間と入力文字数の表示
 		isShowInfo = true;
 		// 課題文表示
@@ -214,6 +213,8 @@ public class LongSentenceScript : MonoBehaviour {
 		// 入力フィールドアクティブ化
 		UIInputField.interactable = true;
 		UIInputField.ActivateInputField();
+		// 開始時刻取得
+		startTime = Time.realtimeSinceStartup;
 	}
 
 	/// <summary>
@@ -321,6 +322,13 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 入力終了後の処理
 	/// </summary>
 	private void Finish(){
+		// 終了時刻の取得
+		var endTime = Time.realtimeSinceStartup;
+		var elapsedTime = endTime - startTime;
+		var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
+		var elapsedMin = elapsedTimeInt / 60;
+		var elapsedSec = elapsedTimeInt % 60;
+		UIResultElapsedTime.text = $"経過時間: {elapsedMin.ToString()}分 {elapsedSec.ToString()}秒";
 		// 表示の切り替え
 		ResultPanel.SetActive(true);
 		ScorePanel.SetActive(true);
