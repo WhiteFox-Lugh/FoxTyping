@@ -58,8 +58,11 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UIDetailText;
 	[SerializeField] TextMeshProUGUI TaskTextContent;
+	[SerializeField] TextMeshProUGUI PreviewText;
+	[SerializeField] TMP_Dropdown DropdownSectionSelect;
 	[SerializeField] GameObject TaskViewport;
 	[SerializeField] TMP_InputField UIInputField;
+	[SerializeField] GameObject SectionSelectPanel;
 	[SerializeField] GameObject InputPanel;
 	[SerializeField] GameObject ResultPanel;
 	[SerializeField] GameObject TaskPanel;
@@ -69,6 +72,9 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject ResultOperationPanel;
 	[SerializeField] GameObject TaskVerticalBar;
 	// 課題文章関係
+	private static string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
+	private static string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+	private static List<int> sectionStartPosList;
 	// ルビ利用するかどうか
 	private static bool isUseRuby;
 	// 表示している文章
@@ -110,6 +116,7 @@ public class LongSentenceScript : MonoBehaviour {
 		ScorePanel.SetActive(false);
 		OperationPanel.SetActive(true);
 		ResultOperationPanel.SetActive(false);
+		SectionSelectPanel.SetActive(true);
 	}
 
 	/// <summary>
@@ -117,11 +124,51 @@ public class LongSentenceScript : MonoBehaviour {
 	/// </summary>
 	private void CanStart(){
 		if (abLongData != null){
-			Init();
+			GetSectionInfo();
+			SelectSection();
 		}
 		else {
 			ReturnConfig();
 		}
+	}
+
+	/// <summary>
+	/// スタートボタンを押したときの挙動
+	/// </summary>
+	public void OnCilckStartButton(){
+		SectionSelectPanel.SetActive(false);
+		Init();
+	}
+
+	/// <summary>
+	/// セクション選択に移動
+	/// </summary>
+	private void SelectSection(){
+		SectionSelectPanel.SetActive(true);
+	}
+
+	/// <summary>
+	/// セクション情報の取得
+	/// </summary>
+	private void GetSectionInfo(){
+		sectionStartPosList = new List<int>();
+		var sectionHeaderList = new List<string>();
+		// \section{} の抽出
+		var docData = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+		var idx = 1;
+		foreach (Match match in Regex.Matches(docData, sectionRegex)){
+			sectionStartPosList.Add(match.Index);
+			var sectionSentence = Regex.Replace(match.Value, sectionRegex, "$1 ...");
+			sectionHeaderList.Add($"第{idx}セクション: {sectionSentence}");
+			idx++;
+		}
+		// プレイ前のセクション選択用に課題文を表示
+		var sectionReplacedDoc = Regex.Replace(docData, sectionRegex, "");
+		var previewDoc = Regex.Replace(sectionReplacedDoc, rubyRegex, "$1");
+		PreviewText.text = previewDoc;
+		// Dropdown にセット
+		DropdownSectionSelect.ClearOptions();
+		DropdownSectionSelect.AddOptions(sectionHeaderList);
 	}
 
 	/// <summary>
@@ -220,8 +267,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update()
-	{
+	void Update(){
 		// フォーカスされていなければ強制フォーカス
 		if (!UIInputField.isFocused){
 				UIInputField.Select();
@@ -239,12 +285,13 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 表示文章の生成
 	/// </summary>
 	private void GenerateTaskText(){
-		string pattern = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+		int startIdx = sectionStartPosList[DropdownSectionSelect.value];
 		string replacement = "<r=$2>$1</r>";
-		string newlinePattern = "(\n|\r\n|\r)";
-		var docData = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
-		taskText = Regex.Replace(docData, pattern, "$1");
-		var convertedText = Regex.Replace(docData, pattern, replacement);
+		string newlinePattern = @"[\n|\r\n|\r]";
+		var docDataOrigin = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString().Substring(startIdx);
+		var docData = Regex.Replace(docDataOrigin, sectionRegex, "");
+		taskText = Regex.Replace(docData, rubyRegex, "$1");
+		var convertedText = Regex.Replace(docData, rubyRegex, replacement);
 		taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
 		displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
 	}
@@ -704,7 +751,7 @@ public class LongSentenceScript : MonoBehaviour {
 			// F1: リトライ
 			else if (e.keyCode == KeyCode.F1 && isShowInfo){
 				InitUIPanel();
-				Init();
+				SelectSection();
 			}
 			// F5: ルビの表示切り替え
 			else if (e.keyCode == KeyCode.F5 && isPracticing){
