@@ -680,7 +680,7 @@ public class LongSentenceScript : MonoBehaviour {
 			}
 		}
 		var html = sb.ToString();
-		var ret = html.Replace("&para;<br>", "[NL]\n");
+		var ret = html.Replace("&para;<br>", "⏎\n");
 		return ret;
 	}
 
