@@ -10,6 +10,8 @@ public class TypingPerformance {
 	const double ALPHA = 0.25;
 	// BETA: ノーマルスコアの加重平均の重み
 	const double BETA = 0.85;
+	// CONFIDENCE_WORD_NUM: スコア計算でこの値以上のときスコアを保証
+	const int CONFIDENCE_WORD_NUM = 30;
 	// 原文のリスト
 	public List<string> OriginSentenceList {
 		private set;
@@ -225,11 +227,22 @@ public class TypingPerformance {
 	/// </summary>
 	public int GetNormalScore() {
 		var sortedScoreList = GetSortedScoreList();
-		var len = OriginSentenceList.Count();
+		var len = sortedScoreList.Count();
 		double numerator = 0.0;
 		double denominator = 0.0;
 		double weight = BETA;
-		for (int i = 0; i < len; ++i){
+		// 指定ワード数以上かそれ未満で使う部分を変更
+		if (len > CONFIDENCE_WORD_NUM){
+			var startIndex = (len - CONFIDENCE_WORD_NUM) / 5;
+			sortedScoreList = sortedScoreList.GetRange(startIndex, CONFIDENCE_WORD_NUM);
+		}
+		// 30ワード未満は0ptを補完
+		else if (len < CONFIDENCE_WORD_NUM){
+			while (sortedScoreList.Count() < CONFIDENCE_WORD_NUM){
+				sortedScoreList.Add(0);
+			}
+		}
+		for (int i = 0; i < CONFIDENCE_WORD_NUM; ++i){
 			numerator += sortedScoreList[i] * weight;
 			denominator += weight;
 			weight *= BETA;
