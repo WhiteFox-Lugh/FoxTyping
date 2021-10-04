@@ -10,12 +10,19 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	private const int TASK_UNIT = 5;
 	private const int LONG_MAX_TIME_LIMIT = 60 * 60;
 	private const int LONG_MIN_TIME_LIMIT = 1;
+	private const int SETTINGS_DEFAULT_VAL = 0;
+	private const int SETTINGS_TASKNUM_DEFAULT_VAL = 5;
+	private const int SETTINGS_LONG_TIME_DEFAULT_VAL = 300;
+	private const int SETTINGS_CPU_KPM_DEFAULT = 300;
 	private static int prevDropdownGameMode = 0;
 	private static int prevDropdownTaskNum = 5;
 	private static int prevDropdownShortDataset = 0;
 	private static int prevDropdownLongDataset = 0;
 	private static int prevDropdownUseYomigana = 0;
-	private static int longSentenceTimeLimitVal = 0;
+	private static int prevCPUKpm = 1;
+	private static int prevIsUseCPUGuide = 0;
+	private static int prevLongTimeLimit = 300;
+	private static int longSentenceTimeLimitVal = 300;
 	[SerializeField] private TMP_Dropdown UIGameMode;
 	[SerializeField] private TMP_Dropdown UIDataSetName;
 	[SerializeField] private TMP_Dropdown UILongDataSetName;
@@ -43,12 +50,41 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 
 	// Start is called before the first frame update
 	void Awake(){
+		LoadPlayerPrefSettings();
 		SetPreviousSettings();
 	}
 
 	// Update is called once per frame
 	void Update(){
 		ChangeConfigPanel();
+	}
+
+	/// <summary>
+	/// PlayerPrefs から設定を読み込む
+	/// </summary>
+	private void LoadPlayerPrefSettings(){
+		prevDropdownGameMode = PlayerPrefs.GetInt("foxtyping_single_gamemode", SETTINGS_DEFAULT_VAL);
+		prevDropdownTaskNum = PlayerPrefs.GetInt("foxtyping_single_tasknum", SETTINGS_TASKNUM_DEFAULT_VAL);
+		prevDropdownShortDataset = PlayerPrefs.GetInt("foxtyping_single_short_data", SETTINGS_DEFAULT_VAL);
+		prevDropdownLongDataset = PlayerPrefs.GetInt("foxtyping_single_long_data", SETTINGS_DEFAULT_VAL);
+		prevDropdownUseYomigana = PlayerPrefs.GetInt("foxtyping_single_use_yomigana", SETTINGS_DEFAULT_VAL);
+		prevLongTimeLimit = PlayerPrefs.GetInt("foxtyping_single_long_time", SETTINGS_LONG_TIME_DEFAULT_VAL);
+		prevCPUKpm = PlayerPrefs.GetInt("foxtyping_single_cpukpm", SETTINGS_CPU_KPM_DEFAULT);
+		prevIsUseCPUGuide = PlayerPrefs.GetInt("foxtyping_single_use_cpuguide", SETTINGS_DEFAULT_VAL);
+	}
+
+	/// <summary>
+	/// PlayerPrefs に設定を保存
+	/// </summary>
+	private void SavePlayerPrefSettings(){
+		PlayerPrefs.SetInt("foxtyping_single_gamemode", UIGameMode.value);
+		PlayerPrefs.SetInt("foxtyping_single_tasknum", UISentenceNum.value);
+		PlayerPrefs.SetInt("foxtyping_single_short_data", UIDataSetName.value);
+		PlayerPrefs.SetInt("foxtyping_single_long_data", UILongDataSetName.value);
+		PlayerPrefs.SetInt("foxtyping_single_use_yomigana",  UIUseYomigana.value);
+		PlayerPrefs.SetInt("foxtyping_single_long_time", longSentenceTimeLimitVal);
+		PlayerPrefs.SetInt("foxtyping_single_cpukpm", Int32.Parse(InputCPUSpeed.text));
+		PlayerPrefs.SetInt("foxtyping_single_use_cpuguide", UIUseCPUKpmGuide.value);
 	}
 
 	/// <summary>
@@ -60,10 +96,10 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		UILongDataSetName.value = prevDropdownLongDataset;
 		UIUseYomigana.value = prevDropdownUseYomigana;
 		UISentenceNum.value = prevDropdownTaskNum;
-		longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
-		UIUseCPUKpmGuide.value = (ConfigScript.UseCPUGuide ? 1 : 0);
-		InputCPUSpeed.interactable = UIUseCPUKpmGuide.value == 1;
-		InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
+		longSentenceTimeLimitVal = prevLongTimeLimit;
+		UIUseCPUKpmGuide.value = (prevIsUseCPUGuide == 1 ? 1 : 0);
+		InputCPUSpeed.interactable = prevIsUseCPUGuide == 1;
+		InputCPUSpeed.text = prevCPUKpm.ToString();
 		SetLongSentenceTimeLimitUI();
 	}
 
@@ -77,13 +113,14 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		prevDropdownLongDataset = UILongDataSetName.value;
 		prevDropdownTaskNum = UISentenceNum.value;
 		prevDropdownUseYomigana = UIUseYomigana.value;
-		ConfigScript.GameMode = UIGameMode.value;
-		ConfigScript.DataSetName = shortDatasetFileName[UIDataSetName.value];
-		ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
-		ConfigScript.LongSentenceTaskName = longDatasetFileName[UILongDataSetName.value];
+		prevCPUKpm = Int32.Parse(InputCPUSpeed.text);
+		ConfigScript.GameMode = prevDropdownGameMode;
+		ConfigScript.DataSetName = shortDatasetFileName[prevDropdownShortDataset];
+		ConfigScript.Tasks = (prevDropdownTaskNum + 1) * TASK_UNIT;
+		ConfigScript.LongSentenceTaskName = longDatasetFileName[prevDropdownLongDataset];
 		ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
 		ConfigScript.UseCPUGuide = UIUseCPUKpmGuide.value == 1;
-		ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
+		ConfigScript.CPUKpm = prevCPUKpm;
 		ConfigScript.UseRuby = UIUseYomigana.value == 1;
 	}
 
@@ -118,6 +155,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		if(KeyCode.Space == kc){
 			var selectedMode = UIGameMode.value;
 			SetCurrentSettings();
+			SavePlayerPrefSettings();
 			if (selectedMode == (int)GameModeNumber.ShortSentence){
 				SceneManager.LoadScene("TypingScene");
 			}
