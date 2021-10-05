@@ -4,6 +4,7 @@ using System.Text;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -48,14 +49,20 @@ public class LongSentenceScript : MonoBehaviour {
 	private static AssetBundle abLongData;
 	private static bool isABLoaded = false;
 	// UI
-	[SerializeField] Text UIResultTextField;
+	[SerializeField] TextMeshProUGUI UIResultTextField;
+	[SerializeField] TextMeshProUGUI UIResultElapsedTime;
 	[SerializeField] RubyTextMeshProUGUI UITextField;
 	[SerializeField] Text UIRestTime;
 	[SerializeField] Text UICountDownText;
 	[SerializeField] Text UIInputCounter;
 	[SerializeField] TextMeshProUGUI UIScoreText;
 	[SerializeField] TextMeshProUGUI UIDetailText;
-	[SerializeField] InputField UIInputField;
+	[SerializeField] TextMeshProUGUI TaskTextContent;
+	[SerializeField] TextMeshProUGUI PreviewText;
+	[SerializeField] TMP_Dropdown DropdownSectionSelect;
+	[SerializeField] GameObject TaskViewport;
+	[SerializeField] TMP_InputField UIInputField;
+	[SerializeField] GameObject SectionSelectPanel;
 	[SerializeField] GameObject InputPanel;
 	[SerializeField] GameObject ResultPanel;
 	[SerializeField] GameObject TaskPanel;
@@ -63,8 +70,22 @@ public class LongSentenceScript : MonoBehaviour {
 	[SerializeField] GameObject ScorePanel;
 	[SerializeField] GameObject OperationPanel;
 	[SerializeField] GameObject ResultOperationPanel;
-	// 課題文章
+	[SerializeField] GameObject TaskVerticalBar;
+	// 課題文章関係
+	private static string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
+	private static string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+	private static List<int> sectionStartPosList;
+	// ルビ利用するかどうか
+	private static bool isUseRuby;
+	// 表示している文章
+	private static string displayText;
+	// ルビ付き
+	private static string taskWithRuby;
+	// オリジナル
 	private static string taskText;
+	// 打鍵記録
+	private static string currentTypedSentence;
+	private static List<KeyCode> typeKeyCodeHistory;
 	// スコア表示
 	private int correctCount = 0;
 	private int deleteCount = 0;
@@ -95,6 +116,7 @@ public class LongSentenceScript : MonoBehaviour {
 		ScorePanel.SetActive(false);
 		OperationPanel.SetActive(true);
 		ResultOperationPanel.SetActive(false);
+		SectionSelectPanel.SetActive(true);
 	}
 
 	/// <summary>
@@ -102,11 +124,51 @@ public class LongSentenceScript : MonoBehaviour {
 	/// </summary>
 	private void CanStart(){
 		if (abLongData != null){
-			Init();
+			GetSectionInfo();
+			SelectSection();
 		}
 		else {
 			ReturnConfig();
 		}
+	}
+
+	/// <summary>
+	/// スタートボタンを押したときの挙動
+	/// </summary>
+	public void OnCilckStartButton(){
+		SectionSelectPanel.SetActive(false);
+		Init();
+	}
+
+	/// <summary>
+	/// セクション選択に移動
+	/// </summary>
+	private void SelectSection(){
+		SectionSelectPanel.SetActive(true);
+	}
+
+	/// <summary>
+	/// セクション情報の取得
+	/// </summary>
+	private void GetSectionInfo(){
+		sectionStartPosList = new List<int>();
+		var sectionHeaderList = new List<string>();
+		// \section{} の抽出
+		var docData = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+		var idx = 1;
+		foreach (Match match in Regex.Matches(docData, sectionRegex)){
+			sectionStartPosList.Add(match.Index);
+			var sectionSentence = Regex.Replace(match.Value, sectionRegex, "$1 ...");
+			sectionHeaderList.Add($"第{idx}セクション: {sectionSentence}");
+			idx++;
+		}
+		// プレイ前のセクション選択用に課題文を表示
+		var sectionReplacedDoc = Regex.Replace(docData, sectionRegex, "");
+		var previewDoc = Regex.Replace(sectionReplacedDoc, rubyRegex, "$1");
+		PreviewText.text = previewDoc;
+		// Dropdown にセット
+		DropdownSectionSelect.ClearOptions();
+		DropdownSectionSelect.AddOptions(sectionHeaderList);
 	}
 
 	/// <summary>
@@ -154,10 +216,16 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 各種初期化
 	/// </summary>
 	private void Init(){
-		taskText = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+		// クリップボードの中身を消去
+		GUIUtility.systemCopyBuffer = "";
+		// その他の初期化
+		isUseRuby = ConfigScript.UseRuby;
+		GenerateTaskText();
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
+		currentTypedSentence = "";
+		typeKeyCodeHistory = new List<KeyCode>();
 		UIInputField.interactable = false;
 		UITextField.text = "";
 		UIInputField.text = "";
@@ -185,34 +253,93 @@ public class LongSentenceScript : MonoBehaviour {
 	/// カウントダウン後の処理
 	/// </summary>
 	private void AfterCountDown(){
-		// 開始時刻取得
-		startTime = Time.realtimeSinceStartup;
 		// 経過時間と入力文字数の表示
 		isShowInfo = true;
 		// 課題文表示
-		UITextField.text = taskText;
+		UITextField.UnditedText = displayText;
 		// 入力フィールドアクティブ化
 		UIInputField.interactable = true;
 		UIInputField.ActivateInputField();
+		// 開始時刻取得
+		startTime = Time.realtimeSinceStartup;
 	}
 
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update()
-	{
+	void Update(){
 		// フォーカスされていなければ強制フォーカス
 		if (!UIInputField.isFocused){
 				UIInputField.Select();
 		}
-		// 必ず文末からしか編集できないようにする
-		// インテルステノ方式
-		UIInputField.MoveTextEnd(false);
+		// クリップボードの中身を消去
+		GUIUtility.systemCopyBuffer = "";
 		// 入力中はタイマーを更新
 		if (isShowInfo && !isFinished){
 				CheckTimer();
 				CheckInputStr();
 		}
+	}
+
+	/// <summary>
+	/// 表示文章の生成
+	/// </summary>
+	private void GenerateTaskText(){
+		int startIdx = sectionStartPosList[DropdownSectionSelect.value];
+		string replacement = "<r=$2>$1</r>";
+		string newlinePattern = @"[\n|\r\n|\r]";
+		var docDataOrigin = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString().Substring(startIdx);
+		var docData = Regex.Replace(docDataOrigin, sectionRegex, "");
+		taskText = Regex.Replace(docData, rubyRegex, "$1");
+		var convertedText = Regex.Replace(docData, rubyRegex, replacement);
+		taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
+		displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
+	}
+
+	/// <summary>
+	/// 課題文をスクロールする
+	/// <param name="numOfLine">スクロールする行数</param>
+	/// </summary>
+	private void ScrollTask(int numOfLine){
+		var scrollBar = TaskVerticalBar.GetComponent<Scrollbar>();
+		// 現在のバーの位置を取得(0-1)
+		var currentBarPos = scrollBar.value;
+		// 表示ウィンドウの高さを取得
+		var windowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+		// 課題文のコンテンツの高さと行数を取得
+		var taskHeight = TaskTextContent.preferredHeight;
+		var lineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
+		// 現在表示している下限のy座標
+		var currentPosY = currentBarPos * (Math.Max(taskHeight, windowHeight) - windowHeight);
+		// スクロール後の位置座標
+		var setPosY = currentPosY - numOfLine * lineHeight;
+		// スクロール後のバーの位置
+		var setBarPos = setPosY / (Math.Max(taskHeight, windowHeight) - windowHeight);
+		if (setBarPos > 1f){
+			setBarPos = 1f;
+		}
+		else if (setBarPos < 0f){
+			setBarPos = 0f;
+		}
+		scrollBar.value = setBarPos;
+	}
+
+	/// <summary>
+	/// ルビを消す
+	/// </summary>
+	private void HideRuby(){
+		displayText = taskText + "\n\n\n\n\n";
+		isUseRuby = false;
+		UITextField.UnditedText = displayText;
+	}
+
+	/// <summary>
+	/// ルビを表示
+	/// </summary>
+	private void ShowRuby(){
+		displayText = taskWithRuby + "\n\n\n\n\n";
+		isUseRuby = true;
+		UITextField.UnditedText = displayText;
 	}
 
 	/// <summary>
@@ -242,6 +369,13 @@ public class LongSentenceScript : MonoBehaviour {
 	/// 入力終了後の処理
 	/// </summary>
 	private void Finish(){
+		// 終了時刻の取得
+		var endTime = Time.realtimeSinceStartup;
+		var elapsedTime = endTime - startTime;
+		var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
+		var elapsedMin = elapsedTimeInt / 60;
+		var elapsedSec = elapsedTimeInt % 60;
+		UIResultElapsedTime.text = $"経過時間: {elapsedMin.ToString()}分 {elapsedSec.ToString()}秒";
 		// 表示の切り替え
 		ResultPanel.SetActive(true);
 		ScorePanel.SetActive(true);
@@ -282,7 +416,7 @@ public class LongSentenceScript : MonoBehaviour {
 		sbScore.Append($"スコア(F)： {score.ToString()}");
 		sbDetail.Append($"正解数：{correctCount.ToString()} x {CORRECT_SCORE.ToString()}点\n")
 						.Append($"<color=\"{COLOR_DELETE}\">削除：{deleteCount.ToString()}")
-						.Append($" x (-{MISS_COST.ToString()}点</color> / ")
+						.Append($" x (-{MISS_COST.ToString()}点)</color> / ")
 						.Append($"<color=\"{COLOR_INSERT}\">余分：{insertCount.ToString()}")
 						.Append($" x (-{MISS_COST.ToString()}点)</color>\n")
 						.Append($"<color=\"{COLOR_REPLACE}\">置換：{replaceCount.ToString()}")
@@ -593,7 +727,7 @@ public class LongSentenceScript : MonoBehaviour {
 			}
 		}
 		var html = sb.ToString();
-		var ret = html.Replace("&para;<br>", "[NL]\n");
+		var ret = html.Replace("&para;<br>", "⏎\n");
 		return ret;
 	}
 
@@ -603,23 +737,46 @@ public class LongSentenceScript : MonoBehaviour {
 	void OnGUI() {
 		Event e = Event.current;
 		var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.D && isPushedCtrlKey){
-			if (!isFinished && isShowInfo){
-				Finish();
+		var isPracticing = !isFinished && isShowInfo;
+		if (e.type == EventType.KeyDown){
+			// F3: 終了か設定画面に戻るか
+			if (e.keyCode == KeyCode.F3){
+				if (!isFinished && isShowInfo){
+					Finish();
+				}
+				else {
+					ReturnConfig();
+				}
 			}
-			else {
-				ReturnConfig();
+			// F1: リトライ
+			else if (e.keyCode == KeyCode.F1 && isShowInfo){
+				InitUIPanel();
+				SelectSection();
 			}
-		}
-		else if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F2 && isShowInfo){
-			Init();
-		}
-		else if (!isFinished && e.type == EventType.KeyDown && e.keyCode == KeyCode.V && isPushedCtrlKey){
-			Debug.Log("Copy detected");
-		}
-		else if (isFinished && e.type == EventType.KeyDown){
-			if(e.keyCode == KeyCode.R){
-				Init();
+			// F5: ルビの表示切り替え
+			else if (e.keyCode == KeyCode.F5 && isPracticing){
+				if (isUseRuby) {
+					HideRuby();
+				}
+				else {
+					ShowRuby();
+				}
+			}
+			// 課題文1行戻る
+			else if (e.keyCode == KeyCode.E && isPushedCtrlKey && isPracticing){
+				ScrollTask(-1);
+			}
+			// 課題文1行次へ
+			else if (e.keyCode == KeyCode.Y && isPushedCtrlKey && isPracticing){
+				ScrollTask(1);
+			}
+			// 課題文5行戻る
+			else if (e.keyCode == KeyCode.U && isPushedCtrlKey && isPracticing){
+				ScrollTask(-5);
+			}
+			// 課題文5行次へ
+			else if (e.keyCode == KeyCode.D && isPushedCtrlKey && isPracticing){
+				ScrollTask(5);
 			}
 		}
 	}

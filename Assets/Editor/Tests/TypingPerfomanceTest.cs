@@ -220,17 +220,6 @@ public class TypingPerfomanceTest
 	}
 
 	[Test]
-	public void NormalScoreTest() {
-		// 仕様に則って計算した結果
-		var expectedScore = 123;
-		BeforeTest();
-		var type = TP.GetType();
-		MethodInfo loader = type.GetMethod("GetNormalScore");
-		var value = (int) loader.Invoke(TP, null);
-		Assert.AreEqual(value, expectedScore);
-	}
-
-	[Test]
 	public void StdDevTest() {
 		// 仕様に則って計算した結果
 		var expectedAvg = 3.9;
@@ -267,5 +256,522 @@ public class TypingPerfomanceTest
 		double diff = value - expected;
 		bool isApproximatelyEqual = Math.Abs(diff) < EPS;
 		Assert.IsTrue(isApproximatelyEqual);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest01() {
+		// データ作成
+		// 10ワード、300kpm固定
+		int wordNum = 10;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			dataTime.Add(new List<double>() {1.0, 1.25, 1.5, 1.75, 2.0});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(242.79);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest02() {
+		// データ作成
+		// 10ワード、600kpm固定
+		int wordNum = 10;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			dataTime.Add(new List<double>() {1.0, 1.1, 1.2, 1.3, 1.5});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(485.581);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest03() {
+		// データ作成
+		// 20ワード、600kpm固定
+		int wordNum = 20;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			dataTime.Add(new List<double>() {1.0, 1.1, 1.2, 1.3, 1.5});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(581.179);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest04() {
+		// データ作成
+		// 30ワード、600kpm固定
+		int wordNum = 30;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			dataTime.Add(new List<double>() {1.0, 1.1, 1.2, 1.3, 1.5});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = 600;
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest05() {
+		// データ作成
+		// 100ワード、600kpm固定
+		int wordNum = 100;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			dataTime.Add(new List<double>() {1.0, 1.1, 1.2, 1.3, 1.5});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = 600;
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest06() {
+		// データ作成
+		// 10ワード
+		int wordNum = 10;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>() {
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 2.0}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.95},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.9}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.85},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.8}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.75},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.7}, new List<double>() {1.0, 1.1, 1.2, 1.25, 1.65},
+			new List<double>() {1.0, 1.1, 1.11, 1.12, 1.6}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.55}
+		};
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(353.368);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest07() {
+		// データ作成
+		int wordNum = 20;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>() {
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 2.0}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.95},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.9}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.85},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.8}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.75},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.7}, new List<double>() {1.0, 1.1, 1.2, 1.25, 1.65},
+			new List<double>() {1.0, 1.1, 1.11, 1.12, 1.6}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.55},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 2.0}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.95},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.9}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.85},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.8}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.75},
+			new List<double>() {1.0, 1.1, 1.2, 1.3, 1.7}, new List<double>() {1.0, 1.1, 1.2, 1.25, 1.65},
+			new List<double>() {1.0, 1.1, 1.11, 1.12, 1.6}, new List<double>() {1.0, 1.1, 1.2, 1.3, 1.55},
+		};
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(451.914);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest08() {
+		// データ作成
+		int wordNum = 30;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(2.0 - 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(394.378);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest09() {
+		// データ作成
+		int wordNum = 40;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.6 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(447.597);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest10() {
+		// データ作成
+		int wordNum = 100;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.3 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(613.597);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest11() {
+		// データ作成
+		int wordNum = 35;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.2 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(1176.46);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest12() {
+		// データ作成
+		int wordNum = 25;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.2 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(1219.83);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest13() {
+		// データ作成
+		int wordNum = 15;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.2 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(1164.06);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest14() {
+		// データ作成
+		int wordNum = 5;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.2 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(778.902);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
+	}
+
+	[Test]
+	[Category("ScoreTest")]
+	public void ScoreTest15() {
+		// データ作成
+		int wordNum = 30;
+		TP = new TypingPerformance();
+		var type = TP.GetType();
+		Assert.IsNotNull(TP);
+		var dataOrigin = new List<string>();
+		var dataTyped = new List<string>();
+		var dataJudge = new List<List<int>>();
+		var dataTime = new List<List<double>>();
+		for (int i = 0; i < wordNum; ++i){
+			dataOrigin.Add("あいうえお");
+			dataTyped.Add("aiueo");
+			dataJudge.Add(new List<int>() {1, 1, 1, 1, 1});
+			var tmpList = new List<double>() {1.0, 1.01, 1.02, 1.03};
+			tmpList.Add(1.2 + 0.01*i);
+			dataTime.Add(tmpList);
+		}
+		for (int i = 0; i < wordNum; ++i){
+			TP.AddOriginSentence(dataOrigin[i]);
+			TP.AddTypedSentenceList(dataTyped[i]);
+			TP.AddTypeJudgeList(dataJudge[i]);
+			TP.AddTypeTimeList(dataTime[i]);
+		}
+		var expectedScore = Math.Floor(1226.03);
+
+		// 計算と判定
+		MethodInfo loader = type.GetMethod("GetNormalScore");
+		var value = (int) loader.Invoke(TP, null);
+		Assert.AreEqual(value, expectedScore);
 	}
 }
