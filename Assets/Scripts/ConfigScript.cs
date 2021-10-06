@@ -20,9 +20,11 @@ public class ConfigScript : MonoBehaviour {
 		get;
 	} = 0;
 
-	// 画面中部に表示するもの
+	// 画面中段の表示
 	// 0 : タイピングパフォーマンス情報
 	// 1 : アシストキーボード
+	// 2 : 両方表示
+	// 3 : なにも表示しない
 	public static int InfoPanelMode {
 		set;
 		get;

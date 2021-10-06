@@ -191,8 +191,12 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
-		UICPUText.text = "";
-		CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
+		if (UICPUText != null){
+			UICPUText.text = "";
+		}
+		if (CPUPanel != null){
+			CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
+		}
 		inputKeyQueue.Clear();
 		timeQueue.Clear();
 	}
@@ -268,7 +272,9 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
-		UICPUText.text = "";
+		if (UICPUText != null){
+			UICPUText.text = "";
+		}
 		// 正解した文字列を初期化
 		correctString = "";
 		// リザルト集積用の変数を初期化
@@ -317,7 +323,7 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = originSentence;
 		UIYomigana.text = typeSentence;
 		// CPU Start
-		if (ConfigScript.UseCPUGuide){
+		if (ConfigScript.UseCPUGuide && UICPUText != null){
 			StartCoroutine("CPUType");
 		}
 	}
@@ -662,6 +668,14 @@ public class TypingSoft : MonoBehaviour {
 		else if(activePanelVal == 1){
 			DataPanel.SetActive(false);
 			AssistKeyboardPanel.SetActive(true);
+		}
+		else if(activePanelVal == 2){
+			DataPanel.SetActive(true);
+			AssistKeyboardPanel.SetActive(true);
+		}
+		else {
+			DataPanel.SetActive(false);
+			AssistKeyboardPanel.SetActive(false);
 		}
 	}
 
