@@ -75,7 +75,7 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] private GameObject NowLoadingPanel;
 	private static GenerateSentence gs = new GenerateSentence();
 	// Assist Keyboard JIS
-	private static AssistKeyboardJIS AKJIS;
+	private static AssistKeyboardJIS AKJIS = new AssistKeyboardJIS();
 
 	// エラーコードとエラータイプ
 	private enum errorType {
@@ -216,12 +216,12 @@ public class TypingSoft : MonoBehaviour {
 			}
 			TypingCheck();
 		}
-		if (AKJIS != null){
-			if (CurrentTypingSentence == ""){
+		if (AssistKeyboardPanel != null){
+			if (CurrentTypingSentence == "" || !isInputValid){
 				AKJIS.SetAllKeyColorWhite();
 				AKJIS.SetAllFingerColorWhite();
 			}
-			else {
+			else if (isInputValid){
 				AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
 			}
 		}
@@ -505,14 +505,16 @@ public class TypingSoft : MonoBehaviour {
 		Performance.AddTypeJudgeList(typeJudgeList);
 		Performance.AddTypeTimeList(typeTimeList);
 		// 現在時刻の取得
-		double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
-		totalTypingTime += sentenceTypeTime;
-		keyPerMin = GetKeyPerMinute();
-		double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
-		int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
-		int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
-		UpdateUIKeyPerMinute(intKPM, intSectionKPM);
-		UpdateUIElapsedTime(sentenceTypeTime);
+		if (UISTT != null && UIKPM != null){
+			double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
+			totalTypingTime += sentenceTypeTime;
+			keyPerMin = GetKeyPerMinute();
+			double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
+			int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
+			int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
+			UpdateUIKeyPerMinute(intKPM, intSectionKPM);
+			UpdateUIElapsedTime(sentenceTypeTime);
+		}
 		inputKeyQueue.Clear();
 		timeQueue.Clear();
 		isInputValid = false;
