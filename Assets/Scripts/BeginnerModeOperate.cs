@@ -17,7 +17,6 @@ public class BeginnerModeOperate : MonoBehaviour {
 		{101, "keyboardMiddle"},
 		{102, "keyboardUpper"},
 		{103, "keyboardLower"},
-		{104, "chapter1All"},
 		{201, "alphabetLower"},
 		{202, "alphabetUpper"},
 		{203, "numberAndSymbol"},
