@@ -91,7 +91,26 @@ public class AssistKeyboardJIS : MonoBehaviour {
 		{'@', new string[1] {"Key_At"}},
 		{'/', new string[1] {"Key_Slash"}},
 		{'!', new string[2] {"Key_1", "Key_RShift"}},
-		{'?', new string[2] {"Key_Slash", "Key_LShift"}}
+		{'?', new string[2] {"Key_Slash", "Key_LShift"}},
+		{'\"', new string[2] {"Key_2", "Key_RShift"}},
+		{'#', new string[2] {"Key_3", "Key_RShift"}},
+		{'$', new string[2] {"Key_4", "Key_RShift"}},
+		{'%', new string[2] {"Key_5", "Key_RShift"}},
+		{'&', new string[2] {"Key_6", "Key_LShift"}},
+		{'\'', new string[2] {"Key_7", "Key_LShift"}},
+		{'(', new string[2] {"Key_8", "Key_LShift"}},
+		{')', new string[2] {"Key_9", "Key_LShift"}},
+		{'=', new string[2] {"Key_Hyphen", "Key_LShift"}},
+		{'~', new string[2] {"Key_Caret", "Key_LShift"}},
+		{'|', new string[2] {"Key_Yen", "Key_LShift"}},
+		{'`', new string[2] {"Key_At", "Key_LShift"}},
+		{'{', new string[2] {"Key_LBracket", "Key_LShift"}},
+		{'}', new string[2] {"Key_RBracket", "Key_LShift"}},
+		{'+', new string[2] {"Key_Semicolon", "Key_LShift"}},
+		{'*', new string[2] {"Key_Colon", "Key_LShift"}},
+		{'<', new string[2] {"Key_Comma", "Key_LShift"}},
+		{'>', new string[2] {"Key_Period", "Key_LShift"}},
+		{'_', new string[2] {"Key_BackSlash", "Key_LShift"}},
 	};
 
 	// string -> key_name[]

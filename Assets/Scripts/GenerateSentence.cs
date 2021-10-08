@@ -991,7 +991,7 @@ public class GenerateSentence {
 		{"$", new string[1] {"$"}},
 		{"%", new string[1] {"%"}},
 		{"&", new string[1] {"&"}},
-		{"'", new string[1] {"'"}},
+		{"\'", new string[1] {"\'"}},
 		{"(", new string[1] {"("}},
 		{")", new string[1] {")"}},
 		{"=", new string[1] {"="}},
