@@ -99,6 +99,7 @@ public class BeginnerModeOperate : MonoBehaviour {
 		ConfigScript.GameMode = 0; // 短文モード固定
 		ConfigScript.DataSetName = beginnerDatasetFileName[buttonNumber];
 		ConfigScript.Tasks = -1; // 無限回練習できるようにするため、-1
+		prevChapterNum = buttonNumber / 100;
 		SceneManager.LoadScene("BeginnerTypingScene");
 	}
 }
