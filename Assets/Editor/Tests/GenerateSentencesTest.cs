@@ -208,4 +208,27 @@ public class GenerateSentencesTest
         };
         GenerateSentenceChecker(testStr, expectedNum);
     }
+
+    [Test]
+    public void GenerateSentenceTest17(){
+        var testStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var expectedNum = new int[26] {
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1
+        };
+        GenerateSentenceChecker(testStr, expectedNum);
+    }
+
+    [Test]
+    public void GenerateSentenceTest18(){
+        var testStr = " -,.;:[]@/!?\"#$%&\'()=~|`{}+*<>_";
+        var expectedNum = new int[31] {
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1
+        };
+        GenerateSentenceChecker(testStr, expectedNum);
+    }
 }

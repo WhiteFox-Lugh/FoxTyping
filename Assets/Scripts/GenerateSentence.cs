@@ -985,7 +985,26 @@ public class GenerateSentence {
 		{"!", new string[1] {"!"}},
 		{"！", new string[1] {"!"}},
 		{"?", new string[1] {"?"}},
-		{"？", new string[1] {"?"}}
+		{"？", new string[1] {"?"}},
+		{"\"", new string[1] {"\""}},
+		{"#", new string[1] {"#"}},
+		{"$", new string[1] {"$"}},
+		{"%", new string[1] {"%"}},
+		{"&", new string[1] {"&"}},
+		{"\'", new string[1] {"\'"}},
+		{"(", new string[1] {"("}},
+		{")", new string[1] {")"}},
+		{"=", new string[1] {"="}},
+		{"~", new string[1] {"~"}},
+		{"|", new string[1] {"|"}},
+		{"`", new string[1] {"`"}},
+		{"{", new string[1] {"{"}},
+		{"}", new string[1] {"}"}},
+		{"+", new string[1] {"+"}},
+		{"*", new string[1] {"*"}},
+		{"<", new string[1] {"<"}},
+		{">", new string[1] {">"}},
+		{"_", new string[1] {"_"}},
 	};
 
 	// 原文と読み方のセット

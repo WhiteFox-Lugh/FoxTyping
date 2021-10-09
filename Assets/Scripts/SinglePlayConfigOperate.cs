@@ -122,6 +122,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 		ConfigScript.UseCPUGuide = UIUseCPUKpmGuide.value == 1;
 		ConfigScript.CPUKpm = prevCPUKpm;
 		ConfigScript.UseRuby = UIUseYomigana.value == 1;
+		ConfigScript.IsBeginnerMode = false;
 	}
 
 	/// <summary>

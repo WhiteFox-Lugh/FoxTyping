@@ -75,7 +75,7 @@ public class TypingSoft : MonoBehaviour {
 	[SerializeField] private GameObject NowLoadingPanel;
 	private static GenerateSentence gs = new GenerateSentence();
 	// Assist Keyboard JIS
-	private static AssistKeyboardJIS AKJIS;
+	private static AssistKeyboardJIS AKJIS = new AssistKeyboardJIS();
 
 	// エラーコードとエラータイプ
 	private enum errorType {
@@ -191,8 +191,12 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
-		UICPUText.text = "";
-		CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
+		if (UICPUText != null){
+			UICPUText.text = "";
+		}
+		if (CPUPanel != null){
+			CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
+		}
 		inputKeyQueue.Clear();
 		timeQueue.Clear();
 	}
@@ -212,12 +216,12 @@ public class TypingSoft : MonoBehaviour {
 			}
 			TypingCheck();
 		}
-		if (AKJIS != null){
-			if (CurrentTypingSentence == ""){
+		if (AssistKeyboardPanel != null){
+			if (CurrentTypingSentence == "" || !isInputValid){
 				AKJIS.SetAllKeyColorWhite();
 				AKJIS.SetAllFingerColorWhite();
 			}
-			else {
+			else if (isInputValid){
 				AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
 			}
 		}
@@ -268,7 +272,9 @@ public class TypingSoft : MonoBehaviour {
 		UIOriginSentence.text = "";
 		UIYomigana.text = "";
 		UIType.text = "";
-		UICPUText.text = "";
+		if (UICPUText != null){
+			UICPUText.text = "";
+		}
 		// 正解した文字列を初期化
 		correctString = "";
 		// リザルト集積用の変数を初期化
@@ -316,8 +322,11 @@ public class TypingSoft : MonoBehaviour {
 		// UI 上のテキスト変更
 		UIOriginSentence.text = originSentence;
 		UIYomigana.text = typeSentence;
+		if (ConfigScript.IsBeginnerMode){
+			UIType.text = nextTypingSentence;
+		}
 		// CPU Start
-		if (ConfigScript.UseCPUGuide){
+		if (ConfigScript.UseCPUGuide && UICPUText != null){
 			StartCoroutine("CPUType");
 		}
 	}
@@ -499,14 +508,16 @@ public class TypingSoft : MonoBehaviour {
 		Performance.AddTypeJudgeList(typeJudgeList);
 		Performance.AddTypeTimeList(typeTimeList);
 		// 現在時刻の取得
-		double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
-		totalTypingTime += sentenceTypeTime;
-		keyPerMin = GetKeyPerMinute();
-		double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
-		int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
-		int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
-		UpdateUIKeyPerMinute(intKPM, intSectionKPM);
-		UpdateUIElapsedTime(sentenceTypeTime);
+		if (UISTT != null && UIKPM != null){
+			double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
+			totalTypingTime += sentenceTypeTime;
+			keyPerMin = GetKeyPerMinute();
+			double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
+			int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
+			int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
+			UpdateUIKeyPerMinute(intKPM, intSectionKPM);
+			UpdateUIElapsedTime(sentenceTypeTime);
+		}
 		inputKeyQueue.Clear();
 		timeQueue.Clear();
 		isInputValid = false;
@@ -549,14 +560,15 @@ public class TypingSoft : MonoBehaviour {
 				}
 			}
 		}
-		// }
-		// 正解した文字を表示するオプションの場合
-		// else {
 		correctString += typeChar;
-		UIType.text = correctString;
-		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		var UIStr = correctString + (isSentenceMistyped ? ("<color=#ff0000ff>" + nextTypingSentence + "</color>") : "");
+		var UIStr = "";
+		if (ConfigScript.IsBeginnerMode){
+			UIStr = nextTypingSentence;
+		}
+		else {
+			UIStr = correctString + (isSentenceMistyped ? ("<color=#ff0000ff>" + nextTypingSentence + "</color>") : "");
+		}
 		SetUITypeText(UIStr);
 		CurrentTypingSentence = nextTypingSentence;
 	}
@@ -573,8 +585,14 @@ public class TypingSoft : MonoBehaviour {
 		accuracyValue = GetCorrectTypeRate();
 		UpdateUICorrectTypeRate();
 		// 打つべき文字を赤く表示
-		if(!isRecMistype){
-			string UIStr = correctString + "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+		if (!isRecMistype){
+			string UIStr = "";
+			if (ConfigScript.IsBeginnerMode){
+				UIStr = "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+			}
+			else {
+				UIStr = correctString + "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+			}
 			SetUITypeText(UIStr);
 		}
 		// color タグを多重で入れないようにする
@@ -662,6 +680,14 @@ public class TypingSoft : MonoBehaviour {
 		else if(activePanelVal == 1){
 			DataPanel.SetActive(false);
 			AssistKeyboardPanel.SetActive(true);
+		}
+		else if(activePanelVal == 2){
+			DataPanel.SetActive(true);
+			AssistKeyboardPanel.SetActive(true);
+		}
+		else {
+			DataPanel.SetActive(false);
+			AssistKeyboardPanel.SetActive(false);
 		}
 	}
 
