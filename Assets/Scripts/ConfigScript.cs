@@ -65,4 +65,10 @@ public class ConfigScript : MonoBehaviour {
 		set;
 		get;
 	} = 300;
+
+	// 初心者モードであるか
+	public static bool IsBeginnerMode {
+		set;
+		get;
+	} = false;
 }

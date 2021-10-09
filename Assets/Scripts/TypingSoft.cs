@@ -322,6 +322,9 @@ public class TypingSoft : MonoBehaviour {
 		// UI 上のテキスト変更
 		UIOriginSentence.text = originSentence;
 		UIYomigana.text = typeSentence;
+		if (ConfigScript.IsBeginnerMode){
+			UIType.text = nextTypingSentence;
+		}
 		// CPU Start
 		if (ConfigScript.UseCPUGuide && UICPUText != null){
 			StartCoroutine("CPUType");
@@ -557,14 +560,15 @@ public class TypingSoft : MonoBehaviour {
 				}
 			}
 		}
-		// }
-		// 正解した文字を表示するオプションの場合
-		// else {
 		correctString += typeChar;
-		UIType.text = correctString;
-		// }
 		// Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-		var UIStr = correctString + (isSentenceMistyped ? ("<color=#ff0000ff>" + nextTypingSentence + "</color>") : "");
+		var UIStr = "";
+		if (ConfigScript.IsBeginnerMode){
+			UIStr = nextTypingSentence;
+		}
+		else {
+			UIStr = correctString + (isSentenceMistyped ? ("<color=#ff0000ff>" + nextTypingSentence + "</color>") : "");
+		}
 		SetUITypeText(UIStr);
 		CurrentTypingSentence = nextTypingSentence;
 	}
@@ -581,8 +585,14 @@ public class TypingSoft : MonoBehaviour {
 		accuracyValue = GetCorrectTypeRate();
 		UpdateUICorrectTypeRate();
 		// 打つべき文字を赤く表示
-		if(!isRecMistype){
-			string UIStr = correctString + "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+		if (!isRecMistype){
+			string UIStr = "";
+			if (ConfigScript.IsBeginnerMode){
+				UIStr = "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+			}
+			else {
+				UIStr = correctString + "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
+			}
 			SetUITypeText(UIStr);
 		}
 		// color タグを多重で入れないようにする
