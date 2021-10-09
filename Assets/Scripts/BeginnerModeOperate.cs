@@ -39,13 +39,8 @@ public class BeginnerModeOperate : MonoBehaviour {
 		{406, "hiragana_my"},
 		{407, "hiragana_ry"},
 		{408, "hiragana_ltu"},
-		{409, "hiragana_small"},
-		{410, "chapter4All"},
-		{501, "shortWords"},
-		{502, "katakanaWords"},
-		{503, "jukugo"},
-		{504, "proverb"},
-		{505, "conversation"}
+		{409, "hiragana_long_vowel"},
+		{410, "hiragana_xn"}
 	};
 
 	// Start is called before the first frame update
