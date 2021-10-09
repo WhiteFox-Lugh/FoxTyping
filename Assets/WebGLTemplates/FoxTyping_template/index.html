@@ -84,12 +84,12 @@
         frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
         codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
         #if MEMORY_FILENAME
-        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+            memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
         #endif
-#if SYMBOLS_FILENAME
-        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+    #if SYMBOLS_FILENAME
+            symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
         #endif
-        streamingAssetsUrl: "StreamingAssets",
+            streamingAssetsUrl: "StreamingAssets",
         companyName: "{{{ COMPANY_NAME }}}",
         productName: "{{{ PRODUCT_NAME }}}",
         productVersion: "{{{ PRODUCT_VERSION }}}",
@@ -126,10 +126,10 @@
         canvas.style.width = "{{{ WIDTH }}}px";
         canvas.style.height = "{{{ HEIGHT }}}px";
       }
-
-#if BACKGROUND_FILENAME
+    
+    #if BACKGROUND_FILENAME
       canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
-#endif
+    #endif
       loadingBar.style.display = "block";
 
       var script = document.createElement("script");
