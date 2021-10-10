@@ -40,7 +40,7 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	};
 
 	private static string[] longDatasetFileName = new string[2] {
-		"Long_Constitution", "Long_ConstitutionEnglish"
+		"Long_Constitution", "Long_Gongitsune"
 	};
 
 	enum GameModeNumber {
