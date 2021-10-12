@@ -155,19 +155,33 @@ public class SinglePlayConfigOperate : MonoBehaviour {
 	/// </summary>
 	private void KeyCheck(KeyCode kc){
 		if(KeyCode.Space == kc){
-			var selectedMode = UIGameMode.value;
-			SetCurrentSettings();
-			SavePlayerPrefSettings();
-			if (selectedMode == (int)GameModeNumber.ShortSentence){
-				SceneManager.LoadScene("TypingScene");
-			}
-			else if(selectedMode == (int)GameModeNumber.LongSentence){
-				SceneManager.LoadScene("LongSentenceTypingScene");
-			}
+			BeforeStartPractice();
 		}
-		else if(KeyCode.Escape == kc){
-			SceneManager.LoadScene("ModeSelectScene");
+		else if(KeyCode.Backspace == kc){
+			ReturnModeSelectScene();
 		}
+	}
+
+	/// <summary>
+	/// 練習を開始する前の処理
+	/// </summary>
+	public void BeforeStartPractice(){
+		var selectedMode = UIGameMode.value;
+		SetCurrentSettings();
+		SavePlayerPrefSettings();
+		if (selectedMode == (int)GameModeNumber.ShortSentence){
+			SceneManager.LoadScene("TypingScene");
+		}
+		else if(selectedMode == (int)GameModeNumber.LongSentence){
+			SceneManager.LoadScene("LongSentenceTypingScene");
+		}
+	}
+
+	/// <summary>
+	/// モード選択画面へ戻る
+	/// </summary>
+	public void ReturnModeSelectScene(){
+		SceneManager.LoadScene("ModeSelectScene");
 	}
 
 	/// <summary>

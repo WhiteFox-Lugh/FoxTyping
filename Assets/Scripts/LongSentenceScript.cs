@@ -45,6 +45,7 @@ public class LongSentenceScript : MonoBehaviour {
 	private double startTime;
 	private bool isShowInfo;
 	private bool isFinished;
+	private bool isSectionSelect;
 	// AssetBundle
 	private static AssetBundle abLongData;
 	private static bool isABLoaded = false;
@@ -101,6 +102,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// Update() 前の処理
 	/// </summary>
 	void Awake(){
+		isSectionSelect = true;
 		InitUIPanel();
 		StartCoroutine(LoadAssetBundle(CanStart));
 	}
@@ -120,6 +122,14 @@ public class LongSentenceScript : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// リトライ処理
+	/// </summary>
+	public void Retry(){
+		InitUIPanel();
+		SelectSection();
+	}
+
+	/// <summary>
 	/// スタートできるかどうかをチェック
 	/// </summary>
 	private void CanStart(){
@@ -135,7 +145,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// <summary>
 	/// スタートボタンを押したときの挙動
 	/// </summary>
-	public void OnCilckStartButton(){
+	public void StartPractice(){
 		SectionSelectPanel.SetActive(false);
 		Init();
 	}
@@ -144,6 +154,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// セクション選択に移動
 	/// </summary>
 	private void SelectSection(){
+		isSectionSelect = true;
 		SectionSelectPanel.SetActive(true);
 	}
 
@@ -224,6 +235,7 @@ public class LongSentenceScript : MonoBehaviour {
 		startTime = 0.0;
 		isShowInfo = false;
 		isFinished = false;
+		isSectionSelect = false;
 		currentTypedSentence = "";
 		typeKeyCodeHistory = new List<KeyCode>();
 		UIInputField.interactable = false;
@@ -328,7 +340,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// ルビを消す
 	/// </summary>
 	private void HideRuby(){
-		displayText = taskText + "\n\n\n\n\n";
+		displayText = taskText + "\n";
 		isUseRuby = false;
 		UITextField.UnditedText = displayText;
 	}
@@ -337,7 +349,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// ルビを表示
 	/// </summary>
 	private void ShowRuby(){
-		displayText = taskWithRuby + "\n\n\n\n\n";
+		displayText = taskWithRuby + "\n";
 		isUseRuby = true;
 		UITextField.UnditedText = displayText;
 	}
@@ -748,10 +760,17 @@ public class LongSentenceScript : MonoBehaviour {
 					ReturnConfig();
 				}
 			}
+			// Space: セクション選択画面ならスタート
+			else if (e.keyCode == KeyCode.Space && isSectionSelect){
+				StartPractice();
+			}
+			// BackSpace: セクション選択画面なら設定画面へ戻る
+			else if (e.keyCode == KeyCode.Backspace && isSectionSelect){
+				ReturnConfig();
+			}
 			// F1: リトライ
 			else if (e.keyCode == KeyCode.F1 && isShowInfo){
-				InitUIPanel();
-				SelectSection();
+				Retry();
 			}
 			// F5: ルビの表示切り替え
 			else if (e.keyCode == KeyCode.F5 && isPracticing){
@@ -784,7 +803,7 @@ public class LongSentenceScript : MonoBehaviour {
 	/// <summary>
 	/// Config 画面へ戻る
 	/// </summary>
-	private static void ReturnConfig(){
+	public static void ReturnConfig(){
 		SceneManager.LoadScene("SinglePlayConfigScene");
 	}
 }

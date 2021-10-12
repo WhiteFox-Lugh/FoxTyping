@@ -137,7 +137,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	private void InitGame() {
+	public void InitGame() {
 		InitData();
 		InitText();
 		NowLoadingPanel.SetActive(false);
@@ -699,7 +699,7 @@ public class TypingSoft : MonoBehaviour {
 		Event e = Event.current;
 		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Backspace){
-			CurrentGameCondition = (int)gameCondition.Canceled;
+			CancelPractice();
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
@@ -719,6 +719,13 @@ public class TypingSoft : MonoBehaviour {
 				timeQueue.Enqueue(currentTime);
 			}
 		}
+	}
+
+	/// <summary>
+	/// 練習を中断するフラグを立てる
+	/// </summary>
+	public void CancelPractice(){
+		CurrentGameCondition = (int)gameCondition.Canceled;
 	}
 
 	/// <summary>

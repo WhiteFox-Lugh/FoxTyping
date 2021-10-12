@@ -25,9 +25,6 @@ public class ModeSelectScript : MonoBehaviour
     // else if(KeyCode.U == k){
     //   LoadUserSettingsScene();
     // }
-    // else if(KeyCode.O == k){
-    //   LoadOtherScene();
-    // }
     else if(KeyCode.Backspace == kc){
       LoadTitleScene();
     }
