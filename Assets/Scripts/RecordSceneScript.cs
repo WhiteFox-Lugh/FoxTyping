@@ -37,10 +37,10 @@ public class RecordSceneScript : MonoBehaviour {
 	private void SetResult() {
 		var perf = TypingSoft.Performance;
 		var kpsPerf = perf.GetKpmAverageAndStdDev();
-		UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " key/s";
-		UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " key/s";
+		UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
+		UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
 		UIScoreText.text = perf.GetNormalScore().ToString();
-		UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " s";
+		UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " 秒";
 		UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
 	}
 
@@ -65,11 +65,25 @@ public class RecordSceneScript : MonoBehaviour {
 	/// </summary>
 	private void KeyCheck(KeyCode kc){
 		if(KeyCode.Backspace == kc){
-			SceneManager.LoadScene("SinglePlayConfigScene");
+			ReturnConfigScene();
 		}
 		else if(KeyCode.F2 == kc){
-			SceneManager.LoadScene("TypingScene");
+			Retry();
 		}
+	}
+
+	/// <summary>
+	/// リトライする
+	/// </summary>
+	public void Retry(){
+		SceneManager.LoadScene("TypingScene");
+	}
+
+	/// <summary>
+	/// 設定画面に戻る
+	/// </summary>
+	public void ReturnConfigScene(){
+		SceneManager.LoadScene("SinglePlayConfigScene");
 	}
 
 	/// <summary>

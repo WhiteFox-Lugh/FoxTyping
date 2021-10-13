@@ -145,8 +145,8 @@ public class TypingPerformance {
 	private string GetCorrectAndMistypeNumString(int num) {
 		var sb = new StringBuilder();
 		var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-		sb.Append("Correct: ").Append(typeInfo.correctTypeNum.ToString())
-			.Append(" / Mistype: ").Append(typeInfo.mistypeNum.ToString());
+		sb.Append("正解タイプ数: ").Append(typeInfo.correctTypeNum.ToString())
+			.Append(" / ミスタイプ数: ").Append(typeInfo.mistypeNum.ToString());
 		return sb.ToString();
 	}
 
@@ -158,8 +158,8 @@ public class TypingPerformance {
 	private string GetTimeInfoString(int num) {
 		var sb = new StringBuilder();
 		var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-		sb.Append("Time: ").Append(GetSentenceTypeTime(num).ToString("0.00"))
-			.Append(" / Sentence KPM: ").Append(GetSentenceKPM(num).ToString("0"));
+		sb.Append("時間: ").Append(GetSentenceTypeTime(num).ToString("0.00"))
+			.Append("秒 / Key Per Minute: ").Append(GetSentenceKPM(num).ToString("0"));
 		return sb.ToString();
 	}
 

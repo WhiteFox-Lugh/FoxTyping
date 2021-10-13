@@ -71,8 +71,15 @@ public class BeginnerModeOperate : MonoBehaviour {
 	/// </summary>
 	private void KeyCheck(KeyCode kc){
 		if(KeyCode.Backspace == kc){
-			SceneManager.LoadScene("ModeSelectScene");
+			ReturnModeSelectScene();
 		}
+	}
+
+	/// <summary>
+	/// モードセレクト画面へ戻る
+	/// </summary>
+	public void ReturnModeSelectScene(){
+		SceneManager.LoadScene("ModeSelectScene");
 	}
 
 	/// <summary>

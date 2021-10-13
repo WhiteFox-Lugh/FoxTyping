@@ -54,10 +54,10 @@ public class TypingSoft : MonoBehaviour {
 	private static List<int> typeJudgeList = new List<int>();
 	private static List<double> typeTimeList = new List<double>();
 	// 色
-	private static Color colorBrown = new Color(80f / 255f, 40f / 255f, 40f / 255f, 1f);
-	private static Color colorBlack = new Color(0f / 255f, 0f / 255f, 0f / 255f, 1f);
+	private static Color colorBeforeMeasure = new Color(16f / 255f, 7f / 255f, 45f / 255f, 1f);
+	private static Color colorMeasuring = new Color(102f / 255f, 50f / 255f, 80f / 255f, 1f);
 	private static Color colorCpuPanelDisable = new Color(128f / 255f, 128f / 255f, 128f / 255f, 100f / 255f);
-	private static Color colorCpuPanelAble = new Color(1, 1, 1, 100f/ 255f);
+	private static Color colorCpuPanelAble = new Color(221f / 255f, 229f / 255f, 237f / 255f, 200f / 255f);
 	// UI たち
 	[SerializeField] private Text UIOriginSentence;
 	[SerializeField] private Text UIYomigana;
@@ -137,7 +137,7 @@ public class TypingSoft : MonoBehaviour {
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	private void InitGame() {
+	public void InitGame() {
 		InitData();
 		InitText();
 		NowLoadingPanel.SetActive(false);
@@ -248,10 +248,10 @@ public class TypingSoft : MonoBehaviour {
 	private void TextColorChange() {
 		double currentTime = Time.realtimeSinceStartup;
 		if(isFirstInput && currentTime - lastSentenceUpdateTime <= INTERVAL){
-			UIOriginSentence.color = colorBlack;
+			UIOriginSentence.color = colorBeforeMeasure;
 		}
 		else {
-			UIOriginSentence.color = colorBrown;
+			UIOriginSentence.color = colorMeasuring;
 			isIntervalEnded = true;
 		}
 	}
@@ -624,7 +624,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	private void UpdateUICorrectTypeRate() {
 		if (UIAccuracy != null){
-			UIAccuracy.text = "Accuracy : " + accuracyValue.ToString("0.00") + " %";
+			UIAccuracy.text = $"精度 : {accuracyValue.ToString("0.00")} %";
 		}
 	}
 
@@ -633,7 +633,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	private void UpdateUITypeInfo() {
 		if (UITypeInfo != null){
-			UITypeInfo.text = "Correct : " + correctTypeNum.ToString() + "\nMistype : " + misTypeNum.ToString();
+			UITypeInfo.text = $"正解タイプ数 : {correctTypeNum.ToString()}\nミスタイプ数 : {misTypeNum.ToString()}";
 		}
 	}
 
@@ -644,7 +644,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	private void UpdateUIKeyPerMinute(int intKPMAll, int intSentenceKPM) {
 		if (UIKPM != null){
-			UIKPM.text = "Speed : " + intKPMAll.ToString() + " kpm\n[Sentence:" + intSentenceKPM.ToString() + " kpm]";
+			UIKPM.text = $"タイプ速度(ワード) : {intSentenceKPM.ToString()} kpm\n" + $"平均タイプ速度 : {intKPMAll.ToString()} kpm";
 		}
 	}
 
@@ -654,8 +654,8 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	private void UpdateUIElapsedTime(double sentenceTypeTime) {
 		if (UISTT != null){
-			UISTT.text = "Time : " + sentenceTypeTime.ToString("0.00") + " sec\nTotal : "
-			+ totalTypingTime.ToString("0.00") + " sec";
+			UISTT.text = $"ワードタイプ時間 : {sentenceTypeTime.ToString("0.00")} 秒\n"
+			+ $"合計タイプ時間 : {totalTypingTime.ToString("0.00")} 秒";
 		}
 	}
 
@@ -664,7 +664,7 @@ public class TypingSoft : MonoBehaviour {
 	/// </summary>
 	private void UpdateUITask() {
 		if (UITask != null){
-			UITask.text = "Tasks : " + tasksCompleted.ToString() + " / " + numOfTask.ToString();
+			UITask.text = $"ワード数 : {tasksCompleted.ToString()} / {numOfTask.ToString()}";
 		}
 	}
 
@@ -699,7 +699,7 @@ public class TypingSoft : MonoBehaviour {
 		Event e = Event.current;
 		var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 		if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Backspace){
-			CurrentGameCondition = (int)gameCondition.Canceled;
+			CancelPractice();
 		}
     else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
 		&& !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2)){
@@ -719,6 +719,13 @@ public class TypingSoft : MonoBehaviour {
 				timeQueue.Enqueue(currentTime);
 			}
 		}
+	}
+
+	/// <summary>
+	/// 練習を中断するフラグを立てる
+	/// </summary>
+	public void CancelPractice(){
+		CurrentGameCondition = (int)gameCondition.Canceled;
 	}
 
 	/// <summary>
