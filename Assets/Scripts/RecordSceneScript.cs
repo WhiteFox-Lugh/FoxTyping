@@ -101,22 +101,21 @@ public class RecordSceneScript : MonoBehaviour {
 	/// ツイートボタンを押したときの処理（現時点で機能自体は非表示）
 	/// </summary>
 	public void OnClickTweetButton(){
-		string tweetText = GetTweetText();
-		string url = "";
-		string hashTag = "FoxTyping";
-		OpenTweetWindow(tweetText, hashTag, url);
+		PostTweet();
 	}
 
 	/// <summary>
 	/// ツイート文章を生成
 	/// </summary>
-	string GetTweetText(){
-		string ret = "";
-		// const string template = "FoxTyping で_User_難易度 _Difficulty_ でスコア _Score_ をゲット！";
-		// ret = template;
-		// ret = ret.Replace("_User_", ((isLogin) ? (" " + UserAuth.currentPlayerName + " が") : ("")));
-		// ret = ret.Replace("_Score_", score.ToString());
-		return ret;
+	private void PostTweet(){
+		var perf = TypingSoft.Performance;
+		var kpsText = perf.GetKpmAverageAndStdDev().kpsAvg.ToString("0.00");
+		var scoreText = perf.GetNormalScore().ToString();
+		var accuracyText = perf.GetAccuracy().ToString("0.00");
+		var tweetText = $"FoxTyping でスコア{scoreText}を出しました。\n精度: {accuracyText}% / 平均速度: {kpsText}打/秒";
+		string url = "https://whitefox-lugh.github.io/FoxTyping/";
+		string hashTag = "FoxTyping";
+		OpenTweetWindow(tweetText, hashTag, url);
 	}
 
 	[DllImport("__Internal")]
