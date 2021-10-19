@@ -303,6 +303,7 @@ public class LongSentenceScript : MonoBehaviour {
 		var docDataOrigin = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString().Substring(startIdx);
 		var docData = Regex.Replace(docDataOrigin, sectionRegex, "");
 		taskText = Regex.Replace(docData, rubyRegex, "$1");
+		taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
 		var convertedText = Regex.Replace(docData, rubyRegex, replacement);
 		taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
 		displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
