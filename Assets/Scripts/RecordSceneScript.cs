@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
+using System;
 using System.Linq;
 using System.Text;
 using System.Collections;
@@ -17,6 +18,23 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UITimeText;
   [SerializeField] TextMeshProUGUI UIAccuracyText;
+  [SerializeField] TextMeshProUGUI UIRank;
+  [SerializeField] Material[] RankFontMaterials;
+  private int[] RankScore = new int[20] {
+    1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
+    500, 450, 400, 350, 300, 250, 200, 150, 100, 0
+  };
+
+  private string[] RankName = new string[20] {
+    "Legend", "GrandMaster 1", "GrandMaster 2", "GrandMaster 3", "Master 1",
+    "Master 2", "Master 3", "S1", "S2", "S3",
+    "A1", "A2", "A3", "B1", "B2",
+    "B3", "C1", "C2", "C3", "C4"
+  };
+
+  private int[] RankFontMaterialNum = new int[20] {
+    0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6
+  };
 
   /// <summary>
   /// 初期化など
@@ -41,11 +59,21 @@ public class RecordSceneScript : MonoBehaviour
   {
     var perf = TypingSoft.Performance;
     var kpsPerf = perf.GetKpmAverageAndStdDev();
+    int score = perf.GetNormalScore();
     UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
     UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
-    UIScoreText.text = perf.GetNormalScore().ToString();
+    UIScoreText.text = score.ToString();
     UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " 秒";
     UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
+    for (int i = 0; i < RankScore.Count(); ++i)
+    {
+      if (score >= RankScore[i])
+      {
+        UIRank.text = RankName[i];
+        UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
+        break;
+      }
+    }
   }
 
   /// <summary>
