@@ -156,7 +156,7 @@ public class RecordSceneScript : MonoBehaviour
     var kpsText = perf.GetKpmAverageAndStdDev().kpsAvg.ToString("0.00");
     var scoreText = perf.GetNormalScore().ToString();
     var accuracyText = perf.GetAccuracy().ToString("0.00");
-    var tweetText = $"FoxTyping でスコア{scoreText}を出しました。\n精度: {accuracyText}% / 平均速度: {kpsText}打/秒";
+    var tweetText = $"FoxTyping でスコア{scoreText}を出しました。\n精度: {accuracyText}％ / 平均速度: {kpsText}打/秒";
     string url = "https://whitefox-lugh.github.io/FoxTyping/";
     string hashTag = "FoxTyping";
     OpenTweetWindow(tweetText, hashTag, url);
