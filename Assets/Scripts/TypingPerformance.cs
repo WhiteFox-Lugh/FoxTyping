@@ -10,7 +10,7 @@ public class TypingPerformance
   // ALPHA: 正確さから倍率への関数の定数
   const double ALPHA = 0.25;
   // BETA: ノーマルスコアの加重平均の重み
-  const double BETA = 0.85;
+  const double BETA = 0.90;
   // CONFIDENCE_WORD_NUM: スコア計算でこの値以上のときスコアを保証
   const int CONFIDENCE_WORD_NUM = 30;
   // 原文のリスト
