@@ -19,6 +19,7 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UITimeText;
   [SerializeField] TextMeshProUGUI UIAccuracyText;
   [SerializeField] TextMeshProUGUI UIRank;
+  [SerializeField] GameObject ScoreInfoPanel;
   [SerializeField] Material[] RankFontMaterials;
   private int[] RankScore = new int[20] {
     1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
@@ -41,6 +42,7 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
+    ScoreInfoPanel.SetActive(false);
     SetResult();
     SetResultDetail();
   }
@@ -60,11 +62,11 @@ public class RecordSceneScript : MonoBehaviour
     var perf = TypingSoft.Performance;
     var kpsPerf = perf.GetKpmAverageAndStdDev();
     int score = perf.GetNormalScore();
-    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
-    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
+    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.000") + " 打/秒";
+    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.000") + " 打/秒";
     UIScoreText.text = score.ToString();
     UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " 秒";
-    UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
+    UIAccuracyText.text = perf.GetAccuracy().ToString("0.000") + " %";
     for (int i = 0; i < RankScore.Count(); ++i)
     {
       if (score >= RankScore[i])
@@ -156,10 +158,26 @@ public class RecordSceneScript : MonoBehaviour
     var kpsText = perf.GetKpmAverageAndStdDev().kpsAvg.ToString("0.00");
     var scoreText = perf.GetNormalScore().ToString();
     var accuracyText = perf.GetAccuracy().ToString("0.00");
-    var tweetText = $"FoxTyping でスコア{scoreText}を出しました。\n精度: {accuracyText}％ / 平均速度: {kpsText}打/秒";
+    var tweetText = $"FoxTyping でスコア {scoreText} を出しました。\n精度: {accuracyText}％ / 平均速度: {kpsText}打/秒";
     string url = "https://whitefox-lugh.github.io/FoxTyping/";
     string hashTag = "FoxTyping";
     OpenTweetWindow(tweetText, hashTag, url);
+  }
+
+  /// <summary>
+  /// スコア横の ? ボタンを押したときにヘルプを開く
+  /// </summary>
+  public void OnClickScoreHelpButton()
+  {
+    ScoreInfoPanel.SetActive(true);
+  }
+
+  /// <summary>
+  /// スコア横の ? ボタンを押したときにヘルプを開く
+  /// </summary>
+  public void OnClickScoreHelpCloseButton()
+  {
+    ScoreInfoPanel.SetActive(false);
   }
 
   [DllImport("__Internal")]
