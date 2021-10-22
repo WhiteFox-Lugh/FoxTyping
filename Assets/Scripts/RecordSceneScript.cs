@@ -62,11 +62,11 @@ public class RecordSceneScript : MonoBehaviour
     var perf = TypingSoft.Performance;
     var kpsPerf = perf.GetKpmAverageAndStdDev();
     int score = perf.GetNormalScore();
-    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.000") + " 打/秒";
-    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.000") + " 打/秒";
+    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
+    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
     UIScoreText.text = score.ToString();
-    UITimeText.text = perf.GetElapsedTime().ToString("0.000") + " 秒";
-    UIAccuracyText.text = perf.GetAccuracy().ToString("0.000") + " %";
+    UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
+    UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
     for (int i = 0; i < RankScore.Count(); ++i)
     {
       if (score >= RankScore[i])

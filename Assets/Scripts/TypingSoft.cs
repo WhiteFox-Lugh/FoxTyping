@@ -569,6 +569,8 @@ public class TypingSoft : MonoBehaviour
     Performance.AddTypedSentenceList(typedLetter.ToString());
     Performance.AddTypeJudgeList(typeJudgeList);
     Performance.AddTypeTimeList(typeTimeList);
+    // タイプした文字を緑色に
+    UIType.text = $"<color=#20A01D>{UIType.text}</color>";
     // 現在時刻の取得
     if (UISTT != null && UIKPM != null)
     {
