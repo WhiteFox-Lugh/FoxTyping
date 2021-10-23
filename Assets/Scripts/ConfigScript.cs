@@ -82,4 +82,13 @@ public class ConfigScript : MonoBehaviour
     set;
     get;
   } = false;
+
+  // 入力モード
+  // 0: Roman
+  // 1: Kana
+  public static int InputMode
+  {
+    set;
+    get;
+  } = 0;
 }

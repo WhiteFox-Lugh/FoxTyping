@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System;
 using System.Text;
 using System.Collections;
@@ -6,14 +7,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 public class TypingSoft : MonoBehaviour
 {
   private const double INTERVAL = 2.0F;
-  // 入力された文字の queue
-  private static Queue<char> inputKeyQueue = new Queue<char>();
-  // 時刻の queue
-  private static Queue<double> timeQueue = new Queue<double>();
   // 問題表示関連
   private static string originSentence;
   private static string typeSentence;
@@ -28,6 +27,8 @@ public class TypingSoft : MonoBehaviour
   private static bool isSentenceMistyped;
   // タイピングの正誤判定器
   private static List<List<string>> typingJudge;
+  // キーを押す、離すの判定
+  private static bool isPressedAnyKey;
   // load 関係
   private static bool isLoadSuccess = false;
   // index 類
@@ -77,6 +78,33 @@ public class TypingSoft : MonoBehaviour
   private static GenerateSentence gs = new GenerateSentence();
   // Assist Keyboard JIS
   private static AssistKeyboardJIS AKJIS = new AssistKeyboardJIS();
+
+  /// <summary>
+  /// キーコードから char への変換
+  /// <param name="key">keycode</param>
+  /// <param name="isShiftkeyPushed">シフトキーが押されたかどうか</param>
+  /// </summary>
+  private static Dictionary<string, string> charToHiragana = new Dictionary<string, string> {
+    {"1", "ぬ"}, {"!", "み"}, {"2", "ふ"}, {"\"", "ふ"}, {"3", "あ"}, {"#", "ぁ"},
+    {"4", "う"}, {"$", "ぅ"}, {"5", "え"}, {"%", "ぇ"}, {"6", "お"}, {"&", "ぉ"},
+    {"7", "や"}, {"\'", "ゃ"}, {"8", "ゆ"}, {"(", "ゅ"}, {"9", "よ"}, {")", "ょ"},
+    {"0", "わ"}, {"\t", "を"}, {"-", "ほ"}, {"=", "ほ"}, {"^", "へ"}, {"~", "へ"},
+    {"Yen", "ー"}, {"|", "ー"}, {"q", "た"}, {"Q", "た"}, {"w", "て"}, {"W", "て"},
+    {"e", "い"}, {"E", "ぃ"}, {"r", "す"}, {"R", "す"}, {"t", "か"}, {"T", "か"},
+    {"y", "ん"}, {"Y", "ん"}, {"u", "な"}, {"U", "な"}, {"i", "に"}, {"I", "に"},
+    {"o", "ら"}, {"O", "ら"}, {"p", "せ"}, {"P", "せ"}, {"@", "゛"}, {"`", "゛"},
+    {"[", "゜"}, {"{", "「"}, {"a", "ち"}, {"A", "ち"}, {"s", "と"}, {"S", "と"},
+    {"d", "し"}, {"D", "し"}, {"f", "は"}, {"F", "は"}, {"g", "き"}, {"G", "き"},
+    {"h", "く"}, {"H", "く"}, {"j", "ま"}, {"J", "ま"}, {"k", "の"}, {"K", "の"},
+    {"l", "り"}, {"L", "り"}, {";", "れ"}, {"+", "れ"}, {":", "け"}, {"*", "け"},
+    {"]", "む"}, {"}", "」"}, {"z", "つ"}, {"Z", "っ"}, {"x", "さ"}, {"X", "さ"},
+    {"c", "そ"}, {"C", "そ"}, {"v", "ひ"}, {"V", "ひ"}, {"b", "こ"}, {"B", "こ"},
+    {"n", "み"}, {"N", "み"}, {"m", "も"}, {"M", "も"}, {",", "ね"}, {"<", "、"},
+    {".", "る"}, {">", "。"}, {"/", "め"}, {"?", "・"}, {"\\", "ろ"}, {"_", "ろ"},
+    {" ", " "}
+  };
+
+  private Queue<bool> JISKanaOem2keyLog = new Queue<bool>();
 
   // エラーコードとエラータイプ
   private enum errorType
@@ -185,6 +213,7 @@ public class TypingSoft : MonoBehaviour
   private void InitData()
   {
     // データ関連の初期化
+    isPressedAnyKey = false;
     ErrorCode = (int)errorType.None;
     CurrentGameCondition = (int)gameCondition.Progress;
     correctTypeNum = 0;
@@ -206,6 +235,7 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = "";
     UIYomigana.text = "";
     UIType.text = "";
+    JISKanaOem2keyLog = new Queue<bool>();
     if (UICPUText != null)
     {
       UICPUText.text = "";
@@ -214,8 +244,6 @@ public class TypingSoft : MonoBehaviour
     {
       CPUPanel.GetComponent<Image>().color = (ConfigScript.UseCPUGuide ? colorCpuPanelAble : colorCpuPanelDisable);
     }
-    inputKeyQueue.Clear();
-    timeQueue.Clear();
   }
 
   /// <summary>
@@ -223,21 +251,20 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   void Update()
   {
+    if (ConfigScript.InputMode == 1)
+    {
+      JISKanaOem2keyLog.Enqueue(Keyboard.current.oem2Key.wasPressedThisFrame);
+      if (JISKanaOem2keyLog.Count > 30)
+      {
+        JISKanaOem2keyLog.Dequeue();
+      }
+    }
     TextColorChange();
     if (DataPanel != null && AssistKeyboardPanel != null)
     {
       ShowMiddlePanel(ConfigScript.InfoPanelMode);
     }
-    if (inputKeyQueue.Count > 0 && timeQueue.Count > 0)
-    {
-      // キューの長さが一致しないなら Config へ戻す
-      if (inputKeyQueue.Count != timeQueue.Count)
-      {
-        ErrorCode = (int)errorType.QueueLengthNotMatch;
-      }
-      TypingCheck();
-    }
-    if (AssistKeyboardPanel != null)
+    if (AssistKeyboardPanel != null && ConfigScript.InputMode == 0)
     {
       if (CurrentTypingSentence == "" || !isInputValid)
       {
@@ -428,39 +455,54 @@ public class TypingSoft : MonoBehaviour
   /// <summary>
   /// タイピングの正誤判定部分
   /// </summary>
-  private void TypingCheck()
+  private IEnumerator TypingCheck(string nextString, double keyDownTime)
   {
-    while (inputKeyQueue.Count > 0)
+    lastJudgeTime = keyDownTime;
+    yield return null;
+    if (JISKanaOem2keyLog.Contains(true))
     {
-      // inputKeyQueue に入ってる keycode を取得
-      char inputChar = inputKeyQueue.Peek();
-      inputKeyQueue.Dequeue();
-      double keyDownTime = timeQueue.Peek();
-      timeQueue.Dequeue();
-      if (keyDownTime <= lastJudgeTime)
+      nextString = "\\";
+      JISKanaOem2keyLog.Clear();
+    }
+    // リザルト集積用
+    typedLetter.Append(nextString);
+    typeTimeList.Add(keyDownTime);
+
+    // まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
+    bool isMistype = judgeType(nextString);
+    if (!isMistype)
+    {
+      Correct(nextString);
+    }
+    else
+    {
+      Mistype();
+    }
+    yield return null;
+  }
+
+  /// <summary>
+  /// 入力された文字と次打つべき文字の判定部分
+  /// </summary>
+  private bool judgeType(string currentStr)
+  {
+    bool isMistype = true;
+    // 全ての valid なセンテンスに対してチェックする
+    for (int i = 0; i < typingJudge[index].Count; ++i)
+    {
+      // invalid ならパス
+      if (0 == sentenceValid[index][i])
       {
         continue;
       }
-      lastJudgeTime = keyDownTime;
-
-      // リザルト集積用
-      typedLetter.Append(inputChar.ToString());
-      typeTimeList.Add(keyDownTime);
-
-      // まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
-      bool isMistype = true;
-      // 全ての valid なセンテンスに対してチェックする
-      for (int i = 0; i < typingJudge[index].Count; ++i)
+      int j = sentenceIndex[index][i];
+      string judgeString = typingJudge[index][i][j].ToString();
+      // ローマ字
+      if (ConfigScript.InputMode == 0)
       {
-        // invalid ならパス
-        if (0 == sentenceValid[index][i])
-        {
-          continue;
-        }
-        int j = sentenceIndex[index][i];
-        char nextInputChar = typingJudge[index][i][j];
+
         // 正解タイプ
-        if (inputChar == nextInputChar)
+        if (currentStr.Equals(judgeString))
         {
           isMistype = false;
           indexAdd[index][i] = 1;
@@ -470,15 +512,22 @@ public class TypingSoft : MonoBehaviour
           indexAdd[index][i] = 0;
         }
       }
-      if (!isMistype)
+      // JIS かな
+      else if (ConfigScript.InputMode == 1)
       {
-        Correct(inputChar.ToString());
-      }
-      else
-      {
-        Mistype();
+        string inputHiragana = charToHiragana[currentStr];
+        if (inputHiragana.Equals(judgeString))
+        {
+          isMistype = false;
+          indexAdd[index][i] = 1;
+        }
+        else
+        {
+          indexAdd[index][i] = 0;
+        }
       }
     }
+    return isMistype;
   }
 
   /// <summary>
@@ -583,8 +632,6 @@ public class TypingSoft : MonoBehaviour
       UpdateUIKeyPerMinute(intKPM, intSectionKPM);
       UpdateUIElapsedTime(sentenceTypeTime);
     }
-    inputKeyQueue.Clear();
-    timeQueue.Clear();
     isInputValid = false;
     // 終了
     // numOfTask <= 0 の時は練習モード用で無限にできるようにするため
@@ -636,7 +683,7 @@ public class TypingSoft : MonoBehaviour
         }
       }
     }
-    correctString += typeChar;
+    correctString += (ConfigScript.InputMode == 0) ? typeChar : charToHiragana[typeChar];
     // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
     var UIStr = "";
     if (ConfigScript.IsBeginnerMode)
@@ -795,33 +842,32 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   void OnGUI()
   {
-    double currentTime = Time.realtimeSinceStartup;
     Event e = Event.current;
     var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
     if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Backspace)
     {
       CancelPractice();
     }
-    else if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
-    && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+    else if (!isPressedAnyKey && isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
+    && e.keyCode != KeyCode.LeftShift && e.keyCode != KeyCode.RightShift && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
       // F2 キーならリトライ
       if (e.keyCode == KeyCode.F2)
       {
         InitGame();
       }
-      var inputChar = ConvertKeyCodeToChar(e.keyCode, isPushedShiftKey);
-      if (isFirstInput && inputChar != '\\')
+      var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
+      double currentTime = Time.realtimeSinceStartup;
+      if (isFirstInput && !inputStr.Equals(""))
       {
         firstCharInputTime = currentTime;
         isFirstInput = false;
       }
       // タイピングで使用する文字以外は受け付けない
       // Esc など画面遷移などで使うキーと競合を避ける
-      if (inputChar != '\\')
+      if (!inputStr.Equals(""))
       {
-        inputKeyQueue.Enqueue(inputChar);
-        timeQueue.Enqueue(currentTime);
+        StartCoroutine(TypingCheck(inputStr, currentTime));
       }
     }
   }
@@ -835,113 +881,116 @@ public class TypingSoft : MonoBehaviour
   }
 
   /// <summary>
-  /// キーコードから char への変換
+  /// キーコードから string
   /// <param name="key">keycode</param>
   /// <param name="isShiftkeyPushed">シフトキーが押されたかどうか</param>
   /// </summary>
-  private char ConvertKeyCodeToChar(KeyCode key, bool isShiftkeyPushed)
+  private string ConvertKeyCodeToStr(KeyCode key, bool isShiftkeyPushed)
   {
     switch (key)
     {
       // かな入力用に便宜的にタブ文字を Shift+0 に割り当てている
       case KeyCode.Alpha0:
-        return isShiftkeyPushed ? '\t' : '0';
+        return isShiftkeyPushed ? "\t" : "0";
       case KeyCode.Alpha1:
-        return isShiftkeyPushed ? '!' : '1';
+        return isShiftkeyPushed ? "!" : "1";
       case KeyCode.Alpha2:
-        return isShiftkeyPushed ? '\"' : '2';
+        return isShiftkeyPushed ? "\"" : "2";
       case KeyCode.Alpha3:
-        return isShiftkeyPushed ? '#' : '3';
+        return isShiftkeyPushed ? "#" : "3";
       case KeyCode.Alpha4:
-        return isShiftkeyPushed ? '$' : '4';
+        return isShiftkeyPushed ? "$" : "4";
       case KeyCode.Alpha5:
-        return isShiftkeyPushed ? '%' : '5';
+        return isShiftkeyPushed ? "%" : "5";
       case KeyCode.Alpha6:
-        return isShiftkeyPushed ? '&' : '6';
+        return isShiftkeyPushed ? "&" : "6";
       case KeyCode.Alpha7:
-        return isShiftkeyPushed ? '\'' : '7';
+        return isShiftkeyPushed ? "\'" : "7";
       case KeyCode.Alpha8:
-        return isShiftkeyPushed ? '(' : '8';
+        return isShiftkeyPushed ? "(" : "8";
       case KeyCode.Alpha9:
-        return isShiftkeyPushed ? ')' : '9';
+        return isShiftkeyPushed ? ")" : "9";
       case KeyCode.A:
-        return isShiftkeyPushed ? 'A' : 'a';
+        return isShiftkeyPushed ? "A" : "a";
       case KeyCode.B:
-        return isShiftkeyPushed ? 'B' : 'b';
+        return isShiftkeyPushed ? "B" : "b";
       case KeyCode.C:
-        return isShiftkeyPushed ? 'C' : 'c';
+        return isShiftkeyPushed ? "C" : "c";
       case KeyCode.D:
-        return isShiftkeyPushed ? 'D' : 'd';
+        return isShiftkeyPushed ? "D" : "d";
       case KeyCode.E:
-        return isShiftkeyPushed ? 'E' : 'e';
+        return isShiftkeyPushed ? "E" : "e";
       case KeyCode.F:
-        return isShiftkeyPushed ? 'F' : 'f';
+        return isShiftkeyPushed ? "F" : "f";
       case KeyCode.G:
-        return isShiftkeyPushed ? 'G' : 'g';
+        return isShiftkeyPushed ? "G" : "g";
       case KeyCode.H:
-        return isShiftkeyPushed ? 'H' : 'h';
+        return isShiftkeyPushed ? "H" : "h";
       case KeyCode.I:
-        return isShiftkeyPushed ? 'I' : 'i';
+        return isShiftkeyPushed ? "I" : "i";
       case KeyCode.J:
-        return isShiftkeyPushed ? 'J' : 'j';
+        return isShiftkeyPushed ? "J" : "j";
       case KeyCode.K:
-        return isShiftkeyPushed ? 'K' : 'k';
+        return isShiftkeyPushed ? "K" : "k";
       case KeyCode.L:
-        return isShiftkeyPushed ? 'L' : 'l';
+        return isShiftkeyPushed ? "L" : "l";
       case KeyCode.M:
-        return isShiftkeyPushed ? 'M' : 'm';
+        return isShiftkeyPushed ? "M" : "m";
       case KeyCode.N:
-        return isShiftkeyPushed ? 'N' : 'n';
+        return isShiftkeyPushed ? "N" : "n";
       case KeyCode.O:
-        return isShiftkeyPushed ? 'O' : 'o';
+        return isShiftkeyPushed ? "O" : "o";
       case KeyCode.P:
-        return isShiftkeyPushed ? 'P' : 'p';
+        return isShiftkeyPushed ? "P" : "p";
       case KeyCode.Q:
-        return isShiftkeyPushed ? 'Q' : 'q';
+        return isShiftkeyPushed ? "Q" : "q";
       case KeyCode.R:
-        return isShiftkeyPushed ? 'R' : 'r';
+        return isShiftkeyPushed ? "R" : "r";
       case KeyCode.S:
-        return isShiftkeyPushed ? 'S' : 's';
+        return isShiftkeyPushed ? "S" : "s";
       case KeyCode.T:
-        return isShiftkeyPushed ? 'T' : 't';
+        return isShiftkeyPushed ? "T" : "t";
       case KeyCode.U:
-        return isShiftkeyPushed ? 'U' : 'u';
+        return isShiftkeyPushed ? "U" : "u";
       case KeyCode.V:
-        return isShiftkeyPushed ? 'V' : 'v';
+        return isShiftkeyPushed ? "V" : "v";
       case KeyCode.W:
-        return isShiftkeyPushed ? 'W' : 'w';
+        return isShiftkeyPushed ? "W" : "w";
       case KeyCode.X:
-        return isShiftkeyPushed ? 'X' : 'x';
+        return isShiftkeyPushed ? "X" : "x";
       case KeyCode.Y:
-        return isShiftkeyPushed ? 'Y' : 'y';
+        return isShiftkeyPushed ? "Y" : "y";
       case KeyCode.Z:
-        return isShiftkeyPushed ? 'Z' : 'z';
+        return isShiftkeyPushed ? "Z" : "z";
       case KeyCode.Minus:
-        return isShiftkeyPushed ? '=' : '-';
+        return isShiftkeyPushed ? "=" : "-";
       case KeyCode.Caret:
-        return isShiftkeyPushed ? '~' : '^';
+        return isShiftkeyPushed ? "~" : "^";
       case KeyCode.At:
-        return isShiftkeyPushed ? '`' : '@';
+        return isShiftkeyPushed ? "`" : "@";
       case KeyCode.LeftBracket:
-        return isShiftkeyPushed ? '{' : '[';
+        return isShiftkeyPushed ? "{" : "[";
       case KeyCode.RightBracket:
-        return isShiftkeyPushed ? '}' : ']';
+        return isShiftkeyPushed ? "}" : "]";
       case KeyCode.Semicolon:
-        return isShiftkeyPushed ? '+' : ';';
+        return isShiftkeyPushed ? "+" : ";";
       case KeyCode.Colon:
-        return isShiftkeyPushed ? '*' : ':';
+        return isShiftkeyPushed ? "*" : ":";
       case KeyCode.Comma:
-        return isShiftkeyPushed ? '<' : ',';
+        return isShiftkeyPushed ? "<" : ",";
       case KeyCode.Period:
-        return isShiftkeyPushed ? '>' : '.';
+        return isShiftkeyPushed ? ">" : ".";
       case KeyCode.Slash:
-        return isShiftkeyPushed ? '?' : '/';
+        return isShiftkeyPushed ? "?" : "/";
       case KeyCode.Underscore:
-        return '_';
+        return "_";
       case KeyCode.Space:
-        return ' ';
-      default: // backslash
-        return '\\';
+        return " ";
+      case KeyCode.Backslash:
+        return isShiftkeyPushed ? "|" : "Yen";
+      default: // 改行文字を割り当てる
+        return "";
     }
   }
+
 }

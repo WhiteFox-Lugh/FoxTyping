@@ -18,11 +18,10 @@ public class GenerateSentence
   private static AssetBundle abData;
   private const string ABPathLocal = "AssetBundleData/wordset_short";
   private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_short";
-  private static int inputType;
-  private static Dictionary<string, int> inputTypeMap = new Dictionary<string, int> {
-    {"Roman", 0},
+  private static int lang;
+  private static Dictionary<string, int> langMap = new Dictionary<string, int> {
+    {"Japanese", 0},
     {"English", 1},
-    {"Kana", 2}
   };
 
   // ひらがな -> ローマ字マッピング
@@ -1008,6 +1007,35 @@ public class GenerateSentence
     {"_", new string[1] {"_"}},
   };
 
+  /// JIS かな入力で2打鍵必要なもののマッピング
+  private static Dictionary<string, string[]> jisKanaMap = new Dictionary<string, string[]> {
+    {"が", new string[2] {"か","゛"}},
+    {"ぎ", new string[2] {"き","゛"}},
+    {"ぐ", new string[2] {"く","゛"}},
+    {"げ", new string[2] {"け","゛"}},
+    {"ご", new string[2] {"こ","゛"}},
+    {"ざ", new string[2] {"さ","゛"}},
+    {"じ", new string[2] {"し","゛"}},
+    {"ず", new string[2] {"す","゛"}},
+    {"ぜ", new string[2] {"せ","゛"}},
+    {"ぞ", new string[2] {"そ","゛"}},
+    {"だ", new string[2] {"た","゛"}},
+    {"ぢ", new string[2] {"ち","゛"}},
+    {"づ", new string[2] {"つ","゛"}},
+    {"で", new string[2] {"て","゛"}},
+    {"ど", new string[2] {"と","゛"}},
+    {"ば", new string[2] {"は","゛"}},
+    {"び", new string[2] {"ひ","゛"}},
+    {"ぶ", new string[2] {"ふ","゛"}},
+    {"べ", new string[2] {"へ","゛"}},
+    {"ぼ", new string[2] {"ほ","゛"}},
+    {"ぱ", new string[2] {"は","゜"}},
+    {"ぴ", new string[2] {"ひ","゜"}},
+    {"ぷ", new string[2] {"ふ","゜"}},
+    {"ぺ", new string[2] {"へ","゜"}},
+    {"ぽ", new string[2] {"ほ","゜"}},
+  };
+
   // 原文と読み方のセット
   private static Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
 
@@ -1062,6 +1090,34 @@ public class GenerateSentence
     return judge;
   }
 
+  /// <summary>
+  /// ひらがな文をパースして、JIS かな用の判定を作成
+  /// <param name="sentenceHiragana">パースされるひらがな文字列</param>
+  /// <returns>判定器</returns>
+  /// </summary>
+  private static List<List<string>> ConstructJISKanaTypeSentence(string sentenceHiragana)
+  {
+    var judge = new List<List<string>>();
+    for (int i = 0; i < sentenceHiragana.Length; ++i)
+    {
+      var hiragana = sentenceHiragana[i].ToString();
+      if (jisKanaMap.ContainsKey(hiragana))
+      {
+        var mappingList = jisKanaMap[hiragana].ToList();
+        var validTypeList1 = new List<string> { mappingList[0] };
+        var validTypeList2 = new List<string> { mappingList[1] };
+        judge.Add(validTypeList1);
+        judge.Add(validTypeList2);
+      }
+      else
+      {
+        var validTypeList = new List<string> { sentenceHiragana[i].ToString() };
+        judge.Add(validTypeList);
+      }
+    }
+    return judge;
+  }
+
 
   /// <summary>
   /// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
@@ -1097,7 +1153,7 @@ public class GenerateSentence
         {
           originSentenceStr = tmpOriginSentenceStr;
           typeSentenceStr = tmpTypeSentenceStr;
-          retTypeJudge = ConstructTypeSentence(typeSentenceStr);
+          retTypeJudge = (ConfigScript.InputMode == 0) ? ConstructTypeSentence(typeSentenceStr) : ConstructJISKanaTypeSentence(typeSentenceStr);
           isOK = true;
         }
       }
@@ -1170,7 +1226,7 @@ public class GenerateSentence
       var jsonStr = abData.LoadAsset<TextAsset>(dataName).ToString();
       var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
       DataSetName = problemData.sentenceDatasetScreenName;
-      inputType = inputTypeMap[problemData.inputType];
+      lang = langMap[problemData.lang];
       foreach (var word in problemData.words)
       {
         var wordSection = word.wordSection;
@@ -1197,7 +1253,7 @@ public class GenerateSentence
 [Serializable]
 public class SentenceData
 {
-  public string inputType;
+  public string lang;
   public string sentenceDatasetName;
   public string sentenceDatasetScreenName;
   public Word[] words;
