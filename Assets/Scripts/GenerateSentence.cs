@@ -26,7 +26,7 @@ public class GenerateSentence
   };
 
   // ひらがな -> ローマ字マッピング
-  private static Dictionary<string, string[]> mp = new Dictionary<string, string[]> {
+  private static Dictionary<string, string[]> romanTypeMap = new Dictionary<string, string[]> {
     {"あ", new string[1] {"a"}},
     {"い", new string[2] {"i", "yi"}},
     {"う", new string[3] {"u", "wu", "whu"}},
@@ -1020,70 +1020,48 @@ public class GenerateSentence
   }
 
   /// <summary>
-  /// ひらがなの読みをパースして、1～3文字ごとに区切る
+  /// ひらがな文をパースして、判定を作成
   /// <param name="sentenceHiragana">パースされるひらがな文字列</param>
-  /// <returns>1～3文字ごとに区切られたひらがなのList</returns>
+  /// <returns>判定器</returns>
   /// </summary>
-  private static List<string> ParseHiraganaSentence(string sentenceHiragana)
+  private static List<List<string>> ConstructTypeSentence(string sentenceHiragana)
   {
-    var separatedSentence = new List<string>();
     int i = 0;
     string uni = "";
     string bi = "";
     string tri = "";
+    var judge = new List<List<string>>();
     while (i < sentenceHiragana.Length)
     {
+      var validTypeList = new List<string>();
       uni = sentenceHiragana[i].ToString();
       bi = (i + 1 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 2) : "";
       tri = (i + 2 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 3) : "";
-      if (mp.ContainsKey(tri))
+      if (romanTypeMap.ContainsKey(tri))
       {
+        validTypeList = romanTypeMap[tri].ToList();
         i += 3;
-        separatedSentence.Add(tri);
       }
-      else if (mp.ContainsKey(bi))
+      else if (romanTypeMap.ContainsKey(bi))
       {
+        validTypeList = romanTypeMap[bi].ToList();
         i += 2;
-        separatedSentence.Add(bi);
       }
       else
       {
+        validTypeList = romanTypeMap[uni].ToList();
+        // 文末「ん」の処理
+        if (uni.Equals("ん") && sentenceHiragana.Length - 1 == i)
+        {
+          validTypeList.Remove("n");
+        }
         i++;
-        separatedSentence.Add(uni);
-      }
-    }
-    return separatedSentence;
-  }
-
-  /// <summary>
-  /// ParseHiraganaSentence で区切った文字をもとにして
-  /// タイピング入力判定器を作成
-  /// <param name="separatedSentence">区切られた文字列（リスト）</param>
-  /// <returns>タイピングの判定器(オートマトンのようなもの)</returns>
-  /// </summary>
-  private static List<List<string>> ConstructTypeSentence(List<string> separatedSentence)
-  {
-    var judge = new List<List<string>>();
-    string s;
-    for (int i = 0; i < separatedSentence.Count; ++i)
-    {
-      s = separatedSentence[i];
-      var validTypeList = new List<string>();
-      // 文末「ん」の処理
-      if (s.Equals("ん") && separatedSentence.Count - 1 == i)
-      {
-        var nList = new List<string>(mp[s]);
-        nList.Remove("n");
-        validTypeList = nList;
-      }
-      else
-      {
-        validTypeList = mp[s].ToList();
       }
       judge.Add(validTypeList);
     }
     return judge;
   }
+
 
   /// <summary>
   /// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
@@ -1119,8 +1097,7 @@ public class GenerateSentence
         {
           originSentenceStr = tmpOriginSentenceStr;
           typeSentenceStr = tmpTypeSentenceStr;
-          hiraganaSeparated = ParseHiraganaSentence(typeSentenceStr);
-          retTypeJudge = ConstructTypeSentence(hiraganaSeparated);
+          retTypeJudge = ConstructTypeSentence(typeSentenceStr);
           isOK = true;
         }
       }
