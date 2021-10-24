@@ -23,6 +23,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
   private static int prevCPUKpm = 1;
   private static int prevIsUseCPUGuide = 0;
   private static int prevLongTimeLimit = 300;
+  private static int prevInputType = 0;
   private static int longSentenceTimeLimitVal = 300;
   [SerializeField] private TMP_Dropdown UIGameMode;
   [SerializeField] private TMP_Dropdown UIDataSetName;
@@ -30,6 +31,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_Dropdown UISentenceNum;
   [SerializeField] private TMP_Dropdown UIUseCPUKpmGuide;
   [SerializeField] private TMP_Dropdown UIUseYomigana;
+  [SerializeField] private TMP_Dropdown UIInputType;
   [SerializeField] private TMP_InputField InputCPUSpeed;
   [SerializeField] private GameObject ConfigPanel;
   [SerializeField] private GameObject LongSentenceConfigPanel;
@@ -103,6 +105,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UILongDataSetName.value = prevDropdownLongDataset;
     UIUseYomigana.value = prevDropdownUseYomigana;
     UISentenceNum.value = prevDropdownTaskNum;
+    UIInputType.value = prevInputType;
     longSentenceTimeLimitVal = prevLongTimeLimit;
     UIUseCPUKpmGuide.value = (prevIsUseCPUGuide == 1 ? 1 : 0);
     InputCPUSpeed.interactable = prevIsUseCPUGuide == 1;
@@ -122,6 +125,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     prevDropdownTaskNum = UISentenceNum.value;
     prevDropdownUseYomigana = UIUseYomigana.value;
     prevCPUKpm = Int32.Parse(InputCPUSpeed.text);
+    prevInputType = UIInputType.value;
     ConfigScript.GameMode = prevDropdownGameMode;
     ConfigScript.DataSetName = shortDatasetFileName[prevDropdownShortDataset];
     ConfigScript.Tasks = (prevDropdownTaskNum + 1) * TASK_UNIT;
@@ -132,6 +136,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
     ConfigScript.InfoPanelMode = 0;
+    ConfigScript.InputMode = prevInputType;
   }
 
   /// <summary>
