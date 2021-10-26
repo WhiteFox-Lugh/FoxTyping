@@ -843,26 +843,19 @@ public class LongSentenceScript : MonoBehaviour
     if (e.type == EventType.KeyDown)
     {
       // F3: 終了か設定画面に戻るか
-      if (e.keyCode == KeyCode.F3)
+      if (e.keyCode == KeyCode.F3 && !isFinished && isShowInfo)
       {
-        if (!isFinished && isShowInfo)
-        {
-          Finish();
-        }
-        else
-        {
-          ReturnConfig();
-        }
+        Finish();
       }
       // Space: セクション選択画面ならスタート
       else if (e.keyCode == KeyCode.Space && isSectionSelect)
       {
         StartPractice();
       }
-      // BackSpace: セクション選択画面なら設定画面へ戻る
-      else if (e.keyCode == KeyCode.Backspace && isSectionSelect)
+      // Escape: セクション選択画面なら設定画面へ戻る
+      else if (e.keyCode == KeyCode.Escape)
       {
-        ReturnConfig();
+        if (isSectionSelect || isFinished) { ReturnConfig(); }
       }
       // F1: リトライ
       else if (e.keyCode == KeyCode.F1 && isShowInfo)

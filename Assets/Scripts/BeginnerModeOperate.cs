@@ -76,7 +76,7 @@ public class BeginnerModeOperate : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Backspace == kc)
+    if (KeyCode.Escape == kc)
     {
       ReturnModeSelectScene();
     }

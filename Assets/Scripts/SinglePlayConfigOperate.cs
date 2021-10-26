@@ -177,7 +177,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     {
       BeforeStartPractice();
     }
-    else if (KeyCode.Backspace == kc)
+    else if (KeyCode.Escape == kc)
     {
       ReturnModeSelectScene();
     }

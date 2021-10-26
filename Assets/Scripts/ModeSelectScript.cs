@@ -30,7 +30,7 @@ public class ModeSelectScript : MonoBehaviour
     // else if(KeyCode.U == k){
     //   LoadUserSettingsScene();
     // }
-    else if (KeyCode.Backspace == kc)
+    else if (KeyCode.Escape == kc)
     {
       LoadTitleScene();
     }

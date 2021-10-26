@@ -846,7 +846,7 @@ public class TypingSoft : MonoBehaviour
   {
     Event e = Event.current;
     var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-    if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Backspace)
+    if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
     {
       CancelPractice();
     }

@@ -102,7 +102,7 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Backspace == kc)
+    if (KeyCode.Escape == kc)
     {
       ReturnConfigScene();
     }
