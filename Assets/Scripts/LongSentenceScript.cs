@@ -338,7 +338,7 @@ public class LongSentenceScript : MonoBehaviour
   /// 課題文をスクロールする
   /// <param name="numOfLine">スクロールする行数</param>
   /// </summary>
-  private void ScrollTask(int numOfLine)
+  public void ScrollTask(int numOfLine)
   {
     var scrollBar = TaskVerticalBar.GetComponent<Scrollbar>();
     // 現在のバーの位置を取得(0-1)
