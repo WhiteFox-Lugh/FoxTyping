@@ -29,7 +29,7 @@
 
 <body>
   <!-- main content -->
-  <div class="container-fluid mx-auto text-center" style="margin-top: 100px">
+  <div class="container-fluid mx-auto text-center py-5" style="margin-top: 100px">
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=1280 height=720></canvas>
       <div id="unity-loading-bar">
@@ -42,7 +42,6 @@
       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">FoxTyping</div>
       </div>
     </div>
     <script>
@@ -143,13 +142,34 @@
 
   <div class="container-fluid bg-light py-2">
     <div class="container py-2">
-      <h3><i class="fas fa-wrench"></i> 素材など</h3>
+      <h3><i class="fas fa-info-circle"></i> FoxTyping について</h3>
+      <p>タッチタイピングの練習ができるタイピング練習サイトです。<br>
+        無料で遊べます。</p>
+      <p>
+        本サイトでは WebGL を利用しているため、WebGL に対応したブラウザでのみ動作します。
+      </p>
+    </div>
+  </div>
+
+  <div class="container-fluid bg-white py-2">
+    <div class="container py-2">
+      <h3><i class="fas fa-exclamation-circle"></i> 利用上の注意</h3>
+      <p>
+        FoxTyping はタッチタイピングのスキル上達を支援するための練習サイトであります。<br>
+        したがって、プログラムを利用して入力を行わせるといった本サイトの目的に反する行為や、それを助長する行為（例：自動入力プログラムを実装し、そのプログラムを公開したり、ブログの記事や動画共有サイトなどに公開すること）を禁止します。
+      </p>
+      <p>
+        本サイトの運営を妨げる行為、営利目的の利用、著作権やその他の知的財産権を侵害または侵害するおそれのある行為、利用者への誹謗中傷行為、その他運営を妨げたり法令に違反したりする可能性のある行為を禁止します。
+      </p>
+    </div>
+  </div>
+
+  <div class="container-fluid bg-light py-2">
+    <div class="container py-2">
+      <h3><i class="fas fa-wrench"></i> 素材・出典</h3>
       <ul>
         <li>
           <a href="https://fonts.google.com/noto#sans-jpan" target="_blank">Noto Fonts</a>: フォント
-        </li>
-        <li>
-          <a href="https://github.com/IBM/plex" target="_blank">IBM Plex Sans JP</a>: フォント
         </li>
         <li>
           <a href="https://www.aozora.gr.jp/" target="_blank">青空文庫</a>: 長文課題文章
@@ -168,7 +188,7 @@
         </div>
         <div class="col-md-4 mb-3 mb-md-0">
           <p class="m-0">
-            All Rights Reserved
+            Copyright &copy; 2021 WhiteFox(白狐)
           </p>
         </div>
         <div class="col-md-4">
