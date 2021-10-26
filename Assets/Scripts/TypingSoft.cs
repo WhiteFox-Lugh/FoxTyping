@@ -153,6 +153,7 @@ public class TypingSoft : MonoBehaviour
   {
     NowLoadingPanel.SetActive(true);
     isLoadSuccess = false;
+    isInputValid = true;
     CurrentGameCondition = (int)gameCondition.Progress;
     StartCoroutine(LoadWordDataset(CanStart));
   }
@@ -178,6 +179,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   public void InitGame()
   {
+    if (!isInputValid) { return; }
     InitData();
     InitText();
     NowLoadingPanel.SetActive(false);
@@ -856,18 +858,21 @@ public class TypingSoft : MonoBehaviour
       {
         InitGame();
       }
-      var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
-      double currentTime = Time.realtimeSinceStartup;
-      if (isFirstInput && !inputStr.Equals(""))
+      else
       {
-        firstCharInputTime = currentTime;
-        isFirstInput = false;
-      }
-      // タイピングで使用する文字以外は受け付けない
-      // Esc など画面遷移などで使うキーと競合を避ける
-      if (!inputStr.Equals(""))
-      {
-        StartCoroutine(TypingCheck(inputStr, currentTime));
+        var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
+        double currentTime = Time.realtimeSinceStartup;
+        if (isFirstInput && !inputStr.Equals(""))
+        {
+          firstCharInputTime = currentTime;
+          isFirstInput = false;
+        }
+        // タイピングで使用する文字以外は受け付けない
+        // Esc など画面遷移などで使うキーと競合を避ける
+        if (!inputStr.Equals(""))
+        {
+          StartCoroutine(TypingCheck(inputStr, currentTime));
+        }
       }
     }
   }
