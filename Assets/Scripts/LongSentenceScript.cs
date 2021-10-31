@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System;
 using System.IO;
 using System.Text;
@@ -126,6 +127,7 @@ public class LongSentenceScript : MonoBehaviour
     OperationPanel.SetActive(true);
     ResultOperationPanel.SetActive(false);
     SectionSelectPanel.SetActive(true);
+    UIInputField.interactable = false;
   }
 
   /// <summary>
@@ -133,8 +135,10 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   public void Retry()
   {
-    InitUIPanel();
-    SelectSection();
+    if (isShowInfo || isFinished){
+      InitUIPanel();
+      SelectSection();
+    }
   }
 
   /// <summary>
@@ -216,24 +220,24 @@ public class LongSentenceScript : MonoBehaviour
     // WebGL 時は WebRequest によって AssetBundle を取得
 #if UNITY_WEBGL && !UNITY_EDITOR
 		if (networkState == NetworkReachability.NotReachable){
-			Debug.Log("ネットワークに接続していません");
+			UnityEngine.Debug.Log("ネットワークに接続していません");
 			callback();
 			yield break;
 		}
 		UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(ABPath);
 		yield return request.SendWebRequest();
 		if (request.isNetworkError || request.isHttpError){
-			Debug.LogError(request.error);
+			UnityEngine.Debug.LogError(request.error);
 		}
 		else {
 			abLongData = DownloadHandlerAssetBundle.GetContent(request);
-			Debug.Log("load successfully");
+			UnityEngine.Debug.Log("load successfully");
 		}
 #else
     abLongData = AssetBundle.LoadFromFile(ABPathLocal);
     if (abLongData == null)
     {
-      Debug.Log("Error: AssetBundle Load failed");
+      UnityEngine.Debug.Log("Error: AssetBundle Load failed");
     }
 #endif
 
@@ -302,11 +306,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Update()
   {
-    // フォーカスされていなければ強制フォーカス
-    if (!UIInputField.isFocused)
-    {
-      UIInputField.Select();
-    }
     // クリップボードの中身を消去
     GUIUtility.systemCopyBuffer = "";
     // 入力中はタイマーを更新
@@ -414,8 +413,10 @@ public class LongSentenceScript : MonoBehaviour
   /// <summary>
   /// 入力終了後の処理
   /// </summary>
-  private void Finish()
+  public void Finish()
   {
+    var isPracticing = !isFinished && isShowInfo;
+    if (!isPracticing){ return; }
     // 終了時刻の取得
     var endTime = Time.realtimeSinceStartup;
     var elapsedTime = endTime - startTime;
@@ -839,68 +840,34 @@ public class LongSentenceScript : MonoBehaviour
   {
     Event e = Event.current;
     var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-    var isPracticing = !isFinished && isShowInfo;
     if (e.type == EventType.KeyDown)
     {
-      // F3: 終了か設定画面に戻るか
-      if (e.keyCode == KeyCode.F3 && !isFinished && isShowInfo)
-      {
-        Finish();
-      }
-      // Space: セクション選択画面ならスタート
-      else if (e.keyCode == KeyCode.Space && isSectionSelect)
-      {
-        StartPractice();
-      }
-      // Escape: セクション選択画面なら設定画面へ戻る
-      else if (e.keyCode == KeyCode.Escape)
-      {
-        if (isSectionSelect || isFinished) { ReturnConfig(); }
-      }
-      // F1: リトライ
-      else if (e.keyCode == KeyCode.F1 && isShowInfo)
-      {
-        Retry();
-      }
-      // F5: ルビの表示切り替え
-      else if (e.keyCode == KeyCode.F5 && isPracticing)
-      {
-        if (isUseRuby)
-        {
-          HideRuby();
-        }
-        else
-        {
-          ShowRuby();
-        }
-      }
-      // 課題文1行戻る
-      else if (e.keyCode == KeyCode.E && isPushedCtrlKey && isPracticing)
-      {
-        ScrollTask(-1);
-      }
-      // 課題文1行次へ
-      else if (e.keyCode == KeyCode.Y && isPushedCtrlKey && isPracticing)
-      {
-        ScrollTask(1);
-      }
-      // 課題文5行戻る
-      else if (e.keyCode == KeyCode.U && isPushedCtrlKey && isPracticing)
-      {
-        ScrollTask(-5);
-      }
-      // 課題文5行次へ
-      else if (e.keyCode == KeyCode.D && isPushedCtrlKey && isPracticing)
-      {
-        ScrollTask(5);
-      }
+      UnityEngine.Debug.Log(e.keyCode);
+    }
+  }
+
+  /// <summary>
+  /// ルビ切り替えボタンを押したときの挙動
+  /// </summary>
+  public void OnClickRubyButton(){
+    var isPracticing = !isFinished && isShowInfo;
+    if (!isPracticing){
+      return;
+    }
+    if (isUseRuby)
+    {
+      HideRuby();
+    }
+    else
+    {
+      ShowRuby();
     }
   }
 
   /// <summary>
   /// Config 画面へ戻る
   /// </summary>
-  public static void ReturnConfig()
+  public void ReturnConfig()
   {
     SceneManager.LoadScene("SinglePlayConfigScene");
   }
