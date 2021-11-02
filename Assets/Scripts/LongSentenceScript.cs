@@ -306,8 +306,10 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Update()
   {
-    // クリップボードの中身を消去
-    GUIUtility.systemCopyBuffer = "";
+    // フォーカスされていなければ強制フォーカス
+    if (!UIInputField.isFocused){
+      UIInputField.Select();
+    }
     // 入力中はタイマーを更新
     if (isShowInfo && !isFinished)
     {
