@@ -266,7 +266,7 @@ public class TypingSoft : MonoBehaviour
     {
       ShowMiddlePanel(ConfigScript.InfoPanelMode);
     }
-    if (AssistKeyboardPanel != null && ConfigScript.InputMode == 0)
+    if (AssistKeyboardPanel != null)
     {
       if (CurrentTypingSentence == "" || !isInputValid)
       {
@@ -275,7 +275,7 @@ public class TypingSoft : MonoBehaviour
       }
       else if (isInputValid)
       {
-        AKJIS.SetNextHighlight(CurrentTypingSentence[0]);
+        AKJIS.SetNextHighlight(CurrentTypingSentence[0].ToString());
       }
     }
   }
