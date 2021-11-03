@@ -836,19 +836,6 @@ public class LongSentenceScript : MonoBehaviour
   }
 
   /// <summary>
-  /// キーが押されたときなどのイベント処理
-  /// </summary>
-  void OnGUI()
-  {
-    Event e = Event.current;
-    var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-    if (e.type == EventType.KeyDown)
-    {
-      UnityEngine.Debug.Log(e.keyCode);
-    }
-  }
-
-  /// <summary>
   /// ルビ切り替えボタンを押したときの挙動
   /// </summary>
   public void OnClickRubyButton(){
