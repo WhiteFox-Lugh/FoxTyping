@@ -1,3 +1,10 @@
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net.Mail;
 using System.Diagnostics;
 using System;
 using System.IO;
@@ -40,13 +47,19 @@ public class LongSentenceScript : MonoBehaviour
   private const string ABPathLocal = "AssetBundleData/wordset_long";
   private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
   // diff の表示色
-  const string COLOR_INSERT = "orange";
-  const string COLOR_DELETE = "red";
-  const string COLOR_REPLACE = "blue";
+  private const string COLOR_INSERT = "orange";
+  private const string COLOR_DELETE = "red";
+  private const string COLOR_REPLACE = "blue";
   // 正解、不正解の重み
-  const int CORRECT_SCORE = 1;
-  const int MISS_COST = 30;
-  const int MISS_COST_MP = 1;
+  private const int CORRECT_SCORE = 1;
+  private const int MISS_COST = 30;
+  private const int MISS_COST_MP = 1;
+  // 1行の文字数
+  private const int ROW_CHAR_NUM = 25;
+  // InputField に 表示される行数
+  private const int ROW_DISPLAY = 17;
+  private int field_row_lower = 0;
+  private int field_row_upper = 0;
   private double startTime;
   private bool isShowInfo;
   private bool isFinished;
@@ -64,9 +77,11 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UIDetailText;
   [SerializeField] TextMeshProUGUI TaskTextContent;
+  [SerializeField] TextMeshProUGUI CurrentInputText;
   [SerializeField] TextMeshProUGUI PreviewText;
   [SerializeField] TMP_Dropdown DropdownSectionSelect;
   [SerializeField] GameObject TaskViewport;
+  [SerializeField] GameObject InputArea;
   [SerializeField] TMP_InputField UIInputField;
   [SerializeField] GameObject SectionSelectPanel;
   [SerializeField] GameObject InputPanel;
@@ -77,6 +92,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject OperationPanel;
   [SerializeField] GameObject ResultOperationPanel;
   [SerializeField] GameObject TaskVerticalBar;
+  [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
   private static string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
   private static string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
@@ -267,6 +283,8 @@ public class LongSentenceScript : MonoBehaviour
     UIRestTime.text = "";
     UIInputCounter.text = "";
     LimitSec = ConfigScript.LongSentenceTimeLimit;
+    field_row_lower = 0;
+    field_row_upper = ROW_DISPLAY;
     StartCoroutine(CountDown());
   }
 
@@ -306,16 +324,49 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Update()
   {
-    // フォーカスされていなければ強制フォーカス
-    if (!UIInputField.isFocused){
-      UIInputField.Select();
-    }
-    // 入力中はタイマーを更新
+    // // フォーカスされていなければ強制フォーカス
+    // if (!){
+    //   UIInputField.Select();
+    // }
     if (isShowInfo && !isFinished)
     {
+      // 入力中はタイマーを更新
       CheckTimer();
       CheckInputStr();
+      // スクロール位置を調整
+      if (UIInputField.isFocused){
+        AdjustScroll();
+      }
     }
+  }
+
+  /// <summary>
+  /// 課題文章に合わせてスクロール位置を調整
+  /// </summary>
+  private void AdjustScroll(){
+    var scrollBarTask = TaskVerticalBar.GetComponent<Scrollbar>();
+    var scrollBarInput = InputVerticalBar.GetComponent<Scrollbar>();
+    // 現在のバーの位置を取得(0-1)
+    var taskBarPos = scrollBarTask.value;
+    var inputBarPos = scrollBarInput.value;
+    // UnityEngine.Debug.Log($"task -> {taskBarPos}, input -> {inputBarPos}");
+    // 表示ウィンドウの高さを取得
+    var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
+    // 課題文、入力文のコンテンツの高さと行数を取得
+    var taskHeight = TaskTextContent.preferredHeight;
+    var inputHeight = CurrentInputText.preferredHeight;
+    var taskLineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
+    var inputLineHeight = inputHeight / CurrentInputText.textInfo.lineCount;
+    // スクロールバーの同期
+    // inputPos は入力した文章の上からどれだけスクロールしたか
+    var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
+    // UnityEngine.Debug.Log($"inputPos -> {inputPos}");
+    // inputPos のスクロール量を Task のスクロールバーのほうで換算
+    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
+    scrollBarTask.value = 1 - nextTaskScrollBarValue;
+    // scrollBarInput.value = nextInputBarPos;
+    // UnityEngine.Debug.Log($"高さ: {taskHeight}, {inputHeight}、行の高さ: {taskLineHeight}, {inputLineHeight}");
   }
 
   /// <summary>
@@ -332,7 +383,7 @@ public class LongSentenceScript : MonoBehaviour
     taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
     var convertedText = Regex.Replace(docData, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
-    displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
+    displayText = (isUseRuby ? taskWithRuby : taskText);
   }
 
   /// <summary>
