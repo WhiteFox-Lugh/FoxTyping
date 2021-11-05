@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
-public class GenerateSentence
+public class GenerateSentence : MonoBehaviour
 {
   private const int minLength = 1;
   private const int maxLength = 50;

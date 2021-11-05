@@ -14,7 +14,9 @@ public class TypingSoft : MonoBehaviour
 {
   private const double INTERVAL = 2.0F;
   // 問題表示関連
+  private static List<string> originSentenceList = new List<string>();
   private static string originSentence;
+  private static List<string> typeSentenceList = new List<string>();
   private static string typeSentence;
   // これまで打った文字列
   private static string correctString;
@@ -26,6 +28,7 @@ public class TypingSoft : MonoBehaviour
   private static bool isRecMistype;
   private static bool isSentenceMistyped;
   // タイピングの正誤判定器
+  private static List<List<List<string>>> sentenceJudgeDataList = new List<List<List<string>>>();
   private static List<List<string>> typingJudge;
   // キーを押す、離すの判定
   private static bool isPressedAnyKey;
@@ -43,7 +46,7 @@ public class TypingSoft : MonoBehaviour
   private static double firstCharInputTime;
   private static double lastJudgeTime;
   // タイピング情報表示関連
-  private static int tasksCompleted;
+  private static int currentTaskNumber;
   private static int correctTypeNum;
   private static int misTypeNum;
   private static double keyPerMin;
@@ -75,9 +78,9 @@ public class TypingSoft : MonoBehaviour
   [SerializeField] private GameObject AssistKeyboardPanel;
   [SerializeField] private GameObject CPUPanel;
   [SerializeField] private GameObject NowLoadingPanel;
-  private static GenerateSentence gs = new GenerateSentence();
+  private static GenerateSentence gs;
   // Assist Keyboard JIS
-  private static AssistKeyboardJIS AKJIS = new AssistKeyboardJIS();
+  private static AssistKeyboardJIS AKJIS;
 
   /// <summary>
   /// キーコードから char への変換
@@ -151,6 +154,9 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   void Awake()
   {
+    // コンポーネント読み込み
+    gs = GameObject.Find("generateSentenceScript").GetComponent<GenerateSentence>();
+    AKJIS = GameObject.Find("AssistKeyboard").GetComponent<AssistKeyboardJIS>();
     NowLoadingPanel.SetActive(true);
     isLoadSuccess = false;
     isInputValid = true;
@@ -165,7 +171,7 @@ public class TypingSoft : MonoBehaviour
   {
     if (isLoadSuccess)
     {
-      InitGame();
+      GameMain();
     }
     else
     {
@@ -177,12 +183,13 @@ public class TypingSoft : MonoBehaviour
   /// <summary>
   /// 初期化
   /// </summary>
-  public void InitGame()
+  public void GameMain()
   {
     if (!isInputValid) { return; }
     InitData();
     InitText();
     NowLoadingPanel.SetActive(false);
+    GenerateTask();
     StartCoroutine(CountDown());
   }
 
@@ -223,14 +230,13 @@ public class TypingSoft : MonoBehaviour
     totalTypingTime = 0.0;
     keyPerMin = 0.0;
     accuracyValue = 0.0;
-    tasksCompleted = 0;
+    currentTaskNumber = 0;
     isRecMistype = false;
     lastJudgeTime = -1.0;
     numOfTask = ConfigScript.Tasks;
     isInputValid = false;
     isIntervalEnded = false;
     isSentenceMistyped = false;
-    AKJIS = new AssistKeyboardJIS();
     Performance = new TypingPerformance();
     CurrentTypingSentence = "";
     cpuTypeString = "";
@@ -292,7 +298,7 @@ public class TypingSoft : MonoBehaviour
     countdownText.text = "1";
     yield return new WaitForSeconds(1f);
     countdownText.text = "";
-    GenerateNewSentence();
+    ChangeSentence();
   }
 
   /// <summary>
@@ -318,22 +324,48 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private IEnumerator DelayGenerateNewSentence()
   {
-    yield return new WaitForSeconds(1f);
-    GenerateNewSentence();
+    yield return new WaitForSeconds(ConfigScript.DelayTime);
+    ChangeSentence();
   }
 
   /// <summary>
-  /// 新しい課題文を生成する
+  /// 課題文章の生成
   /// </summary>
-  private void GenerateNewSentence()
+  private void GenerateTask(){
+    var generatedNum = 0;
+    // 初期化
+    originSentenceList.Clear();
+    typeSentenceList.Clear();
+    sentenceJudgeDataList.Clear();
+    while (generatedNum < numOfTask){
+      // 例文生成
+      var t = gs.Generate();
+      if (!t.isGenerateSuccess)
+      {
+        continue;
+      }
+      // 生成したデータをリストに追加
+      originSentenceList.Add(t.originSentence);
+      typeSentenceList.Add(t.typeSentence);
+      sentenceJudgeDataList.Add(t.typeJudge);
+      generatedNum++;
+    }
+  }
+
+  /// <summary>
+  /// 課題文章の変更を行う
+  /// </summary>
+  private void ChangeSentence()
   {
-    // テキストUIを初期化する
-    UIOriginSentence.text = "";
-    UIYomigana.text = "";
-    UIType.text = "";
-    if (UICPUText != null)
+    originSentence = originSentenceList[currentTaskNumber];
+    typeSentence = typeSentenceList[currentTaskNumber];
+    typingJudge = sentenceJudgeDataList[currentTaskNumber];
+    // 判定器などの初期化
+    InitSentenceData();
+    var nextTypingSentence = "";
+    for (int i = 0; i < typingJudge.Count; ++i)
     {
-      UICPUText.text = "";
+      nextTypingSentence += typingJudge[i][0];
     }
     // 正解した文字列を初期化
     correctString = "";
@@ -348,36 +380,6 @@ public class TypingSoft : MonoBehaviour
     isSentenceMistyped = false;
     index = 0;
     sentenceLength = 0;
-    // 問題文生成
-    ChangeSentence();
-    UpdateUITask();
-    // 入力受け付け状態にする
-    isInputValid = true;
-    // 時刻を取得
-    lastSentenceUpdateTime = Time.realtimeSinceStartup;
-  }
-
-  /// <summary>
-  /// 課題文章の変更を行う
-  /// </summary>
-  private void ChangeSentence()
-  {
-    // 例文生成
-    var t = gs.Generate();
-    if (!t.isGenerateSuccess)
-    {
-      CurrentGameCondition = (int)gameCondition.Canceled;
-    }
-    originSentence = t.originSentence;
-    typeSentence = t.typeSentence;
-    typingJudge = t.typeJudge;
-    // 判定器などの初期化
-    InitSentenceData();
-    var nextTypingSentence = "";
-    for (int i = 0; i < typingJudge.Count; ++i)
-    {
-      nextTypingSentence += typingJudge[i][0];
-    }
     // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
     // SetUITypeText(nextTypingSentence);
     CurrentTypingSentence = nextTypingSentence;
@@ -385,13 +387,20 @@ public class TypingSoft : MonoBehaviour
     // UI 上のテキスト変更
     UIOriginSentence.text = originSentence;
     UIYomigana.text = typeSentence;
+    UIType.text = "";
     if (ConfigScript.IsBeginnerMode)
     {
       UIType.text = nextTypingSentence;
     }
+    UpdateUITask();
+    // 入力受け付け状態にする
+    isInputValid = true;
+    // 時刻を取得
+    lastSentenceUpdateTime = Time.realtimeSinceStartup;
     // CPU Start
     if (ConfigScript.UseCPUGuide && UICPUText != null)
     {
+      UICPUText.text = "";
       StartCoroutine("CPUType");
     }
   }
@@ -614,7 +623,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private void CompleteTask()
   {
-    tasksCompleted++;
+    currentTaskNumber++;
     // リザルト集積用に追加
     Performance.AddOriginSentence(originSentence);
     Performance.AddTypedSentenceList(typedLetter.ToString());
@@ -637,7 +646,7 @@ public class TypingSoft : MonoBehaviour
     isInputValid = false;
     // 終了
     // numOfTask <= 0 の時は練習モード用で無限にできるようにするため
-    if (tasksCompleted >= numOfTask && numOfTask > 0)
+    if (currentTaskNumber >= numOfTask && numOfTask > 0)
     {
       CurrentGameCondition = (int)gameCondition.Finished;
     }
@@ -807,7 +816,7 @@ public class TypingSoft : MonoBehaviour
   {
     if (UITask != null)
     {
-      UITask.text = $"ワード数 : {tasksCompleted.ToString()} / {numOfTask.ToString()}";
+      UITask.text = $"ワード数 : {(currentTaskNumber + 1).ToString()} / {numOfTask.ToString()}";
     }
   }
 
@@ -856,7 +865,7 @@ public class TypingSoft : MonoBehaviour
       // F2 キーならリトライ
       if (e.keyCode == KeyCode.F2)
       {
-        InitGame();
+        GameMain();
       }
       else
       {

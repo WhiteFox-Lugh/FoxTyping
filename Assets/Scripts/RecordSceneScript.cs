@@ -104,7 +104,12 @@ public class RecordSceneScript : MonoBehaviour
   {
     if (KeyCode.Escape == kc)
     {
-      ReturnConfigScene();
+      if (ConfigScript.IsBeginnerMode){
+        ReturnBeginnerModeScene();
+      }
+      else {
+        ReturnConfigScene();
+      }
     }
     else if (KeyCode.F2 == kc)
     {
@@ -117,15 +122,40 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   public void Retry()
   {
-    SceneManager.LoadScene("TypingScene");
+    if (ConfigScript.IsBeginnerMode){
+      SceneManager.LoadScene("BeginnerModeTypingScene");
+    }
+    else {
+      SceneManager.LoadScene("TypingScene");
+    }
   }
 
   /// <summary>
   /// 設定画面に戻る
   /// </summary>
-  public void ReturnConfigScene()
+  private void ReturnConfigScene()
   {
     SceneManager.LoadScene("SinglePlayConfigScene");
+  }
+
+  /// <summary>
+  /// ビギナーモードの選択シーンへ戻る
+  /// </summary>
+  private void ReturnBeginnerModeScene()
+  {
+    SceneManager.LoadScene("BeginnerModeScene");
+  }
+
+  /// <summary>
+  /// 戻るボタンを押したときの挙動
+  /// </summary>
+  public void OnClickReturnButton(){
+    if (ConfigScript.IsBeginnerMode){
+      ReturnBeginnerModeScene();
+    }
+    else {
+      ReturnConfigScene();
+    }
   }
 
   /// <summary>

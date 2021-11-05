@@ -22,10 +22,23 @@ public class BeginnerModeTyping : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-    if (TypingSoft.CurrentGameCondition == (int)gameCondition.Canceled)
+    if (TypingSoft.CurrentGameCondition == (int)gameCondition.Finished)
+    {
+      StartCoroutine(FinishedEffect());
+    }
+    else if (TypingSoft.CurrentGameCondition == (int)gameCondition.Canceled)
     {
       ReturnConfig();
     }
+  }
+
+  /// <summary>
+  /// 終了前のエフェクト
+  /// </summary>
+  private IEnumerator FinishedEffect()
+  {
+    yield return new WaitForSeconds(1f);
+    Finished();
   }
 
   /// <summary>
@@ -34,6 +47,14 @@ public class BeginnerModeTyping : MonoBehaviour
   void ReturnConfig()
   {
     SceneManager.LoadScene("BeginnerModeScene");
+  }
+
+  /// <summary>
+  /// 結果画面へ遷移
+  /// </summary>
+  void Finished()
+  {
+    SceneManager.LoadScene("ResultScene");
   }
 
   /// <summary>

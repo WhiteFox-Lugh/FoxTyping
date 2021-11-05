@@ -12,7 +12,7 @@ public class ConfigScript : MonoBehaviour
   {
     set;
     get;
-  } = -1;
+  } = 10;
 
   // ゲームモード
   // 0 : 短文
@@ -91,4 +91,11 @@ public class ConfigScript : MonoBehaviour
     set;
     get;
   } = 0;
+
+  // 次のセンテンスに移行するまでの休止時間
+  public static float DelayTime
+  {
+    set;
+    get;
+  } = 0.5f;
 }
