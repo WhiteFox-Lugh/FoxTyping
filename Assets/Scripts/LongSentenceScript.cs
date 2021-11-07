@@ -58,15 +58,11 @@ public class LongSentenceScript : MonoBehaviour
   private const int ROW_CHAR_NUM = 25;
   // InputField に 表示される行数
   private const int ROW_DISPLAY = 17;
-  private int field_row_lower = 0;
-  private int field_row_upper = 0;
   private double startTime;
   private bool isShowInfo;
   private bool isFinished;
-  private bool isSectionSelect;
   // AssetBundle
   private static AssetBundle abLongData;
-  private static bool isABLoaded = false;
   // UI
   [SerializeField] TextMeshProUGUI UIResultTextField;
   [SerializeField] TextMeshProUGUI UIResultElapsedTime;
@@ -106,7 +102,6 @@ public class LongSentenceScript : MonoBehaviour
   // オリジナル
   private static string taskText;
   // 打鍵記録
-  private static string currentTypedSentence;
   private static List<KeyCode> typeKeyCodeHistory;
   // スコア表示
   private int correctCount = 0;
@@ -125,7 +120,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    isSectionSelect = true;
     InitUIPanel();
     StartCoroutine(LoadAssetBundle(CanStart));
   }
@@ -187,7 +181,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void SelectSection()
   {
-    isSectionSelect = true;
     SectionSelectPanel.SetActive(true);
   }
 
@@ -274,8 +267,6 @@ public class LongSentenceScript : MonoBehaviour
     startTime = 0.0;
     isShowInfo = false;
     isFinished = false;
-    isSectionSelect = false;
-    currentTypedSentence = "";
     typeKeyCodeHistory = new List<KeyCode>();
     UIInputField.interactable = false;
     UITextField.text = "";
@@ -283,8 +274,6 @@ public class LongSentenceScript : MonoBehaviour
     UIRestTime.text = "";
     UIInputCounter.text = "";
     LimitSec = ConfigScript.LongSentenceTimeLimit;
-    field_row_lower = 0;
-    field_row_upper = ROW_DISPLAY;
     StartCoroutine(CountDown());
   }
 
@@ -497,7 +486,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void ShowScore()
   {
-    const string EOS = "{END}";
     // 編集距離の計算
     string taskSentence = taskText;
     string userInputSentence = UIInputField.text;
