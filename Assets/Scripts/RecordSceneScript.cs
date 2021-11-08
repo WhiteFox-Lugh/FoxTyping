@@ -42,7 +42,10 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    ScoreInfoPanel.SetActive(false);
+    if (ScoreInfoPanel != null)
+    {
+      ScoreInfoPanel.SetActive(false);
+    }
     SetResult();
     SetResultDetail();
   }
@@ -60,20 +63,22 @@ public class RecordSceneScript : MonoBehaviour
   private void SetResult()
   {
     var perf = TypingSoft.Performance;
-    var kpsPerf = perf.GetKpmAverageAndStdDev();
-    int score = perf.GetNormalScore();
-    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
-    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
-    UIScoreText.text = score.ToString();
-    UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
     UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
-    for (int i = 0; i < RankScore.Count(); ++i)
-    {
-      if (score >= RankScore[i])
+    UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
+    if (!ConfigScript.IsBeginnerMode){
+      var kpsPerf = perf.GetKpmAverageAndStdDev();
+      int score = perf.GetNormalScore();
+      UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
+      UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
+      UIScoreText.text = score.ToString();
+      for (int i = 0; i < RankScore.Count(); ++i)
       {
-        UIRank.text = RankName[i];
-        UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
-        break;
+        if (score >= RankScore[i])
+        {
+          UIRank.text = RankName[i];
+          UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
+          break;
+        }
       }
     }
   }
@@ -123,7 +128,7 @@ public class RecordSceneScript : MonoBehaviour
   public void Retry()
   {
     if (ConfigScript.IsBeginnerMode){
-      SceneManager.LoadScene("BeginnerModeTypingScene");
+      SceneManager.LoadScene("BeginnerTypingScene");
     }
     else {
       SceneManager.LoadScene("TypingScene");

@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using System.Diagnostics;
 using System;
 using System.Text;
@@ -12,7 +13,7 @@ using UnityEngine.InputSystem.Controls;
 
 public class TypingSoft : MonoBehaviour
 {
-  private const double INTERVAL = 2.0F;
+  private static double INTERVAL = 2.0F;
   // 問題表示関連
   private static List<string> originSentenceList = new List<string>();
   private static string originSentence;
@@ -244,6 +245,9 @@ public class TypingSoft : MonoBehaviour
     UIYomigana.text = "";
     UIType.text = "";
     JISKanaOem2keyLog = new Queue<bool>();
+    if (ConfigScript.IsBeginnerMode){
+      INTERVAL = 0f;
+    }
     if (UICPUText != null)
     {
       UICPUText.text = "";
@@ -397,6 +401,9 @@ public class TypingSoft : MonoBehaviour
     isInputValid = true;
     // 時刻を取得
     lastSentenceUpdateTime = Time.realtimeSinceStartup;
+    if (ConfigScript.IsBeginnerMode){
+      firstCharInputTime = lastSentenceUpdateTime;
+    }
     // CPU Start
     if (ConfigScript.UseCPUGuide && UICPUText != null)
     {
@@ -632,16 +639,18 @@ public class TypingSoft : MonoBehaviour
     // タイプした文字を緑色に
     UIType.text = $"<color=#20A01D>{UIType.text}</color>";
     // 現在時刻の取得
-    if (UISTT != null && UIKPM != null)
+    if (UISTT != null)
     {
       double sentenceTypeTime = GetSentenceTypeTime(lastJudgeTime);
       totalTypingTime += sentenceTypeTime;
-      keyPerMin = GetKeyPerMinute();
-      double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
-      int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
-      int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
-      UpdateUIKeyPerMinute(intKPM, intSectionKPM);
       UpdateUIElapsedTime(sentenceTypeTime);
+      if (UIKPM != null){
+        keyPerMin = GetKeyPerMinute();
+        double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
+        int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
+        int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
+        UpdateUIKeyPerMinute(intKPM, intSectionKPM);
+      }
     }
     isInputValid = false;
     // 終了
@@ -873,7 +882,13 @@ public class TypingSoft : MonoBehaviour
         double currentTime = Time.realtimeSinceStartup;
         if (isFirstInput && !inputStr.Equals(""))
         {
-          firstCharInputTime = currentTime;
+          if (!ConfigScript.IsBeginnerMode)
+          {
+            firstCharInputTime = currentTime;
+          }
+          // 1文字目の時は反応時間もここで計測
+          var latency = currentTime - lastSentenceUpdateTime;
+          Performance.AddLatencyTime(latency);
           isFirstInput = false;
         }
         // タイピングで使用する文字以外は受け付けない

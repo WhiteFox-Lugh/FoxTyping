@@ -54,7 +54,7 @@ public class BeginnerModeTyping : MonoBehaviour
   /// </summary>
   void Finished()
   {
-    SceneManager.LoadScene("ResultScene");
+    SceneManager.LoadScene("BeginnerModeResultScene");
   }
 
   /// <summary>

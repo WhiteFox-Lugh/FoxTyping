@@ -1,3 +1,7 @@
+using System.Reflection.Emit;
+using System.Runtime.InteropServices;
+using System.Data.SqlTypes;
+using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -37,6 +41,12 @@ public class TypingPerformance
     private set;
     get;
   }
+  // Latency
+  public List<double> LatencyList
+  {
+    private set;
+    get;
+  }
 
   /// <summary>
   /// コンストラクター
@@ -47,6 +57,7 @@ public class TypingPerformance
     TypedSentenceList = new List<string>();
     TypeJudgeList = new List<List<int>>();
     TypeTimeList = new List<List<double>>();
+    LatencyList = new List<double>();
   }
 
   /// <summary>
@@ -78,11 +89,20 @@ public class TypingPerformance
 
   /// <summary>
   /// タイプした時刻のリストを追加する
-  /// <paran name="typeTimeList">打鍵した時刻</param>
+  /// <param name="typeTimeList">打鍵した時刻</param>
   /// </summary>
   public void AddTypeTimeList(List<double> typeTimeList)
   {
     TypeTimeList.Add(typeTimeList);
+  }
+
+  /// <summary>
+  /// Latency を追加
+  /// <param name="latency">Latency 値</param>
+  /// </summary>
+  public void AddLatencyTime(double latency)
+  {
+    LatencyList.Add(latency);
   }
 
   /// <summary>
@@ -104,7 +124,11 @@ public class TypingPerformance
   /// </summary>
   public double GetSentenceTypeTime(int num)
   {
-    return TypeTimeList[num][TypeTimeList[num].Count() - 1] - TypeTimeList[num][0];
+    var sentenceTime = TypeTimeList[num][TypeTimeList[num].Count() - 1] - TypeTimeList[num][0];
+    if (ConfigScript.IsBeginnerMode){
+      sentenceTime += LatencyList[num];
+    }
+    return sentenceTime;
   }
 
   /// <summary>
@@ -179,8 +203,22 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-    sb.Append("時間: ").Append(GetSentenceTypeTime(num).ToString("0.00"))
-      .Append("秒 / Key Per Minute: ").Append(GetSentenceKPM(num).ToString("0"));
+    sb.Append("タイプ時間: ").Append(GetSentenceTypeTime(num).ToString("0.00")).Append("秒");
+    if (!ConfigScript.IsBeginnerMode){
+      sb.Append(" / Key Per Minute: ").Append(GetSentenceKPM(num).ToString("0"));
+    }
+    return sb.ToString();
+  }
+
+  /// <summary>
+  /// num 番目のセンテンスに対して Latency を文章化
+  /// <param name="num">確認したいセンテンス番号(0-index)</param>
+  /// <returns>num 番目のセンテンスの Latency を文章化</returns>
+  /// </summary>
+  private string GetLatencyInfoString(int num){
+    var sb = new StringBuilder();
+    var latencyInfo = LatencyList[num].ToString("0.000");
+    sb.Append($"反応時間: {latencyInfo}秒");
     return sb.ToString();
   }
 
@@ -195,7 +233,11 @@ public class TypingPerformance
     sb.Append(this.OriginSentenceList[num]).Append("\n");
     sb.Append(GetColoredTypedSentence(num)).Append("\n");
     sb.Append(GetCorrectAndMistypeNumString(num)).Append("\n");
-    sb.Append(GetTimeInfoString(num)).Append("\n\n");
+    sb.Append(GetTimeInfoString(num)).Append("\n");
+    if (!ConfigScript.IsBeginnerMode){
+      sb.Append(GetLatencyInfoString(num)).Append("\n");
+    }
+    sb.Append("\n");
     return sb.ToString();
   }
 
