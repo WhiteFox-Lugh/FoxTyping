@@ -62,9 +62,16 @@ public class SinglePlayTyping : MonoBehaviour
   void OnGUI()
   {
     Event e = Event.current;
-    if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F1)
+    if (e.type == EventType.KeyDown)
     {
-      ConfigScript.InfoPanelMode = 1 - ConfigScript.InfoPanelMode;
+      if (e.keyCode == KeyCode.F2)
+      {
+        ConfigScript.WordPanelMode = 1 - ConfigScript.WordPanelMode;
+      }
+      else if (e.keyCode == KeyCode.F3)
+      {
+        ConfigScript.InfoPanelMode = 1 - ConfigScript.InfoPanelMode;
+      }
     }
   }
 }

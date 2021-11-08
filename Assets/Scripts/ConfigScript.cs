@@ -34,6 +34,14 @@ public class ConfigScript : MonoBehaviour
     get;
   } = 0;
 
+  // ワードすぐ下の小さいパネルの表示
+  // 0 : 次のワード
+  // 1 : CPU 速度
+  public static int WordPanelMode {
+    set;
+    get;
+  } = 0;
+
   // 短文打つモードでのデータセットのファイル名
   public static string DataSetName
   {

@@ -74,11 +74,13 @@ public class TypingSoft : MonoBehaviour
   [SerializeField] private Text UIAccuracy;
   [SerializeField] private Text UICPUText;
   [SerializeField] private Text UITypeInfo;
+  [SerializeField] private Text UINextWord;
   [SerializeField] private Text countdownText;
   [SerializeField] private GameObject DataPanel;
   [SerializeField] private GameObject AssistKeyboardPanel;
   [SerializeField] private GameObject CPUPanel;
   [SerializeField] private GameObject NowLoadingPanel;
+  [SerializeField] private GameObject NextWordPanel;
   private static GenerateSentence gs;
   // Assist Keyboard JIS
   private static AssistKeyboardJIS AKJIS;
@@ -244,6 +246,7 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = "";
     UIYomigana.text = "";
     UIType.text = "";
+    UINextWord.text = "";
     JISKanaOem2keyLog = new Queue<bool>();
     if (ConfigScript.IsBeginnerMode){
       INTERVAL = 0f;
@@ -275,6 +278,10 @@ public class TypingSoft : MonoBehaviour
     if (DataPanel != null && AssistKeyboardPanel != null)
     {
       ShowMiddlePanel(ConfigScript.InfoPanelMode);
+    }
+    if (CPUPanel != null && NextWordPanel != null)
+    {
+      ShowWordPanel(ConfigScript.WordPanelMode);
     }
     if (AssistKeyboardPanel != null)
     {
@@ -409,6 +416,16 @@ public class TypingSoft : MonoBehaviour
     {
       UICPUText.text = "";
       StartCoroutine("CPUType");
+    }
+    if (UINextWord != null)
+    {
+      if (currentTaskNumber + 1 < numOfTask)
+      {
+        UINextWord.text = originSentenceList[currentTaskNumber + 1];
+      }
+      else {
+        UINextWord.text = "";
+      }
     }
   }
 
@@ -858,6 +875,22 @@ public class TypingSoft : MonoBehaviour
   }
 
   /// <summary>
+  /// ワード関連の UI 表示を更新
+  /// <param name="activePanelVal">表示をアクティブにするパネルの番号</param>
+  /// </summary>
+  private void ShowWordPanel(int activePanelVal){
+    if (activePanelVal == 0)
+    {
+      CPUPanel.SetActive(false);
+      NextWordPanel.SetActive(true);
+    }
+    else if (activePanelVal == 1){
+      CPUPanel.SetActive(true);
+      NextWordPanel.SetActive(false);
+    }
+  }
+
+  /// <summary>
   /// キーが入力されたとき等の処理
   /// </summary>
   void OnGUI()
@@ -871,8 +904,8 @@ public class TypingSoft : MonoBehaviour
     else if (!isPressedAnyKey && isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
     && e.keyCode != KeyCode.LeftShift && e.keyCode != KeyCode.RightShift && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
-      // F2 キーならリトライ
-      if (e.keyCode == KeyCode.F2)
+      // F1 キーならリトライ
+      if (e.keyCode == KeyCode.F1)
       {
         GameMain();
       }
