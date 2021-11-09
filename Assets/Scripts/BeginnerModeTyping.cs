@@ -1,32 +1,24 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class BeginnerModeTyping : MonoBehaviour
 {
-  // ゲームの状況
-  private enum gameCondition
-  {
-    Progress,
-    Finished,
-    Canceled,
-  };
 
   // Start is called before the first frame update
   void Awake()
   {
-    ConfigScript.InfoPanelMode = 2;
+    ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.both;
   }
 
   // Update is called once per frame
   void Update()
   {
-    if (TypingSoft.CurrentGameCondition == (int)gameCondition.Finished)
+    if (TypingSoft.CurrentGameCondition == (int)TypingSoft.GameCondition.Finished)
     {
       StartCoroutine(FinishedEffect());
     }
-    else if (TypingSoft.CurrentGameCondition == (int)gameCondition.Canceled)
+    else if (TypingSoft.CurrentGameCondition == (int)TypingSoft.GameCondition.Canceled)
     {
       ReturnConfig();
     }
@@ -37,7 +29,7 @@ public class BeginnerModeTyping : MonoBehaviour
   /// </summary>
   private IEnumerator FinishedEffect()
   {
-    yield return new WaitForSeconds(1f);
+    yield return new WaitForSeconds(0.5f);
     Finished();
   }
 
@@ -65,9 +57,27 @@ public class BeginnerModeTyping : MonoBehaviour
     Event e = Event.current;
     if (e.type == EventType.KeyDown)
     {
+      // F1 が押されたときは、リトライ
       if (e.keyCode == KeyCode.F1)
       {
-        ConfigScript.InfoPanelMode = 2 - ConfigScript.InfoPanelMode;
+        TypingSoft.RetryPractice();
+      }
+      // F2 が押されたときは、パネル表示の切り替え
+      else if (e.keyCode == KeyCode.F2)
+      {
+        if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.both)
+        {
+          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
+        }
+        else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
+        {
+          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.both;
+        }
+      }
+      // Esc : 中断
+      else if (e.keyCode == KeyCode.Escape)
+      {
+        TypingSoft.CancelPractice();
       }
     }
   }

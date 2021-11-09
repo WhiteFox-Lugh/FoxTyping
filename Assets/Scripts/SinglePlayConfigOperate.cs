@@ -1,10 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class SinglePlayConfigOperate : MonoBehaviour
 {
@@ -21,7 +19,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   private static int prevDropdownLongDataset = 0;
   private static int prevDropdownUseYomigana = 0;
   private static int prevCPUKpm = 1;
-  private static int prevIsUseCPUGuide = 0;
   private static int prevLongTimeLimit = 300;
   private static int prevInputType = 0;
   private static int longSentenceTimeLimitVal = 300;
@@ -29,7 +26,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_Dropdown UIDataSetName;
   [SerializeField] private TMP_Dropdown UILongDataSetName;
   [SerializeField] private TMP_Dropdown UISentenceNum;
-  [SerializeField] private TMP_Dropdown UIUseCPUKpmGuide;
   [SerializeField] private TMP_Dropdown UIUseYomigana;
   [SerializeField] private TMP_Dropdown UIInputType;
   [SerializeField] private TMP_InputField InputCPUSpeed;
@@ -77,7 +73,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     prevDropdownUseYomigana = PlayerPrefs.GetInt("foxtyping_single_use_yomigana", SETTINGS_DEFAULT_VAL);
     prevLongTimeLimit = PlayerPrefs.GetInt("foxtyping_single_long_time", SETTINGS_LONG_TIME_DEFAULT_VAL);
     prevCPUKpm = PlayerPrefs.GetInt("foxtyping_single_cpukpm", SETTINGS_CPU_KPM_DEFAULT);
-    prevIsUseCPUGuide = PlayerPrefs.GetInt("foxtyping_single_use_cpuguide", SETTINGS_DEFAULT_VAL);
   }
 
   /// <summary>
@@ -92,7 +87,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     PlayerPrefs.SetInt("foxtyping_single_use_yomigana", UIUseYomigana.value);
     PlayerPrefs.SetInt("foxtyping_single_long_time", longSentenceTimeLimitVal);
     PlayerPrefs.SetInt("foxtyping_single_cpukpm", Int32.Parse(InputCPUSpeed.text));
-    PlayerPrefs.SetInt("foxtyping_single_use_cpuguide", UIUseCPUKpmGuide.value);
   }
 
   /// <summary>
@@ -107,8 +101,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UISentenceNum.value = prevDropdownTaskNum;
     UIInputType.value = prevInputType;
     longSentenceTimeLimitVal = prevLongTimeLimit;
-    UIUseCPUKpmGuide.value = (prevIsUseCPUGuide == 1 ? 1 : 0);
-    InputCPUSpeed.interactable = prevIsUseCPUGuide == 1;
     InputCPUSpeed.text = prevCPUKpm.ToString();
     SetLongSentenceTimeLimitUI();
   }
@@ -131,7 +123,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.Tasks = (prevDropdownTaskNum + 1) * TASK_UNIT;
     ConfigScript.LongSentenceTaskName = longDatasetFileName[prevDropdownLongDataset];
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
-    ConfigScript.UseCPUGuide = UIUseCPUKpmGuide.value == 1;
     ConfigScript.CPUKpm = prevCPUKpm;
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
@@ -268,13 +259,5 @@ public class SinglePlayConfigOperate : MonoBehaviour
       longSentenceTimeLimitVal = LONG_MIN_TIME_LIMIT;
     }
     SetLongSentenceTimeLimitUI();
-  }
-
-  /// <summary>
-  /// CPU 速度ガイドの設定変更時の挙動
-  /// </summary>
-  public void OnUseCPUGuideValueChanged()
-  {
-    InputCPUSpeed.interactable = UIUseCPUKpmGuide.value == 1;
   }
 }

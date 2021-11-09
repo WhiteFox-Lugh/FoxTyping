@@ -1,27 +1,43 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ConfigScript : MonoBehaviour
 {
+  public enum SingleMode
+  {
+    shortSentence,
+    longSentence
+  }
+
+  // シングルプレイでのモード
+  // SingleMode を参照
+  public static int GameMode
+  {
+    set;
+    get;
+  } = (int)SingleMode.shortSentence;
+
+
+  // 短文で何個ワードを打つか
   public static int Tasks
   {
     set;
     get;
   } = 10;
 
-  // ゲームモード
-  // 0 : 短文
-  // 1 : 長文
-  public static int GameMode
+  // 画面中段の表示
+  public enum MiddlePanel
   {
-    set;
-    get;
-  } = 0;
+    typingPerf,
+    assistKeyboard,
+    both,
+    none
+  }
 
   // 画面中段の表示
   // 0 : タイピングパフォーマンス情報
@@ -32,15 +48,23 @@ public class ConfigScript : MonoBehaviour
   {
     set;
     get;
-  } = 0;
+  } = (int)MiddlePanel.typingPerf;
+
+  // ワードパネルのすぐ下に何を表示するか
+  public enum SmallPanel
+  {
+    nextWord,
+    assistSpeed
+  }
 
   // ワードすぐ下の小さいパネルの表示
   // 0 : 次のワード
   // 1 : CPU 速度
-  public static int WordPanelMode {
+  public static int WordPanelMode
+  {
     set;
     get;
-  } = 0;
+  } = (int)SmallPanel.nextWord;
 
   // 短文打つモードでのデータセットのファイル名
   public static string DataSetName
@@ -56,7 +80,7 @@ public class ConfigScript : MonoBehaviour
     get;
   } = "Long_Constitution";
 
-  // 長文モードでの制限時間
+  // 長文モードでの制限時間(s)
   public static int LongSentenceTimeLimit
   {
     set;
@@ -65,13 +89,6 @@ public class ConfigScript : MonoBehaviour
 
   // 長文モードでルビを使用するか
   public static bool UseRuby
-  {
-    set;
-    get;
-  } = true;
-
-  // CPU Speed Guide の利用をするか
-  public static bool UseCPUGuide
   {
     set;
     get;
@@ -91,6 +108,12 @@ public class ConfigScript : MonoBehaviour
     get;
   } = false;
 
+  public enum InputType
+  {
+    roman,
+    jisKana
+  }
+
   // 入力モード
   // 0: Roman
   // 1: Kana
@@ -98,7 +121,7 @@ public class ConfigScript : MonoBehaviour
   {
     set;
     get;
-  } = 0;
+  } = (int)InputType.roman;
 
   // 次のセンテンスに移行するまでの休止時間
   public static float DelayTime

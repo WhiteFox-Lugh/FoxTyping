@@ -1,14 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class BeginnerModeOperate : MonoBehaviour
 {
-  private const int MODE_NUM = 0; // 短文練習モード固定
   private static int prevChapterNum = 1; // 前回の練習章を維持
   [SerializeField] private GameObject chapterSelect;
 
@@ -109,7 +105,7 @@ public class BeginnerModeOperate : MonoBehaviour
   /// </summary>
   public void OnClickButton(int buttonNumber)
   {
-    ConfigScript.GameMode = MODE_NUM; // 短文モード固定
+    ConfigScript.GameMode = (int)ConfigScript.SingleMode.shortSentence;
     ConfigScript.DataSetName = beginnerDatasetFileName[buttonNumber];
     ConfigScript.Tasks = 30;
     ConfigScript.IsBeginnerMode = true;

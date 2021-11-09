@@ -1,15 +1,7 @@
-using System.Diagnostics;
-using System.Security.AccessControl;
-using System;
-using System.Text;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Shapes2D;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class AssistKeyboardJIS : MonoBehaviour
 {
@@ -326,7 +318,8 @@ public class AssistKeyboardJIS : MonoBehaviour
       {
         var obj = keyboardRows.transform.GetChild(j).gameObject;
         var keyName = obj.name;
-        if (ConfigScript.InputMode == 1 && jisKanaKeyNameMap.ContainsKey(keyName)){
+        if (ConfigScript.InputMode == 1 && jisKanaKeyNameMap.ContainsKey(keyName))
+        {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var kanaText = jisKanaKeyNameMap[keyName];
           keyTextObj.text = kanaText;
