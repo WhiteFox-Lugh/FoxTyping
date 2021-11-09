@@ -1,17 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ModeSelectScript : MonoBehaviour
 {
-  void Start()
-  {
-  }
-
-  void Update()
-  {
-  }
 
   /// <summary>
   /// 押されたキーのチェックと対応する操作への移行

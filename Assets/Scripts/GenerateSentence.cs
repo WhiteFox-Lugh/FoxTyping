@@ -1,14 +1,12 @@
 using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 
 public class GenerateSentence : MonoBehaviour
 {

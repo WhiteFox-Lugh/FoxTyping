@@ -28,8 +28,7 @@ public class TypingSoft : MonoBehaviour
   // タイピングの正誤判定器
   private static List<List<List<string>>> sentenceJudgeDataList = new List<List<List<string>>>();
   private static List<List<string>> typingJudge;
-  // キーを押す、離すの判定
-  private static bool isPressedAnyKey;
+
   // load 関係
   private static bool isLoadSuccess = false;
   // index 類
@@ -104,6 +103,7 @@ public class TypingSoft : MonoBehaviour
   // JIS かな用
   // 長音と「ろ」の識別用に OEM2 キーが押されたかのチェックを行う
   private Queue<bool> JISKanaOem2keyLog = new Queue<bool>();
+  private const int OEM2KEY_LOG_FRAME = 30;
 
   // エラーコードとエラータイプ
   private enum ErrorType
@@ -231,7 +231,6 @@ public class TypingSoft : MonoBehaviour
     currentTaskNumber = 0;
     lastJudgeTime = -1.0;
     isRecMistype = false;
-    isPressedAnyKey = false;
     isInputValid = false;
     isIntervalEnded = false;
     isSentenceMistyped = false;
@@ -286,21 +285,25 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   void Update()
   {
+    // リトライの状態になっていればリトライを最優先
     if (CurrentGameCondition == (int)GameCondition.Retry)
     {
       GameMain();
     }
     else
     {
-      if (ConfigScript.InputMode == 1)
+      // JIS かなモードの時は OEM2 キーが押されたかどうかを監視
+      if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
       {
         JISKanaOem2keyLog.Enqueue(Keyboard.current.oem2Key.wasPressedThisFrame);
-        if (JISKanaOem2keyLog.Count > 30)
+        if (JISKanaOem2keyLog.Count > OEM2KEY_LOG_FRAME)
         {
           JISKanaOem2keyLog.Dequeue();
         }
       }
+      // テキストカラーの設定
       TextColorChange();
+      // パネル表示
       if (DataPanel != null && AssistKeyboardPanel != null)
       {
         ShowMiddlePanel(ConfigScript.InfoPanelMode);
@@ -309,6 +312,7 @@ public class TypingSoft : MonoBehaviour
       {
         ShowWordPanel(ConfigScript.WordPanelMode);
       }
+      // アシストキーボード表示
       if (AssistKeyboardPanel != null)
       {
         if (CurrentTypingSentence == "" || !isInputValid)
@@ -382,11 +386,13 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private void ChangeSentence()
   {
+    // 文章などをセット
     originSentence = originSentenceList[currentTaskNumber];
     typeSentence = typeSentenceList[currentTaskNumber];
     typingJudge = sentenceJudgeDataList[currentTaskNumber];
     // 判定器などの初期化
     InitSentenceData();
+    // ローマ字で次打つべき文字表示を判定からセット
     var nextTypingSentence = "";
     for (int i = 0; i < typingJudge.Count; ++i)
     {
@@ -509,18 +515,21 @@ public class TypingSoft : MonoBehaviour
   private IEnumerator TypingCheck(string nextString, double keyDownTime)
   {
     lastJudgeTime = keyDownTime;
+    // JIS かなの OEM2 キー判定用に 1フレームだけ遅延させる
     yield return null;
+    // OEM2 キーが押されているかどうかの判定
     if (JISKanaOem2keyLog.Contains(true))
     {
       nextString = "\\";
+      // 多重判定防止のためのクリア
       JISKanaOem2keyLog.Clear();
     }
-    // リザルト集積用
+    // リザルト集積
     typedLetter.Append(nextString);
     typeTimeList.Add(keyDownTime);
 
     // まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
-    bool isMistype = judgeType(nextString);
+    bool isMistype = JudgeTyping(nextString);
     if (!isMistype)
     {
       Correct(nextString);
@@ -535,7 +544,7 @@ public class TypingSoft : MonoBehaviour
   /// <summary>
   /// 入力された文字と次打つべき文字の判定部分
   /// </summary>
-  private bool judgeType(string currentStr)
+  private bool JudgeTyping(string currentStr)
   {
     bool isMistype = true;
     // 全ての valid なセンテンスに対してチェックする
@@ -645,7 +654,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private double GetKeyPerMinute()
   {
-    return ((1.0 * correctTypeNum) / (1.0 * totalTypingTime)) * 60.0;
+    return 60.0 * correctTypeNum / (1.0 * totalTypingTime);
   }
 
   /// <summary>
@@ -655,7 +664,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private double GetSentenceKeyPerMinute(double sentenceTypeTime)
   {
-    return ((1.0 * sentenceLength) / (1.0 * sentenceTypeTime)) * 60.0;
+    return 60.0 * sentenceLength / (1.0 * sentenceTypeTime);
   }
 
   /// <summary>
@@ -916,26 +925,27 @@ public class TypingSoft : MonoBehaviour
   {
     Event e = Event.current;
     var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-    if (!isPressedAnyKey && isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
-    && e.keyCode != KeyCode.LeftShift && e.keyCode != KeyCode.RightShift && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
+    && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
       var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
       double currentTime = Time.realtimeSinceStartup;
-      if (isFirstInput && !inputStr.Equals(""))
-      {
-        if (!ConfigScript.IsBeginnerMode)
-        {
-          firstCharInputTime = currentTime;
-        }
-        // 1文字目の時は反応時間もここで計測
-        var latency = currentTime - lastSentenceUpdateTime;
-        Performance.AddLatencyTime(latency);
-        isFirstInput = false;
-      }
       // タイピングで使用する文字以外は受け付けない
       // Esc など画面遷移などで使うキーと競合を避ける
       if (!inputStr.Equals(""))
       {
+        if (isFirstInput)
+        {
+          if (!ConfigScript.IsBeginnerMode)
+          {
+            firstCharInputTime = currentTime;
+          }
+          // 1文字目の時は反応時間もここで計測
+          var latency = currentTime - lastSentenceUpdateTime;
+          Performance.AddLatencyTime(latency);
+          isFirstInput = false;
+        }
+        // 正誤チェック
         StartCoroutine(TypingCheck(inputStr, currentTime));
       }
     }

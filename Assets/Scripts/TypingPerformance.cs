@@ -1,13 +1,7 @@
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Data.SqlTypes;
-using System.ComponentModel;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 public class TypingPerformance
 {
@@ -110,7 +104,7 @@ public class TypingPerformance
   /// <param name="num">確認したいセンテンス番号(0-index)</param>
   /// <returns>情報が整合性が取れていれば true、そうでなければ false</returns>
   /// </summary>
-  public bool isSentenceInfoValid(int num)
+  public bool IsSentenceInfoValid(int num)
   {
     bool isCountValid = (TypedSentenceList[num].Length == TypeJudgeList[num].Count())
                         && (TypeJudgeList[num].Count() == TypeTimeList[num].Count());
@@ -125,7 +119,8 @@ public class TypingPerformance
   public double GetSentenceTypeTime(int num)
   {
     var sentenceTime = TypeTimeList[num][TypeTimeList[num].Count() - 1] - TypeTimeList[num][0];
-    if (ConfigScript.IsBeginnerMode){
+    if (ConfigScript.IsBeginnerMode)
+    {
       sentenceTime += LatencyList[num];
     }
     return sentenceTime;
@@ -204,7 +199,8 @@ public class TypingPerformance
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
     sb.Append("タイプ時間: ").Append(GetSentenceTypeTime(num).ToString("0.00")).Append("秒");
-    if (!ConfigScript.IsBeginnerMode){
+    if (!ConfigScript.IsBeginnerMode)
+    {
       sb.Append(" / Key Per Minute: ").Append(GetSentenceKPM(num).ToString("0"));
     }
     return sb.ToString();
@@ -215,7 +211,8 @@ public class TypingPerformance
   /// <param name="num">確認したいセンテンス番号(0-index)</param>
   /// <returns>num 番目のセンテンスの Latency を文章化</returns>
   /// </summary>
-  private string GetLatencyInfoString(int num){
+  private string GetLatencyInfoString(int num)
+  {
     var sb = new StringBuilder();
     var latencyInfo = LatencyList[num].ToString("0.000");
     sb.Append($"反応時間: {latencyInfo}秒");
@@ -234,7 +231,8 @@ public class TypingPerformance
     sb.Append(GetColoredTypedSentence(num)).Append("\n");
     sb.Append(GetCorrectAndMistypeNumString(num)).Append("\n");
     sb.Append(GetTimeInfoString(num)).Append("\n");
-    if (!ConfigScript.IsBeginnerMode){
+    if (!ConfigScript.IsBeginnerMode)
+    {
       sb.Append(GetLatencyInfoString(num)).Append("\n");
     }
     sb.Append("\n");
