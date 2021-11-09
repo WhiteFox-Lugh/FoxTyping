@@ -82,7 +82,7 @@ public class TypingSoft : MonoBehaviour
   // char からひらがなへの変換
   // JIS かな用
   private static readonly Dictionary<string, string> charToHiragana = new Dictionary<string, string> {
-    {"1", "ぬ"}, {"!", "み"}, {"2", "ふ"}, {"\"", "ふ"}, {"3", "あ"}, {"#", "ぁ"},
+    {"1", "ぬ"}, {"!", "ぬ"}, {"2", "ふ"}, {"\"", "ふ"}, {"3", "あ"}, {"#", "ぁ"},
     {"4", "う"}, {"$", "ぅ"}, {"5", "え"}, {"%", "ぇ"}, {"6", "お"}, {"&", "ぉ"},
     {"7", "や"}, {"\'", "ゃ"}, {"8", "ゆ"}, {"(", "ゅ"}, {"9", "よ"}, {")", "ょ"},
     {"0", "わ"}, {"\t", "を"}, {"-", "ほ"}, {"=", "ほ"}, {"^", "へ"}, {"~", "へ"},
@@ -525,7 +525,14 @@ public class TypingSoft : MonoBehaviour
       JISKanaOem2keyLog.Clear();
     }
     // リザルト集積
-    typedLetter.Append(nextString);
+    if (ConfigScript.InputMode == (int)ConfigScript.InputType.roman)
+    {
+      typedLetter.Append(nextString);
+    }
+    else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
+    {
+      typedLetter.Append(charToHiragana[nextString]);
+    }
     typeTimeList.Add(keyDownTime);
 
     // まだ可能性のあるセンテンス全てに対してミスタイプかチェックする
@@ -558,7 +565,7 @@ public class TypingSoft : MonoBehaviour
       int j = sentenceIndex[index][i];
       string judgeString = typingJudge[index][i][j].ToString();
       // ローマ字
-      if (ConfigScript.InputMode == 0)
+      if (ConfigScript.InputMode == (int)ConfigScript.InputType.roman)
       {
 
         // 正解タイプ
@@ -573,7 +580,7 @@ public class TypingSoft : MonoBehaviour
         }
       }
       // JIS かな
-      else if (ConfigScript.InputMode == 1)
+      else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
       {
         string inputHiragana = charToHiragana[currentStr];
         if (inputHiragana.Equals(judgeString))
