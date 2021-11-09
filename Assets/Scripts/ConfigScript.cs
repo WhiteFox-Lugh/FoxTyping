@@ -1,7 +1,16 @@
-using UnityEngine;
-
-public class ConfigScript : MonoBehaviour
+public sealed class ConfigScript
 {
+  private readonly static ConfigScript instance = new ConfigScript();
+
+  public static ConfigScript GetInstance()
+  {
+    return instance;
+  }
+  private ConfigScript()
+  {
+
+  }
+
   public enum SingleMode
   {
     shortSentence,
