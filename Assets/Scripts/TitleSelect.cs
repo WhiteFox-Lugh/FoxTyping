@@ -1,23 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class TitleSelect : MonoBehaviour
 {
-
-  /// <summary>
-  /// 初期化
-  /// </summary>
-  void Start()
-  {
-  }
-
-  /// <summary>
-  /// 1f ごとの処理
-  /// </summary>
-  void Update()
-  {
-  }
 
   /// <summary>
   /// 押されたキーのチェックと対応する操作への移行

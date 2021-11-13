@@ -1,17 +1,15 @@
-using System.Diagnostics;
 using System;
-using System.IO;
-using System.Text;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 // 差分表示用
 public struct Diff
@@ -30,7 +28,7 @@ public struct Diff
 
 public class LongSentenceScript : MonoBehaviour
 {
-  private enum judgeType
+  private enum JudgeType
   {
     insert,
     delete,
@@ -40,20 +38,17 @@ public class LongSentenceScript : MonoBehaviour
   private const string ABPathLocal = "AssetBundleData/wordset_long";
   private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
   // diff の表示色
-  const string COLOR_INSERT = "orange";
-  const string COLOR_DELETE = "red";
-  const string COLOR_REPLACE = "blue";
+  private const string COLOR_INSERT = "orange";
+  private const string COLOR_DELETE = "red";
+  private const string COLOR_REPLACE = "blue";
   // 正解、不正解の重み
-  const int CORRECT_SCORE = 1;
-  const int MISS_COST = 30;
-  const int MISS_COST_MP = 1;
+  private const int CORRECT_SCORE = 1;
+  private const int MISS_COST = 30;
   private double startTime;
   private bool isShowInfo;
   private bool isFinished;
-  private bool isSectionSelect;
   // AssetBundle
   private static AssetBundle abLongData;
-  private static bool isABLoaded = false;
   // UI
   [SerializeField] TextMeshProUGUI UIResultTextField;
   [SerializeField] TextMeshProUGUI UIResultElapsedTime;
@@ -64,9 +59,11 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UIDetailText;
   [SerializeField] TextMeshProUGUI TaskTextContent;
+  [SerializeField] TextMeshProUGUI CurrentInputText;
   [SerializeField] TextMeshProUGUI PreviewText;
   [SerializeField] TMP_Dropdown DropdownSectionSelect;
   [SerializeField] GameObject TaskViewport;
+  [SerializeField] GameObject InputArea;
   [SerializeField] TMP_InputField UIInputField;
   [SerializeField] GameObject SectionSelectPanel;
   [SerializeField] GameObject InputPanel;
@@ -77,9 +74,10 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject OperationPanel;
   [SerializeField] GameObject ResultOperationPanel;
   [SerializeField] GameObject TaskVerticalBar;
+  [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
-  private static string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
-  private static string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+  private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
+  private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
   private static List<int> sectionStartPosList;
   // ルビ利用するかどうか
   private static bool isUseRuby;
@@ -89,9 +87,6 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskWithRuby;
   // オリジナル
   private static string taskText;
-  // 打鍵記録
-  private static string currentTypedSentence;
-  private static List<KeyCode> typeKeyCodeHistory;
   // スコア表示
   private int correctCount = 0;
   private int deleteCount = 0;
@@ -109,7 +104,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    isSectionSelect = true;
     InitUIPanel();
     StartCoroutine(LoadAssetBundle(CanStart));
   }
@@ -135,7 +129,8 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   public void Retry()
   {
-    if (isShowInfo || isFinished){
+    if (isShowInfo || isFinished)
+    {
       InitUIPanel();
       SelectSection();
     }
@@ -171,7 +166,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void SelectSection()
   {
-    isSectionSelect = true;
     SectionSelectPanel.SetActive(true);
   }
 
@@ -258,9 +252,6 @@ public class LongSentenceScript : MonoBehaviour
     startTime = 0.0;
     isShowInfo = false;
     isFinished = false;
-    isSectionSelect = false;
-    currentTypedSentence = "";
-    typeKeyCodeHistory = new List<KeyCode>();
     UIInputField.interactable = false;
     UITextField.text = "";
     UIInputField.text = "";
@@ -306,14 +297,51 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Update()
   {
-    // クリップボードの中身を消去
-    GUIUtility.systemCopyBuffer = "";
-    // 入力中はタイマーを更新
+    // // フォーカスされていなければ強制フォーカス
+    // if (!){
+    //   UIInputField.Select();
+    // }
     if (isShowInfo && !isFinished)
     {
+      // 入力中はタイマーを更新
       CheckTimer();
       CheckInputStr();
+      // スクロール位置を調整
+      if (UIInputField.isFocused)
+      {
+        AdjustScroll();
+      }
     }
+  }
+
+  /// <summary>
+  /// 課題文章に合わせてスクロール位置を調整
+  /// </summary>
+  private void AdjustScroll()
+  {
+    var scrollBarTask = TaskVerticalBar.GetComponent<Scrollbar>();
+    var scrollBarInput = InputVerticalBar.GetComponent<Scrollbar>();
+    // 現在のバーの位置を取得(0-1)
+    var taskBarPos = scrollBarTask.value;
+    var inputBarPos = scrollBarInput.value;
+    // UnityEngine.Debug.Log($"task -> {taskBarPos}, input -> {inputBarPos}");
+    // 表示ウィンドウの高さを取得
+    var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
+    // 課題文、入力文のコンテンツの高さと行数を取得
+    var taskHeight = TaskTextContent.preferredHeight;
+    var inputHeight = CurrentInputText.preferredHeight;
+    var taskLineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
+    var inputLineHeight = inputHeight / CurrentInputText.textInfo.lineCount;
+    // スクロールバーの同期
+    // inputPos は入力した文章の上からどれだけスクロールしたか
+    var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
+    // UnityEngine.Debug.Log($"inputPos -> {inputPos}");
+    // inputPos のスクロール量を Task のスクロールバーのほうで換算
+    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
+    scrollBarTask.value = 1 - nextTaskScrollBarValue;
+    // scrollBarInput.value = nextInputBarPos;
+    // UnityEngine.Debug.Log($"高さ: {taskHeight}, {inputHeight}、行の高さ: {taskLineHeight}, {inputLineHeight}");
   }
 
   /// <summary>
@@ -330,7 +358,7 @@ public class LongSentenceScript : MonoBehaviour
     taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
     var convertedText = Regex.Replace(docData, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
-    displayText = (isUseRuby ? taskWithRuby : taskText) + "\n\n\n\n\n";
+    displayText = (isUseRuby ? taskWithRuby : taskText);
   }
 
   /// <summary>
@@ -416,7 +444,7 @@ public class LongSentenceScript : MonoBehaviour
   public void Finish()
   {
     var isPracticing = !isFinished && isShowInfo;
-    if (!isPracticing){ return; }
+    if (!isPracticing) { return; }
     // 終了時刻の取得
     var endTime = Time.realtimeSinceStartup;
     var elapsedTime = endTime - startTime;
@@ -444,7 +472,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void ShowScore()
   {
-    const string EOS = "{END}";
     // 編集距離の計算
     string taskSentence = taskText;
     string userInputSentence = UIInputField.text;
@@ -499,19 +526,19 @@ public class LongSentenceScript : MonoBehaviour
       int op = diff.op;
       string beforeText = diff.before;
       string afterText = diff.after;
-      if (op == (int)judgeType.correct)
+      if (op == (int)JudgeType.correct)
       {
         correctCount += beforeText.Length;
       }
-      else if (op == (int)judgeType.delete)
+      else if (op == (int)JudgeType.delete)
       {
         deleteCount += beforeText.Length;
       }
-      else if (op == (int)judgeType.insert)
+      else if (op == (int)JudgeType.insert)
       {
         insertCount += afterText.Length;
       }
-      else if (op == (int)judgeType.replace)
+      else if (op == (int)JudgeType.replace)
       {
         replaceCount += beforeText.Length;
       }
@@ -548,7 +575,7 @@ public class LongSentenceScript : MonoBehaviour
     // restB が空 -> そこまで全部正解
     if (restStrB.Equals(""))
     {
-      retBackTrace.Add(new Diff((int)judgeType.correct, commonPrefix, ""));
+      retBackTrace.Add(new Diff((int)JudgeType.correct, commonPrefix, ""));
       return retBackTrace;
     }
 
@@ -641,9 +668,9 @@ public class LongSentenceScript : MonoBehaviour
 
     // prefix, suffix と統合
     var prefixTrace = (commonPrefix.Equals("")) ? new List<Diff>() { }
-                        : new List<Diff>() { (new Diff((int)judgeType.correct, commonPrefix, "")) };
+                        : new List<Diff>() { (new Diff((int)JudgeType.correct, commonPrefix, "")) };
     var suffixTrace = (commonSuffix.Equals("")) ? new List<Diff>() { }
-                        : new List<Diff>() { (new Diff((int)judgeType.correct, commonSuffix, "")) };
+                        : new List<Diff>() { (new Diff((int)JudgeType.correct, commonSuffix, "")) };
     var trace = ConvertDiff(tmpBackTrace, restStrA, restStrB);
     retBackTrace.AddRange(prefixTrace);
     retBackTrace.AddRange(trace);
@@ -653,7 +680,7 @@ public class LongSentenceScript : MonoBehaviour
 
     // delete, equal だった場合
     var len = retBackTrace.Count;
-    if (len >= 2 && (retBackTrace[len - 2].op == (int)judgeType.delete) && (retBackTrace[len - 1].op == (int)judgeType.correct))
+    if (len >= 2 && (retBackTrace[len - 2].op == (int)JudgeType.delete) && (retBackTrace[len - 1].op == (int)JudgeType.correct))
     {
       var diff2 = retBackTrace[len - 2];
       var diff1 = retBackTrace[len - 1];
@@ -663,15 +690,15 @@ public class LongSentenceScript : MonoBehaviour
       if (MISS_COST * delLen > (MISS_COST + 1) * eqLen)
       {
         retBackTrace.RemoveRange(len - 2, 2);
-        retBackTrace.Add(new Diff((int)judgeType.insert, "", diff1.before));
+        retBackTrace.Add(new Diff((int)JudgeType.insert, "", diff1.before));
       }
     }
     // replace, delete だった場合は置き換えて削除より余分文字として減点したほうが必ず得点が高い
-    else if (len >= 2 && (retBackTrace[len - 2].op == (int)judgeType.replace) && (retBackTrace[len - 1].op == (int)judgeType.delete))
+    else if (len >= 2 && (retBackTrace[len - 2].op == (int)JudgeType.replace) && (retBackTrace[len - 1].op == (int)JudgeType.delete))
     {
       var diff2 = retBackTrace[len - 2];
       retBackTrace.RemoveRange(len - 2, 2);
-      retBackTrace.Add(new Diff((int)judgeType.insert, "", diff2.after));
+      retBackTrace.Add(new Diff((int)JudgeType.insert, "", diff2.after));
     }
     return retBackTrace;
   }
@@ -701,11 +728,11 @@ public class LongSentenceScript : MonoBehaviour
       {
         if (strA[row - 1] == strB[col - 1])
         {
-          trace.Add(((int)judgeType.correct, (row - 1, col - 1)));
+          trace.Add(((int)JudgeType.correct, (row - 1, col - 1)));
         }
         else
         {
-          trace.Add(((int)judgeType.replace, (row - 1, col - 1)));
+          trace.Add(((int)JudgeType.replace, (row - 1, col - 1)));
         }
         row--;
         col--;
@@ -713,13 +740,13 @@ public class LongSentenceScript : MonoBehaviour
       // 挿入
       else if (costC != INF && current == costC + 1)
       {
-        trace.Add(((int)judgeType.insert, (row, col - 1)));
+        trace.Add(((int)JudgeType.insert, (row, col - 1)));
         col--;
       }
       // 削除
       else if (costA != INF && current == costA + 1)
       {
-        trace.Add(((int)judgeType.delete, (row - 1, col)));
+        trace.Add(((int)JudgeType.delete, (row - 1, col)));
         row--;
       }
     }
@@ -745,20 +772,20 @@ public class LongSentenceScript : MonoBehaviour
     int i = 0;
     if (compStrA == "")
     {
-      ret.Add(new Diff((int)judgeType.insert, "", compStrB));
+      ret.Add(new Diff((int)JudgeType.insert, "", compStrB));
       return ret;
     }
     else if (compStrB == "")
     {
-      ret.Add(new Diff((int)judgeType.delete, compStrA, ""));
+      ret.Add(new Diff((int)JudgeType.delete, compStrA, ""));
       return ret;
     }
     while (i < opList.Count)
     {
       var current = opList[i];
       var currentOp = current.op;
-      var targetStrA = (current.op == (int)judgeType.insert) ? "" : compStrA[current.Item2.idxA].ToString();
-      var targetStrB = (current.op == (int)judgeType.delete) ? "" : compStrB[current.Item2.idxB].ToString();
+      var targetStrA = (current.op == (int)JudgeType.insert) ? "" : compStrA[current.Item2.idxA].ToString();
+      var targetStrB = (current.op == (int)JudgeType.delete) ? "" : compStrB[current.Item2.idxB].ToString();
       int j = 0;
       while (i + j + 1 < opList.Count)
       {
@@ -767,27 +794,27 @@ public class LongSentenceScript : MonoBehaviour
         if (nextOp == currentOp)
         {
           j++;
-          targetStrA += (nextOp == (int)judgeType.insert) ? "" : compStrA[next.Item2.idxA].ToString();
-          targetStrB += (nextOp == (int)judgeType.delete) ? "" : compStrB[next.Item2.idxB].ToString();
+          targetStrA += (nextOp == (int)JudgeType.insert) ? "" : compStrA[next.Item2.idxA].ToString();
+          targetStrB += (nextOp == (int)JudgeType.delete) ? "" : compStrB[next.Item2.idxB].ToString();
         }
         else
         {
           break;
         }
       }
-      if (currentOp == (int)judgeType.delete)
+      if (currentOp == (int)JudgeType.delete)
       {
         ret.Add(new Diff(currentOp, targetStrA, ""));
       }
-      else if (currentOp == (int)judgeType.insert)
+      else if (currentOp == (int)JudgeType.insert)
       {
         ret.Add(new Diff(currentOp, "", targetStrB));
       }
-      else if (currentOp == (int)judgeType.replace)
+      else if (currentOp == (int)JudgeType.replace)
       {
         ret.Add(new Diff(currentOp, targetStrA, targetStrB));
       }
-      else if (currentOp == (int)judgeType.correct)
+      else if (currentOp == (int)JudgeType.correct)
       {
         ret.Add(new Diff(currentOp, targetStrA, ""));
       }
@@ -811,19 +838,19 @@ public class LongSentenceScript : MonoBehaviour
       .Replace(">", "&gt;").Replace("\n", "&para;<br>");
       string afterText = diff.after.Replace("&", "&amp;").Replace("<", "&lt;")
       .Replace(">", "&gt;").Replace("\n", "&para;<br>");
-      if (diff.op == (int)judgeType.correct)
+      if (diff.op == (int)JudgeType.correct)
       {
         sb.Append(beforeText);
       }
-      else if (diff.op == (int)judgeType.insert)
+      else if (diff.op == (int)JudgeType.insert)
       {
         sb.Append("<color=\"" + COLOR_INSERT + "\">").Append(afterText).Append("</color>");
       }
-      else if (diff.op == (int)judgeType.delete)
+      else if (diff.op == (int)JudgeType.delete)
       {
         sb.Append("<color=\"" + COLOR_DELETE + "\">").Append(beforeText).Append("</color>");
       }
-      else if (diff.op == (int)judgeType.replace)
+      else if (diff.op == (int)JudgeType.replace)
       {
         sb.Append("<color=\"" + COLOR_REPLACE + "\">[").Append(beforeText).Append(",").Append(afterText).Append("]</color>");
       }
@@ -834,24 +861,13 @@ public class LongSentenceScript : MonoBehaviour
   }
 
   /// <summary>
-  /// キーが押されたときなどのイベント処理
-  /// </summary>
-  void OnGUI()
-  {
-    Event e = Event.current;
-    var isPushedCtrlKey = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-    if (e.type == EventType.KeyDown)
-    {
-      UnityEngine.Debug.Log(e.keyCode);
-    }
-  }
-
-  /// <summary>
   /// ルビ切り替えボタンを押したときの挙動
   /// </summary>
-  public void OnClickRubyButton(){
+  public void OnClickRubyButton()
+  {
     var isPracticing = !isFinished && isShowInfo;
-    if (!isPracticing){
+    if (!isPracticing)
+    {
       return;
     }
     if (isUseRuby)

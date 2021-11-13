@@ -1,14 +1,10 @@
-﻿using System.Diagnostics;
-using System;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class RecordSceneScript : MonoBehaviour
 {
@@ -21,19 +17,19 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIRank;
   [SerializeField] GameObject ScoreInfoPanel;
   [SerializeField] Material[] RankFontMaterials;
-  private int[] RankScore = new int[20] {
+  private readonly int[] RankScore = new int[20] {
     1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
     500, 450, 400, 350, 300, 250, 200, 150, 100, 0
   };
 
-  private string[] RankName = new string[20] {
+  private readonly string[] RankName = new string[20] {
     "Legend", "GrandMaster 1", "GrandMaster 2", "GrandMaster 3", "Master 1",
     "Master 2", "Master 3", "S1", "S2", "S3",
     "A1", "A2", "A3", "B1", "B2",
     "B3", "C1", "C2", "C3", "C4"
   };
 
-  private int[] RankFontMaterialNum = new int[20] {
+  private readonly int[] RankFontMaterialNum = new int[20] {
     0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6
   };
 
@@ -42,7 +38,10 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    ScoreInfoPanel.SetActive(false);
+    if (ScoreInfoPanel != null)
+    {
+      ScoreInfoPanel.SetActive(false);
+    }
     SetResult();
     SetResultDetail();
   }
@@ -60,20 +59,23 @@ public class RecordSceneScript : MonoBehaviour
   private void SetResult()
   {
     var perf = TypingSoft.Performance;
-    var kpsPerf = perf.GetKpmAverageAndStdDev();
-    int score = perf.GetNormalScore();
-    UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
-    UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
-    UIScoreText.text = score.ToString();
-    UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
     UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
-    for (int i = 0; i < RankScore.Count(); ++i)
+    UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
+    if (!ConfigScript.IsBeginnerMode)
     {
-      if (score >= RankScore[i])
+      var kpsPerf = perf.GetKpmAverageAndStdDev();
+      int score = perf.GetNormalScore();
+      UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
+      UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
+      UIScoreText.text = score.ToString();
+      for (int i = 0; i < RankScore.Count(); ++i)
       {
-        UIRank.text = RankName[i];
-        UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
-        break;
+        if (score >= RankScore[i])
+        {
+          UIRank.text = RankName[i];
+          UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
+          break;
+        }
       }
     }
   }
@@ -88,7 +90,7 @@ public class RecordSceneScript : MonoBehaviour
     int len = perf.OriginSentenceList.Count();
     for (int i = 0; i < len; ++i)
     {
-      if (perf.isSentenceInfoValid(i))
+      if (perf.IsSentenceInfoValid(i))
       {
         sb.Append(perf.ConvertDetailResult(i));
       }
@@ -117,15 +119,37 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   public void Retry()
   {
-    SceneManager.LoadScene("TypingScene");
+    if (ConfigScript.IsBeginnerMode)
+    {
+      SceneManager.LoadScene("BeginnerTypingScene");
+    }
+    else
+    {
+      SceneManager.LoadScene("TypingScene");
+    }
   }
 
   /// <summary>
   /// 設定画面に戻る
   /// </summary>
-  public void ReturnConfigScene()
+  private void ReturnConfigScene()
   {
-    SceneManager.LoadScene("SinglePlayConfigScene");
+    if (ConfigScript.IsBeginnerMode)
+    {
+      SceneManager.LoadScene("BeginnerModeScene");
+    }
+    else
+    {
+      SceneManager.LoadScene("SinglePlayConfigScene");
+    }
+  }
+
+  /// <summary>
+  /// 戻るボタンを押したときの挙動
+  /// </summary>
+  public void OnClickReturnButton()
+  {
+    ReturnConfigScene();
   }
 
   /// <summary>

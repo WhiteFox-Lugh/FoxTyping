@@ -1,12 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SinglePlayTyping : MonoBehaviour
 {
   // ゲームの状況
-  private enum gameCondition
+  private enum GameCondition
   {
     Progress,
     Finished,
@@ -21,11 +20,11 @@ public class SinglePlayTyping : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-    if (TypingSoft.CurrentGameCondition == (int)gameCondition.Finished)
+    if (TypingSoft.CurrentGameCondition == (int)GameCondition.Finished)
     {
       StartCoroutine(FinishedEffect());
     }
-    else if (TypingSoft.CurrentGameCondition == (int)gameCondition.Canceled)
+    else if (TypingSoft.CurrentGameCondition == (int)GameCondition.Canceled)
     {
       ReturnConfig();
     }
@@ -62,9 +61,42 @@ public class SinglePlayTyping : MonoBehaviour
   void OnGUI()
   {
     Event e = Event.current;
-    if (e.type == EventType.KeyDown && e.keyCode == KeyCode.F1)
+    if (e.type == EventType.KeyDown)
     {
-      ConfigScript.InfoPanelMode = 1 - ConfigScript.InfoPanelMode;
+      // F1 : リトライ
+      if (e.keyCode == KeyCode.F1)
+      {
+        TypingSoft.RetryPractice();
+      }
+      // F2 : ワードパネル表示切替
+      else if (e.keyCode == KeyCode.F2)
+      {
+        if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.nextWord)
+        {
+          ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.assistSpeed;
+        }
+        else if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.assistSpeed)
+        {
+          ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.nextWord;
+        }
+      }
+      // F3 : 中段の大きいパネルの表示切り替え
+      else if (e.keyCode == KeyCode.F3)
+      {
+        if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
+        {
+          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.assistKeyboard;
+        }
+        else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.assistKeyboard)
+        {
+          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
+        }
+      }
+      // Esc : 中断
+      else if (e.keyCode == KeyCode.Escape)
+      {
+        TypingSoft.CancelPractice();
+      }
     }
   }
 }

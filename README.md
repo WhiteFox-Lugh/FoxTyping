@@ -2,10 +2,10 @@
 
 ## 概要
 
-タイピングゲームをつくる
-詳しいドキュメントは別資料として作ります
+自作のタイピングゲーム
 
-### お借りした素材
+## 仕様
 
-- フォント : http://www.font910.jp/font-list/conposite-comic.html
-- SE, BGM : まだ借りてない
+Notion に公開します（リリース前までは非公開）
+
+https://www.notion.so/FoxTyping-56b1bdecd6a24454af0cacfb1080c5cd
