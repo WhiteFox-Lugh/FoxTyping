@@ -1,12 +1,15 @@
 
 
 using System;
+using System.IO;
+using Newtonsoft.Json;
 using UnityEngine;
 
 [Serializable]
 public sealed class ConfigScript
 {
-  private readonly static ConfigScript instance = null;
+  private readonly static ConfigScript instance = new ConfigScript();
+  private readonly static string configFileName = $"{Application.persistentDataPath}/foxtyping_config_data.json";
   private const int MIN_TASK_NUM = 5;
   private const int MAX_TASK_NUM = 100;
   private const int DEFAULT_TASK_NUM = 30;
@@ -15,27 +18,23 @@ public sealed class ConfigScript
   private const int DEFAULT_LONG_TIME_LIMIT = 5 * 60;
   private const int CPU_KPM_MIN = 1;
   private const int CPU_KPM_MAX = 10000;
-  private const int CPU_KPM_DEFAULT = 300;
-  private const float MIN_DELAY_TIME = 0f;
-  private const float MAX_DELAY_TIME = 3f;
-  private const float DEFAULT_DELAY_TIME = 0.5f;
-  private readonly string filePath = Application.persistentDataPath;
-  [SerializeField]
+  private const int CPU_KPM_DEFAULT = 200;
+  private const int MIN_DELAY_TIME = 0;
+  private const int MAX_DELAY_TIME = 3000;
+  private const int DEFAULT_DELAY_TIME = 500;
   private static int gameMode = (int)SingleMode.shortSentence;
-  [SerializeField]
   private static int taskNum = DEFAULT_TASK_NUM;
-  [SerializeField]
   private static int infoPanel = (int)MiddlePanel.typingPerf;
-  [SerializeField]
   private static int wordPanel = (int)SmallPanel.nextWord;
-  [SerializeField]
   private static int keyInputMode = (int)InputType.roman;
-  [SerializeField]
   private static int longSentencePracticeTimeLimit = DEFAULT_LONG_TIME_LIMIT;
-  [SerializeField]
   private static int cpuKpm = CPU_KPM_DEFAULT;
-  [SerializeField]
-  private static float wordChangeDelayTime = DEFAULT_DELAY_TIME;
+  private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
+
+  public static ConfigScript GetInstance()
+  {
+    return instance;
+  }
 
   private ConfigScript()
   {
@@ -72,6 +71,7 @@ public sealed class ConfigScript
 
   // シングルプレイでのモード
   // SingleMode を参照
+  [JsonProperty]
   public static int GameMode
   {
     set
@@ -94,6 +94,7 @@ public sealed class ConfigScript
 
 
   // 短文で何個ワードを打つか
+  [JsonProperty]
   public static int Tasks
   {
     set
@@ -118,6 +119,7 @@ public sealed class ConfigScript
   // 1 : アシストキーボード
   // 2 : 両方表示
   // 3 : なにも表示しない
+  [JsonProperty]
   public static int InfoPanelMode
   {
     set
@@ -141,6 +143,7 @@ public sealed class ConfigScript
   // ワードすぐ下の小さいパネルの表示
   // 0 : 次のワード
   // 1 : CPU 速度
+  [JsonProperty]
   public static int WordPanelMode
   {
     set
@@ -162,6 +165,7 @@ public sealed class ConfigScript
   }
 
   // 短文打つモードでのデータセットのファイル名
+  [JsonProperty]
   public static string DataSetName
   {
     set;
@@ -169,6 +173,7 @@ public sealed class ConfigScript
   } = "FoxTypingOfficial";
 
   // 長文打つモードでのデータセットのファイル名
+  [JsonProperty]
   public static string LongSentenceTaskName
   {
     set;
@@ -176,6 +181,7 @@ public sealed class ConfigScript
   } = "Long_Constitution";
 
   // 長文モードでの制限時間(s)
+  [JsonProperty]
   public static int LongSentenceTimeLimit
   {
     set
@@ -196,6 +202,7 @@ public sealed class ConfigScript
   }
 
   // 長文モードでルビを使用するか
+  [JsonProperty]
   public static bool UseRuby
   {
     set;
@@ -203,6 +210,7 @@ public sealed class ConfigScript
   } = true;
 
   // CPU の kpm 設定
+  [JsonProperty]
   public static int CPUKpm
   {
     set
@@ -236,6 +244,7 @@ public sealed class ConfigScript
   // 入力モード
   // 0: Roman
   // 1: Kana
+  [JsonProperty]
   public static int InputMode
   {
     set
@@ -256,8 +265,9 @@ public sealed class ConfigScript
     }
   }
 
+  [JsonProperty]
   // 次のセンテンスに移行するまでの休止時間
-  public static float DelayTime
+  public static int DelayTime
   {
     set
     {
@@ -273,6 +283,7 @@ public sealed class ConfigScript
       {
         wordChangeDelayTime = MAX_DELAY_TIME;
       }
+      Debug.Log("delaytime validation");
     }
     get
     {
@@ -280,17 +291,51 @@ public sealed class ConfigScript
     }
   }
 
-  public static ConfigScript GetInstance()
+  /// <summary>
+  /// 設定を JSON 形式で保存する
+  /// </summary>
+  public static void SaveConfig()
   {
-    return instance;
+    var json = JsonConvert.SerializeObject(instance);
+    var writer = new StreamWriter(configFileName, false);
+    writer.Write(json);
+    writer.Flush();
+    writer.Close();
   }
 
   /// <summary>
-  /// 設定を JSON 形式で返す
+  /// 設定を読み込む
   /// </summary>
-  /// <returns>JSON</returns>
-  public static string GetJsonString()
+  public static void LoadConfig()
   {
-    return JsonUtility.ToJson(instance);
+    if (File.Exists(configFileName))
+    {
+      var reader = new StreamReader(configFileName);
+      var dataStr = reader.ReadToEnd();
+      reader.Close();
+      var obj = JsonConvert.DeserializeObject<JsonConfigVars>(dataStr);
+      var props = obj.GetType().GetProperties();
+      foreach (var prop in props)
+      {
+        Debug.Log($"Prop : {prop.Name} => {prop.GetValue(obj)}");
+        var propVal = typeof(ConfigScript).GetProperty(prop.Name);
+        propVal.SetValue(instance, prop.GetValue(obj));
+      }
+    }
   }
+}
+
+public class JsonConfigVars
+{
+  public int GameMode { get; set; }
+  public int Tasks { get; set; }
+  public int InfoPanelMode { get; set; }
+  public int WordPanelMode { get; set; }
+  public string DataSetName { get; set; }
+  public string LongSentenceTaskName { get; set; }
+  public int LongSentenceTimeLimit { get; set; }
+  public bool UseRuby { get; set; }
+  public int CPUKpm { get; set; }
+  public int InputMode { get; set; }
+  public int DelayTime { get; set; }
 }

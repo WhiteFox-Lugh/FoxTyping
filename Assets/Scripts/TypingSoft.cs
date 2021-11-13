@@ -351,7 +351,8 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private IEnumerator DelayGenerateNewSentence()
   {
-    yield return new WaitForSeconds(ConfigScript.DelayTime);
+    var delayVal = (float)(ConfigScript.DelayTime / 1000.0);
+    yield return new WaitForSeconds(delayVal);
     ChangeSentence();
   }
 
