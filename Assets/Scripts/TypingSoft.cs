@@ -420,7 +420,7 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = originSentence;
     UIYomigana.text = typeSentence;
     UIType.text = "";
-    if (ConfigScript.IsBeginnerMode)
+    if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
     {
       UIType.text = nextTypingSentence;
     }
@@ -757,7 +757,7 @@ public class TypingSoft : MonoBehaviour
     correctString += (ConfigScript.InputMode == 0) ? typeChar : charToHiragana[typeChar];
     // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
     var UIStr = "";
-    if (ConfigScript.IsBeginnerMode)
+    if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
     {
       UIStr = nextTypingSentence;
     }
@@ -785,7 +785,7 @@ public class TypingSoft : MonoBehaviour
     if (!isRecMistype)
     {
       string UIStr = "";
-      if (ConfigScript.IsBeginnerMode)
+      if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
       {
         UIStr = "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
       }

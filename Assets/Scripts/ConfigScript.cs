@@ -30,6 +30,7 @@ public sealed class ConfigScript
   private static int longSentencePracticeTimeLimit = DEFAULT_LONG_TIME_LIMIT;
   private static int cpuKpm = CPU_KPM_DEFAULT;
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
+  private static bool showTypeSentence = true;
 
   public static ConfigScript GetInstance()
   {
@@ -292,6 +293,22 @@ public sealed class ConfigScript
   }
 
   /// <summary>
+  /// タイプ文字列をミスタイプ前から表示するか
+  /// </summary>
+  /// <value></value>
+  public static bool IsShowTypeSentence
+  {
+    set
+    {
+      showTypeSentence = true;
+    }
+    get
+    {
+      return showTypeSentence;
+    }
+  }
+
+  /// <summary>
   /// 設定を JSON 形式で保存する
   /// </summary>
   public static void SaveConfig()
@@ -338,4 +355,5 @@ public class JsonConfigVars
   public int CPUKpm { get; set; }
   public int InputMode { get; set; }
   public int DelayTime { get; set; }
+  public bool IsShowTypeSentence { get; set; }
 }
