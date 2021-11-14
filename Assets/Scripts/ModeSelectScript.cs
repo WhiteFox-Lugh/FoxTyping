@@ -48,7 +48,7 @@ public class ModeSelectScript : MonoBehaviour
   /// </summary>
   public void LoadUserSettingsScene()
   {
-    SceneManager.LoadScene("UserSettingsScene");
+    SceneManager.LoadScene("UserConfigScene");
   }
 
   /// <summary>
