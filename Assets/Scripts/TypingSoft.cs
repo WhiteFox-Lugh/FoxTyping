@@ -29,8 +29,6 @@ public class TypingSoft : MonoBehaviour
   private static List<List<List<string>>> sentenceJudgeDataList = new List<List<List<string>>>();
   private static List<List<string>> typingJudge;
 
-  // load 関係
-  private static bool isLoadSuccess = false;
   // index 類
   private static int index;
   private static List<List<int>> indexAdd = new List<List<int>>();
@@ -158,33 +156,14 @@ public class TypingSoft : MonoBehaviour
     AKJIS = GameObject.Find("AssistKeyboard").GetComponent<AssistKeyboardJIS>();
     // init より先に初期化すべき項目
     // ロード成功したかのフラグを false に
-    isLoadSuccess = false;
+    var isLoadSuccess = false;
     // 入力受付状態は一度 true に
     // リトライ機能の関係
     isInputValid = true;
     // ゲームコンディションを in progress にする
     CurrentGameCondition = (int)GameCondition.Progress;
     // ワードデータセットの読み込み
-    StartCoroutine(LoadWordDataset(CanStart));
-  }
-
-  /// <summary>
-  /// データセット読み込み
-  /// </summary>
-  private IEnumerator LoadWordDataset(UnityAction callback)
-  {
-    yield return StartCoroutine(gs.LoadAssetBundle(
-      () => isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName))
-      );
-    callback();
-  }
-
-  /// <summary>
-  /// スタートできるかの確認
-  /// </summary>
-  private void CanStart()
-  {
-    // 読み込み成功したらメインへ
+    isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
     if (isLoadSuccess)
     {
       GameMain();
@@ -420,7 +399,7 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = originSentence;
     UIYomigana.text = typeSentence;
     UIType.text = "";
-    if (ConfigScript.IsBeginnerMode)
+    if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
     {
       UIType.text = nextTypingSentence;
     }
@@ -757,7 +736,7 @@ public class TypingSoft : MonoBehaviour
     correctString += (ConfigScript.InputMode == 0) ? typeChar : charToHiragana[typeChar];
     // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
     var UIStr = "";
-    if (ConfigScript.IsBeginnerMode)
+    if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
     {
       UIStr = nextTypingSentence;
     }
@@ -785,7 +764,7 @@ public class TypingSoft : MonoBehaviour
     if (!isRecMistype)
     {
       string UIStr = "";
-      if (ConfigScript.IsBeginnerMode)
+      if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
       {
         UIStr = "<color=#ff0000ff>" + CurrentTypingSentence.ToString() + "</color>";
       }

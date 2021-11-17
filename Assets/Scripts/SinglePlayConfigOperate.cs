@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,6 +12,8 @@ public class SinglePlayConfigOperate : MonoBehaviour
   private const int LONG_MAX_TIME_LIMIT = 60 * 60;
   private const int LONG_MIN_TIME_LIMIT = 1;
   private static int longSentenceTimeLimitVal = 300;
+  private static Dictionary<int, ShortWordsetData> valToShortWordset = new Dictionary<int, ShortWordsetData>();
+  private static Dictionary<int, LongWordsetData> valToLongWordset = new Dictionary<int, LongWordsetData>();
   [SerializeField] private TMP_Dropdown UIGameMode;
   [SerializeField] private TMP_Dropdown UIDataSetName;
   [SerializeField] private TMP_Dropdown UILongDataSetName;
@@ -21,14 +26,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitSecond;
 
-  private static string[] shortDatasetFileName = new string[2] {
-    "FoxTypingOfficial", "FoxTypingOfficialEnglish"
-  };
-
-  private static string[] longDatasetFileName = new string[2] {
-    "Long_Constitution", "Long_Gongitsune"
-  };
-
   enum GameModeNumber
   {
     ShortSentence,
@@ -39,6 +36,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
   void Awake()
   {
     ConfigScript.LoadConfig();
+    LoadWordsetMetadata();
     SetPreviousSettings();
   }
 
@@ -49,14 +47,42 @@ public class SinglePlayConfigOperate : MonoBehaviour
   }
 
   /// <summary>
+  /// ワードセット情報を取得
+  /// </summary>
+  private void LoadWordsetMetadata()
+  {
+    UIDataSetName.ClearOptions();
+    UILongDataSetName.ClearOptions();
+    var wordsetListShort = new List<string>();
+    var wordsetListLong = new List<string>();
+    valToShortWordset = new Dictionary<int, ShortWordsetData>();
+    valToLongWordset = new Dictionary<int, LongWordsetData>();
+    var idx = 0;
+    foreach (var wordData in WordsetData.ShortWordsetDict.Values)
+    {
+      wordsetListShort.Add(wordData.WordsetScreenName);
+      valToShortWordset.Add(idx, wordData);
+      idx++;
+    }
+    idx = 0;
+    foreach (var wordData in WordsetData.LongWordsetDict.Values)
+    {
+      wordsetListLong.Add(wordData.WordsetScreenName);
+      valToLongWordset.Add(idx, wordData);
+      idx++;
+    }
+    UIDataSetName.AddOptions(wordsetListShort);
+    UILongDataSetName.AddOptions(wordsetListLong);
+  }
+
+  /// <summary>
   /// 直前の練習内容を選択肢にセット
   /// </summary>
   private void SetPreviousSettings()
   {
     UIGameMode.value = ConfigScript.GameMode;
-    // fix: データセットと dropdown の番号の対応付け
-    // UIDataSetName.value = ConfigScript.DataSetName;
-    // UILongDataSetName.value = ConfigScript.LongSentenceTaskName;
+    UIDataSetName.value = valToShortWordset.FirstOrDefault(x => x.Value.WordsetFileName.Equals(ConfigScript.DataSetName)).Key;
+    UILongDataSetName.value = valToLongWordset.FirstOrDefault(x => x.Value.DocumentFileName.Equals(ConfigScript.LongSentenceTaskName)).Key;
     UIUseYomigana.value = Convert.ToInt32(ConfigScript.UseRuby);
     UISentenceNum.value = ConfigScript.Tasks / TASK_UNIT - 1;
     UIInputType.value = ConfigScript.InputMode;
@@ -72,9 +98,8 @@ public class SinglePlayConfigOperate : MonoBehaviour
   {
     CheckKpmSettings();
     ConfigScript.GameMode = UIGameMode.value;
-    // fix: dataset 名の保存
-    // ConfigScript.DataSetName = shortDatasetFileName[UIDataSetName.value];
-    // ConfigScript.LongSentenceTaskName = longDatasetFileName[prevDropdownLongDataset];
+    ConfigScript.DataSetName = valToShortWordset[UIDataSetName.value].WordsetFileName;
+    ConfigScript.LongSentenceTaskName = valToLongWordset[UILongDataSetName.value].DocumentFileName;
     ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
     ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);

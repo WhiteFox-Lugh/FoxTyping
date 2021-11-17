@@ -38,21 +38,21 @@ body {
 #unity-logo {
   width: 154px;
   height: 130px;
-  background: url('unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
+  background: url('./imgs/unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
 }
 
 #unity-progress-bar-empty {
   width: 141px;
   height: 18px;
   margin-top: 10px;
-  background: url('progress-bar-empty-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
+  background: url('./imgs/progress-bar-empty-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
 }
 
 #unity-progress-bar-full {
   width: 0%;
   height: 18px;
   margin-top: 10px;
-  background: url('progress-bar-full-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
+  background: url('./imgs/progress-bar-full-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center
 }
 
 #unity-footer {

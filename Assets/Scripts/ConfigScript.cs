@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -30,6 +31,7 @@ public sealed class ConfigScript
   private static int longSentencePracticeTimeLimit = DEFAULT_LONG_TIME_LIMIT;
   private static int cpuKpm = CPU_KPM_DEFAULT;
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
+  private static bool showTypeSentence = true;
 
   public static ConfigScript GetInstance()
   {
@@ -178,7 +180,7 @@ public sealed class ConfigScript
   {
     set;
     get;
-  } = "Long_Constitution";
+  } = "Constitution";
 
   // 長文モードでの制限時間(s)
   [JsonProperty]
@@ -283,11 +285,26 @@ public sealed class ConfigScript
       {
         wordChangeDelayTime = MAX_DELAY_TIME;
       }
-      Debug.Log("delaytime validation");
     }
     get
     {
       return wordChangeDelayTime;
+    }
+  }
+
+  /// <summary>
+  /// タイプ文字列をミスタイプ前から表示するか
+  /// </summary>
+  /// <value></value>
+  public static bool IsShowTypeSentence
+  {
+    set
+    {
+      showTypeSentence = true;
+    }
+    get
+    {
+      return showTypeSentence;
     }
   }
 
@@ -301,6 +318,7 @@ public sealed class ConfigScript
     writer.Write(json);
     writer.Flush();
     writer.Close();
+    UnityEngine.Debug.Log(configFileName);
   }
 
   /// <summary>
@@ -317,7 +335,6 @@ public sealed class ConfigScript
       var props = obj.GetType().GetProperties();
       foreach (var prop in props)
       {
-        Debug.Log($"Prop : {prop.Name} => {prop.GetValue(obj)}");
         var propVal = typeof(ConfigScript).GetProperty(prop.Name);
         propVal.SetValue(instance, prop.GetValue(obj));
       }
@@ -338,4 +355,5 @@ public class JsonConfigVars
   public int CPUKpm { get; set; }
   public int InputMode { get; set; }
   public int DelayTime { get; set; }
+  public bool IsShowTypeSentence { get; set; }
 }
