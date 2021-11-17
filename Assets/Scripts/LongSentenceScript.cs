@@ -35,8 +35,6 @@ public class LongSentenceScript : MonoBehaviour
     replace,
     correct
   };
-  private const string ABPathLocal = "AssetBundleData/wordset_long";
-  private const string ABPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
   // diff の表示色
   private const string COLOR_INSERT = "orange";
   private const string COLOR_DELETE = "red";
@@ -48,7 +46,7 @@ public class LongSentenceScript : MonoBehaviour
   private bool isShowInfo;
   private bool isFinished;
   // AssetBundle
-  private static AssetBundle abLongData;
+  private static string docData;
   // UI
   [SerializeField] TextMeshProUGUI UIResultTextField;
   [SerializeField] TextMeshProUGUI UIResultElapsedTime;
@@ -105,7 +103,18 @@ public class LongSentenceScript : MonoBehaviour
   void Awake()
   {
     InitUIPanel();
-    StartCoroutine(LoadAssetBundle(CanStart));
+    if (WordsetData.AssetLongWordsetData != null)
+    {
+      var asset = WordsetData.AssetLongWordsetData;
+      UnityEngine.Debug.Log((asset == null ? "unchi" : ConfigScript.LongSentenceTaskName));
+      docData = asset.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+      GetSectionInfo();
+      SelectSection();
+    }
+    else
+    {
+      ReturnConfig();
+    }
   }
 
   /// <summary>
@@ -137,22 +146,6 @@ public class LongSentenceScript : MonoBehaviour
   }
 
   /// <summary>
-  /// スタートできるかどうかをチェック
-  /// </summary>
-  private void CanStart()
-  {
-    if (abLongData != null)
-    {
-      GetSectionInfo();
-      SelectSection();
-    }
-    else
-    {
-      ReturnConfig();
-    }
-  }
-
-  /// <summary>
   /// スタートボタンを押したときの挙動
   /// </summary>
   public void StartPractice()
@@ -177,7 +170,6 @@ public class LongSentenceScript : MonoBehaviour
     sectionStartPosList = new List<int>();
     var sectionHeaderList = new List<string>();
     // \section{} の抽出
-    var docData = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
     var idx = 1;
     foreach (Match match in Regex.Matches(docData, sectionRegex))
     {
@@ -193,50 +185,6 @@ public class LongSentenceScript : MonoBehaviour
     // Dropdown にセット
     DropdownSectionSelect.ClearOptions();
     DropdownSectionSelect.AddOptions(sectionHeaderList);
-  }
-
-  /// <summary>
-  /// AssetBundle の読み込み
-  /// <param name="callback">callback 関数</param>
-  /// </summary>
-  private IEnumerator LoadAssetBundle(UnityAction callback)
-  {
-    var networkState = Application.internetReachability;
-    // すでに AssetBundle が読み込まれているか、
-    // そうでないときにネットワークに接続していないときはリクエストを送信しない
-    // ネットワーク接続していないときは何かしらエラーを出すとよさそう
-    if (abLongData != null)
-    {
-      callback();
-      yield break;
-    }
-
-    // WebGL 時は WebRequest によって AssetBundle を取得
-#if UNITY_WEBGL && !UNITY_EDITOR
-		if (networkState == NetworkReachability.NotReachable){
-			UnityEngine.Debug.Log("ネットワークに接続していません");
-			callback();
-			yield break;
-		}
-		UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(ABPath);
-		yield return request.SendWebRequest();
-		if (request.isNetworkError || request.isHttpError){
-			UnityEngine.Debug.LogError(request.error);
-		}
-		else {
-			abLongData = DownloadHandlerAssetBundle.GetContent(request);
-			UnityEngine.Debug.Log("load successfully");
-		}
-#else
-    abLongData = AssetBundle.LoadFromFile(ABPathLocal);
-    if (abLongData == null)
-    {
-      UnityEngine.Debug.Log("Error: AssetBundle Load failed");
-    }
-#endif
-
-    callback();
-    yield break;
   }
 
   /// <summary>
@@ -352,11 +300,11 @@ public class LongSentenceScript : MonoBehaviour
     int startIdx = sectionStartPosList[DropdownSectionSelect.value];
     string replacement = "<r=$2>$1</r>";
     string newlinePattern = @"[\n|\r\n|\r]";
-    var docDataOrigin = abLongData.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString().Substring(startIdx);
-    var docData = Regex.Replace(docDataOrigin, sectionRegex, "");
-    taskText = Regex.Replace(docData, rubyRegex, "$1");
+    var docDataOrigin = docData.Substring(startIdx);
+    var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
+    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
     taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
-    var convertedText = Regex.Replace(docData, rubyRegex, replacement);
+    var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
     displayText = (isUseRuby ? taskWithRuby : taskText);
   }

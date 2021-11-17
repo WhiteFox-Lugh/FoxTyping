@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -179,7 +180,7 @@ public sealed class ConfigScript
   {
     set;
     get;
-  } = "Long_Constitution";
+  } = "Constitution";
 
   // 長文モードでの制限時間(s)
   [JsonProperty]
@@ -284,7 +285,6 @@ public sealed class ConfigScript
       {
         wordChangeDelayTime = MAX_DELAY_TIME;
       }
-      Debug.Log("delaytime validation");
     }
     get
     {
@@ -318,6 +318,7 @@ public sealed class ConfigScript
     writer.Write(json);
     writer.Flush();
     writer.Close();
+    UnityEngine.Debug.Log(configFileName);
   }
 
   /// <summary>
@@ -334,7 +335,6 @@ public sealed class ConfigScript
       var props = obj.GetType().GetProperties();
       foreach (var prop in props)
       {
-        Debug.Log($"Prop : {prop.Name} => {prop.GetValue(obj)}");
         var propVal = typeof(ConfigScript).GetProperty(prop.Name);
         propVal.SetValue(instance, prop.GetValue(obj));
       }
