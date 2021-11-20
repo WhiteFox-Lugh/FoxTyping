@@ -85,6 +85,8 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskWithRuby;
   // オリジナル
   private static string taskText;
+  // 行間の調整をしたかどうか
+  private static bool isAdjustedLinespacing = false;
   // スコア表示
   private int correctCount = 0;
   private int deleteCount = 0;
@@ -200,6 +202,7 @@ public class LongSentenceScript : MonoBehaviour
     startTime = 0.0;
     isShowInfo = false;
     isFinished = false;
+    isAdjustedLinespacing = false;
     UIInputField.interactable = false;
     UITextField.text = "";
     UIInputField.text = "";
@@ -233,6 +236,8 @@ public class LongSentenceScript : MonoBehaviour
     isShowInfo = true;
     // 課題文表示
     UITextField.UnditedText = displayText;
+    // for debug
+    UIInputField.text = displayText;
     // 入力フィールドアクティブ化
     UIInputField.interactable = true;
     UIInputField.ActivateInputField();
@@ -279,8 +284,47 @@ public class LongSentenceScript : MonoBehaviour
     // 課題文、入力文のコンテンツの高さと行数を取得
     var taskHeight = TaskTextContent.preferredHeight;
     var inputHeight = CurrentInputText.preferredHeight;
-    var taskLineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
-    var inputLineHeight = inputHeight / CurrentInputText.textInfo.lineCount;
+    var taskLineCount = TaskTextContent.textInfo.lineCount;
+    var inputLineCount = CurrentInputText.textInfo.lineCount;
+    var taskLineHeight = taskHeight / taskLineCount;
+    var inputLineHeight = inputHeight / inputLineCount;
+    var taskTextInfo = TaskTextContent.GetTextInfo(TaskTextContent.text);
+    var inputTextInfo = CurrentInputText.GetTextInfo(CurrentInputText.text);
+    // var taskFirstLine = taskTextInfo.lineInfo[0].lineHeight;
+    // var inputFirstLine = inputTextInfo.lineInfo[0].lineHeight;
+    // var taskSecondLine = taskTextInfo.lineInfo[1].lineHeight;
+    // var inputSecondLine = inputTextInfo.lineInfo[1].lineHeight;
+    if (!isAdjustedLinespacing)
+    {
+      var lb = 0f;
+      var ub = 100f;
+      var loop = 0;
+      while (Math.Abs(taskHeight - inputHeight) > 1e-5 && loop < 100)
+      {
+        loop++;
+        var mid = (lb + ub) / 2.0f;
+        UnityEngine.Debug.Log($"{loop} : mid = {mid}");
+        CurrentInputText.lineSpacing = mid;
+        inputHeight = CurrentInputText.preferredHeight;
+        if (taskHeight - inputHeight > 0)
+        {
+          lb = mid;
+        }
+        else
+        {
+          ub = mid;
+        }
+      }
+      isAdjustedLinespacing = true;
+      for (int i = 0; i < inputTextInfo.lineInfo.Count(); ++i)
+      {
+        UnityEngine.Debug.Log($"インプット: {i}行目: {inputTextInfo.lineInfo[i].lineHeight}");
+      }
+      for (int i = 0; i < taskTextInfo.lineInfo.Count(); ++i)
+      {
+        UnityEngine.Debug.Log($"Task: {i}行目: {taskTextInfo.lineInfo[i].lineHeight}");
+      }
+    }
     // スクロールバーの同期
     // inputPos は入力した文章の上からどれだけスクロールしたか
     var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
@@ -289,7 +333,7 @@ public class LongSentenceScript : MonoBehaviour
     var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
     scrollBarTask.value = 1 - nextTaskScrollBarValue;
     // scrollBarInput.value = nextInputBarPos;
-    // UnityEngine.Debug.Log($"高さ: {taskHeight}, {inputHeight}、行の高さ: {taskLineHeight}, {inputLineHeight}");
+    UnityEngine.Debug.Log($"高さ: {taskHeight}, {inputHeight}、行の高さ: {taskLineHeight}, {inputLineHeight}, 行数: {taskLineCount}, {inputLineCount}({CurrentInputText.lineSpacing})");
   }
 
   /// <summary>
