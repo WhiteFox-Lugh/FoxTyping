@@ -75,7 +75,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
   private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
-  private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+  private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
   private static List<int> sectionStartPosList;
   // ルビ利用するかどうか
   private static bool isUseRuby;
@@ -85,6 +85,8 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskWithRuby;
   // オリジナル
   private static string taskText;
+  // 表示用
+  private static string taskDisplayText;
   // 行間の調整をしたかどうか
   private static bool isAdjustedLinespacing = false;
   // スコア表示
@@ -347,10 +349,60 @@ public class LongSentenceScript : MonoBehaviour
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
     taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
-    taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
+    taskDisplayText = Regex.Replace(taskText, newlinePattern, "⏎\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
-    displayText = (isUseRuby ? taskWithRuby : taskText);
+
+    // ルビあり文章となし文章で1行あたりの文字数がずれないようにするため、
+    // ルビあり文章には無理やりディスプレイ用に改行を挿入
+    // 日本語のみ
+    const int LINE_CHAR_COUNT = 25;
+    const string RUBY_TAG_END = "</r>";
+    int cnt = 0;
+    for (int i = 0; i < taskDisplayText.Length; ++i)
+    {
+      cnt++;
+      if (taskDisplayText[i].Equals('\n'))
+      {
+        cnt = 0;
+      }
+      else if (cnt == LINE_CHAR_COUNT)
+      {
+        cnt = 0;
+        if (i + 1 < taskDisplayText.Length && taskDisplayText[i + 1].ToString().Equals("⏎"))
+        {
+          continue;
+        }
+        taskDisplayText = taskDisplayText.Insert(i + 1, "\n");
+      }
+    }
+    // ルビあり文章も適切に改行を入れる
+    int taskIdx = 0;
+    for (int i = 0; i < taskWithRuby.Length; ++i)
+    {
+      if (taskDisplayText[taskIdx].Equals('\n'))
+      {
+        // 手前に改行を表す矢印があるときはスルー
+        if (taskWithRuby[i - 1].ToString().Equals("⏎"))
+        {
+          taskIdx++;
+          continue;
+        }
+        // 後ろに </r> があるときはそのタグの後ろに改行を入れる
+        if (i + RUBY_TAG_END.Length < taskWithRuby.Length && taskWithRuby.Substring(i, RUBY_TAG_END.Length).Equals(RUBY_TAG_END))
+        {
+          i += RUBY_TAG_END.Length;
+        }
+        taskWithRuby = taskWithRuby.Insert(i, "\n");
+        taskIdx++;
+      }
+      else if (taskDisplayText[taskIdx].ToString().Equals(taskWithRuby[i].ToString()))
+      {
+        taskIdx++;
+      }
+    }
+    UnityEngine.Debug.Log(taskWithRuby);
+    displayText = (isUseRuby ? taskWithRuby : taskDisplayText);
   }
 
   /// <summary>
@@ -389,9 +441,10 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void HideRuby()
   {
-    displayText = taskText + "\n";
+    displayText = taskDisplayText + "\n";
     isUseRuby = false;
     UITextField.UnditedText = displayText;
+    isAdjustedLinespacing = false;
   }
 
   /// <summary>
@@ -402,6 +455,7 @@ public class LongSentenceScript : MonoBehaviour
     displayText = taskWithRuby + "\n";
     isUseRuby = true;
     UITextField.UnditedText = displayText;
+    isAdjustedLinespacing = false;
   }
 
   /// <summary>
