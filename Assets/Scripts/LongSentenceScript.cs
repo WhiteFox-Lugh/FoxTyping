@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -108,7 +109,6 @@ public class LongSentenceScript : MonoBehaviour
     if (WordsetData.AssetLongWordsetData != null)
     {
       var asset = WordsetData.AssetLongWordsetData;
-      UnityEngine.Debug.Log((asset == null ? "unchi" : ConfigScript.LongSentenceTaskName));
       docData = asset.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
       GetSectionInfo();
       SelectSection();
@@ -199,7 +199,7 @@ public class LongSentenceScript : MonoBehaviour
     // その他の初期化
     isUseRuby = ConfigScript.UseRuby;
     GenerateTaskText();
-    AdjustLineHeight();
+    AdjustDisplaySettings();
     startTime = 0.0;
     isShowInfo = false;
     isFinished = false;
@@ -260,20 +260,44 @@ public class LongSentenceScript : MonoBehaviour
   }
 
   /// <summary>
-  /// 課題文に合わせた行間を指定
+  /// 課題文に合わせてテキスト表示の調整
   /// </summary>
-  private void AdjustLineHeight()
+  private void AdjustDisplaySettings()
   {
-    var lb = 0f;
-    var ub = 100f;
-    var loop = 0;
-    // 課題文
-    UITextField.UnditedText = displayText;
-    UIInputField.text = taskText;
+    // フォームの改行、禁則処理に合致するように課題文の改行を調整しつつ改行を表すマークを挿入
+    displayText = (isUseRuby ? taskWithRuby : taskDisplayText);
+    UnityEngine.Debug.Log(displayText);
+    UIInputField.text = displayText;
+    var inputInfo = CurrentInputText.GetTextInfo(displayText);
+    var inputLineInfo = inputInfo.lineInfo;
+    var prevIdx = Int32.MaxValue;
+    for (int i = inputLineInfo.Length - 1; i >= 0; --i)
+    {
+      var lastIdx = inputLineInfo[i].lastCharacterIndex;
+      if (!(0 < lastIdx && lastIdx < displayText.Length && prevIdx > lastIdx))
+      {
+        continue;
+      }
+      prevIdx = lastIdx;
+      var lastChar = displayText[lastIdx];
+      UnityEngine.Debug.Log($"{i}行目: index: {lastIdx}, 文字:{lastChar}");
+      if (lastChar == '\n')
+      {
+        displayText = displayText.Insert(lastIdx, "⏎");
+      }
+      else
+      {
+        displayText = displayText.Insert(lastIdx + 1, "\n");
+      }
+    }
+    // 調整後の課題文に合うようにフォームの行の高さを調整する
     var taskLineCount = TaskTextContent.textInfo.lineCount;
     var inputLineCount = CurrentInputText.textInfo.lineCount;
     var taskHeight = TaskTextContent.preferredHeight;
     var inputHeight = CurrentInputText.preferredHeight;
+    var lb = 0f;
+    var ub = 100f;
+    var loop = 0;
     while (Math.Abs(inputLineCount * taskHeight - taskLineCount * inputHeight) > 1e-5 && loop < 100)
     {
       loop++;
@@ -329,60 +353,9 @@ public class LongSentenceScript : MonoBehaviour
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
     taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
-    taskDisplayText = Regex.Replace(taskText, newlinePattern, "⏎\n");
+    taskDisplayText = Regex.Replace(taskText, newlinePattern, "\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
-    taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
-
-    // ルビあり文章となし文章で1行あたりの文字数がずれないようにするため、
-    // ルビあり文章には無理やりディスプレイ用に改行を挿入
-    // 日本語のみ
-    const int LINE_CHAR_COUNT = 25;
-    const string RUBY_TAG_END = "</r>";
-    int cnt = 0;
-    for (int i = 0; i < taskDisplayText.Length; ++i)
-    {
-      cnt++;
-      if (taskDisplayText[i].Equals('\n'))
-      {
-        cnt = 0;
-      }
-      else if (cnt == LINE_CHAR_COUNT)
-      {
-        cnt = 0;
-        if (i + 1 < taskDisplayText.Length && taskDisplayText[i + 1].ToString().Equals("⏎"))
-        {
-          continue;
-        }
-        taskDisplayText = taskDisplayText.Insert(i + 1, "\n");
-      }
-    }
-    // ルビあり文章も適切に改行を入れる
-    int taskIdx = 0;
-    for (int i = 0; i < taskWithRuby.Length; ++i)
-    {
-      if (taskDisplayText[taskIdx].Equals('\n'))
-      {
-        // 手前に改行を表す矢印があるときはスルー
-        if (taskWithRuby[i - 1].ToString().Equals("⏎"))
-        {
-          taskIdx++;
-          continue;
-        }
-        // 後ろに </r> があるときはそのタグの後ろに改行を入れる
-        if (i + RUBY_TAG_END.Length < taskWithRuby.Length && taskWithRuby.Substring(i, RUBY_TAG_END.Length).Equals(RUBY_TAG_END))
-        {
-          i += RUBY_TAG_END.Length;
-        }
-        taskWithRuby = taskWithRuby.Insert(i, "\n");
-        taskIdx++;
-      }
-      else if (taskDisplayText[taskIdx].ToString().Equals(taskWithRuby[i].ToString()))
-      {
-        taskIdx++;
-      }
-    }
-    UnityEngine.Debug.Log(taskWithRuby);
-    displayText = (isUseRuby ? taskWithRuby : taskDisplayText);
+    taskWithRuby = Regex.Replace(convertedText, newlinePattern, "\n");
   }
 
   /// <summary>
