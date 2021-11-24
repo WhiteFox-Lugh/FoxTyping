@@ -58,7 +58,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UIDetailText;
   [SerializeField] TextMeshProUGUI TaskTextContent;
-  [SerializeField] TextMeshProUGUI CurrentInputText;
+  [SerializeField] RubyTextMeshProUGUI CurrentInputText;
   [SerializeField] TextMeshProUGUI PreviewText;
   [SerializeField] TMP_Dropdown DropdownSectionSelect;
   [SerializeField] GameObject TaskViewport;
@@ -266,31 +266,91 @@ public class LongSentenceScript : MonoBehaviour
   {
     // フォームの改行、禁則処理に合致するように課題文の改行を調整しつつ改行を表すマークを挿入
     displayText = (isUseRuby ? taskWithRuby : taskDisplayText);
-    UnityEngine.Debug.Log(displayText);
-    UIInputField.text = displayText;
+    UIInputField.text = taskText;
     var inputInfo = CurrentInputText.GetTextInfo(displayText);
     var inputLineInfo = inputInfo.lineInfo;
-    var prevIdx = Int32.MaxValue;
-    for (int i = inputLineInfo.Length - 1; i >= 0; --i)
+    if (!isUseRuby)
     {
-      var lastIdx = inputLineInfo[i].lastCharacterIndex;
-      if (!(0 < lastIdx && lastIdx < displayText.Length && prevIdx > lastIdx))
+      var prevIdx = Int32.MaxValue;
+      for (int i = inputLineInfo.Length - 1; i >= 0; --i)
       {
-        continue;
+        var lastIdx = inputLineInfo[i].lastCharacterIndex;
+        if (!(0 < lastIdx && lastIdx < displayText.Length && prevIdx > lastIdx))
+        {
+          continue;
+        }
+        prevIdx = lastIdx;
+        var lastChar = displayText[lastIdx];
+        if (lastChar == '\n')
+        {
+          displayText = displayText.Insert(lastIdx, "⏎");
+        }
+        else
+        {
+          displayText = displayText.Insert(lastIdx + 1, "\n");
+        }
       }
-      prevIdx = lastIdx;
-      var lastChar = displayText[lastIdx];
-      UnityEngine.Debug.Log($"{i}行目: index: {lastIdx}, 文字:{lastChar}");
-      if (lastChar == '\n')
+    }
+    // ルビありの場合は愚直に後ろから照合していくしかない
+    else
+    {
+      var lineIdx = 0;
+      var maxLastindex = 0;
+      for (int i = 0; i < inputLineInfo.Length; ++i)
       {
-        displayText = displayText.Insert(lastIdx, "⏎");
+        var lastIdx = inputLineInfo[i].lastCharacterIndex;
+        if (maxLastindex < lastIdx && lastIdx < taskText.Length)
+        {
+          maxLastindex = inputLineInfo[i].lastCharacterIndex;
+          lineIdx = i;
+        }
       }
-      else
+      var taskIdx = taskText.Length - 1;
+      var displayIdx = displayText.Length - 1;
+      var newlineIdx = maxLastindex;
+      const string rubyTagEnd = "</r>";
+      bool isRubyTag = false;
+      while (taskIdx >= 0 && displayIdx >= 0 && lineIdx >= 0)
       {
-        displayText = displayText.Insert(lastIdx + 1, "\n");
+        if (displayText[displayIdx] == '>')
+        {
+          isRubyTag = true;
+        }
+        else if (displayText[displayIdx] == '<')
+        {
+          isRubyTag = false;
+        }
+        if (!isRubyTag && taskText[taskIdx].ToString().Equals(displayText[displayIdx].ToString()))
+        {
+          if (taskIdx == newlineIdx)
+          {
+            if (taskText[taskIdx] == '\n')
+            {
+              displayText = displayText.Insert(displayIdx, "⏎");
+            }
+            else if (displayIdx + rubyTagEnd.Length < displayText.Length &&
+            displayText.Substring(displayIdx + 1, rubyTagEnd.Length).Equals(rubyTagEnd))
+            {
+              displayText = displayText.Insert(displayIdx + 1 + rubyTagEnd.Length, "\n");
+            }
+            else
+            {
+              displayText = displayText.Insert(displayIdx + 1, "\n");
+            }
+            lineIdx--;
+            if (lineIdx >= 0)
+            {
+              newlineIdx = inputLineInfo[lineIdx].lastCharacterIndex;
+            }
+          }
+          taskIdx--;
+        }
+        displayIdx--;
       }
     }
     // 調整後の課題文に合うようにフォームの行の高さを調整する
+    UITextField.UnditedText = displayText;
+    CurrentInputText.UnditedText = displayText;
     var taskLineCount = TaskTextContent.textInfo.lineCount;
     var inputLineCount = CurrentInputText.textInfo.lineCount;
     var taskHeight = TaskTextContent.preferredHeight;
@@ -298,14 +358,13 @@ public class LongSentenceScript : MonoBehaviour
     var lb = 0f;
     var ub = 100f;
     var loop = 0;
-    while (Math.Abs(inputLineCount * taskHeight - taskLineCount * inputHeight) > 1e-5 && loop < 100)
+    while (Math.Abs(taskHeight - inputHeight) > 1e-5 && loop < 100)
     {
       loop++;
       var mid = (lb + ub) / 2.0f;
-      UnityEngine.Debug.Log($"{loop} : mid = {mid}");
       CurrentInputText.lineSpacing = mid;
       inputHeight = CurrentInputText.preferredHeight;
-      if (inputLineCount * taskHeight - taskLineCount * inputHeight > 0)
+      if (taskHeight - inputHeight > 0)
       {
         lb = mid;
       }
@@ -314,7 +373,6 @@ public class LongSentenceScript : MonoBehaviour
         ub = mid;
       }
     }
-    UnityEngine.Debug.Log(CurrentInputText.lineSpacing);
   }
 
   /// <summary>
@@ -327,7 +385,6 @@ public class LongSentenceScript : MonoBehaviour
     // 現在のバーの位置を取得(0-1)
     var taskBarPos = scrollBarTask.value;
     var inputBarPos = scrollBarInput.value;
-    // UnityEngine.Debug.Log($"task -> {taskBarPos}, input -> {inputBarPos}");
     // 表示ウィンドウの高さを取得
     var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
     var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
