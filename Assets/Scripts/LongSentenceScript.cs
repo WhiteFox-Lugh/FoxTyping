@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -236,7 +237,7 @@ public class LongSentenceScript : MonoBehaviour
     isShowInfo = true;
     // 課題文表示
     UITextField.UnditedText = displayText;
-    UIInputField.text = taskText;
+    UIInputField.text = "";
     // 入力フィールドアクティブ化
     UIInputField.interactable = true;
     UIInputField.ActivateInputField();
@@ -358,7 +359,8 @@ public class LongSentenceScript : MonoBehaviour
     var lb = 0f;
     var ub = 100f;
     var loop = 0;
-    while (Math.Abs(taskHeight - inputHeight) > 1e-5 && loop < 100)
+    var taskTextInfo = TaskTextContent.GetTextInfo(displayText);
+    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 1000)
     {
       loop++;
       var mid = (lb + ub) / 2.0f;
