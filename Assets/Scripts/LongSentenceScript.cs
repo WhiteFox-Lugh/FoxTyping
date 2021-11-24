@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -57,7 +59,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UIDetailText;
   [SerializeField] TextMeshProUGUI TaskTextContent;
-  [SerializeField] TextMeshProUGUI CurrentInputText;
+  [SerializeField] RubyTextMeshProUGUI CurrentInputText;
   [SerializeField] TextMeshProUGUI PreviewText;
   [SerializeField] TMP_Dropdown DropdownSectionSelect;
   [SerializeField] GameObject TaskViewport;
@@ -75,7 +77,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
   private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
-  private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)\}\{(?<ruby>\w+)\}";
+  private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
   private static List<int> sectionStartPosList;
   // ルビ利用するかどうか
   private static bool isUseRuby;
@@ -85,6 +87,8 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskWithRuby;
   // オリジナル
   private static string taskText;
+  // 表示用
+  private static string taskDisplayText;
   // スコア表示
   private int correctCount = 0;
   private int deleteCount = 0;
@@ -106,7 +110,6 @@ public class LongSentenceScript : MonoBehaviour
     if (WordsetData.AssetLongWordsetData != null)
     {
       var asset = WordsetData.AssetLongWordsetData;
-      UnityEngine.Debug.Log((asset == null ? "unchi" : ConfigScript.LongSentenceTaskName));
       docData = asset.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
       GetSectionInfo();
       SelectSection();
@@ -197,6 +200,7 @@ public class LongSentenceScript : MonoBehaviour
     // その他の初期化
     isUseRuby = ConfigScript.UseRuby;
     GenerateTaskText();
+    AdjustDisplaySettings();
     startTime = 0.0;
     isShowInfo = false;
     isFinished = false;
@@ -233,6 +237,7 @@ public class LongSentenceScript : MonoBehaviour
     isShowInfo = true;
     // 課題文表示
     UITextField.UnditedText = displayText;
+    UIInputField.text = "";
     // 入力フィールドアクティブ化
     UIInputField.interactable = true;
     UIInputField.ActivateInputField();
@@ -245,19 +250,129 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   void Update()
   {
-    // // フォーカスされていなければ強制フォーカス
-    // if (!){
-    //   UIInputField.Select();
-    // }
     if (isShowInfo && !isFinished)
     {
       // 入力中はタイマーを更新
       CheckTimer();
       CheckInputStr();
       // スクロール位置を調整
-      if (UIInputField.isFocused)
+      AdjustScroll();
+    }
+  }
+
+  /// <summary>
+  /// 課題文に合わせてテキスト表示の調整
+  /// </summary>
+  private void AdjustDisplaySettings()
+  {
+    // フォームの改行、禁則処理に合致するように課題文の改行を調整しつつ改行を表すマークを挿入
+    displayText = (isUseRuby ? taskWithRuby : taskDisplayText);
+    UIInputField.text = taskText;
+    var inputInfo = CurrentInputText.GetTextInfo(displayText);
+    var inputLineInfo = inputInfo.lineInfo;
+    if (!isUseRuby)
+    {
+      var prevIdx = Int32.MaxValue;
+      for (int i = inputLineInfo.Length - 1; i >= 0; --i)
       {
-        AdjustScroll();
+        var lastIdx = inputLineInfo[i].lastCharacterIndex;
+        if (!(0 < lastIdx && lastIdx < displayText.Length && prevIdx > lastIdx))
+        {
+          continue;
+        }
+        prevIdx = lastIdx;
+        var lastChar = displayText[lastIdx];
+        if (lastChar == '\n')
+        {
+          displayText = displayText.Insert(lastIdx, "⏎");
+        }
+        else
+        {
+          displayText = displayText.Insert(lastIdx + 1, "\n");
+        }
+      }
+    }
+    // ルビありの場合は愚直に後ろから照合していくしかない
+    else
+    {
+      var lineIdx = 0;
+      var maxLastindex = 0;
+      for (int i = 0; i < inputLineInfo.Length; ++i)
+      {
+        var lastIdx = inputLineInfo[i].lastCharacterIndex;
+        if (maxLastindex < lastIdx && lastIdx < taskText.Length)
+        {
+          maxLastindex = inputLineInfo[i].lastCharacterIndex;
+          lineIdx = i;
+        }
+      }
+      var taskIdx = taskText.Length - 1;
+      var displayIdx = displayText.Length - 1;
+      var newlineIdx = maxLastindex;
+      const string rubyTagEnd = "</r>";
+      bool isRubyTag = false;
+      while (taskIdx >= 0 && displayIdx >= 0 && lineIdx >= 0)
+      {
+        if (displayText[displayIdx] == '>')
+        {
+          isRubyTag = true;
+        }
+        else if (displayText[displayIdx] == '<')
+        {
+          isRubyTag = false;
+        }
+        if (!isRubyTag && taskText[taskIdx].ToString().Equals(displayText[displayIdx].ToString()))
+        {
+          if (taskIdx == newlineIdx)
+          {
+            if (taskText[taskIdx] == '\n')
+            {
+              displayText = displayText.Insert(displayIdx, "⏎");
+            }
+            else if (displayIdx + rubyTagEnd.Length < displayText.Length &&
+            displayText.Substring(displayIdx + 1, rubyTagEnd.Length).Equals(rubyTagEnd))
+            {
+              displayText = displayText.Insert(displayIdx + 1 + rubyTagEnd.Length, "\n");
+            }
+            else
+            {
+              displayText = displayText.Insert(displayIdx + 1, "\n");
+            }
+            lineIdx--;
+            if (lineIdx >= 0)
+            {
+              newlineIdx = inputLineInfo[lineIdx].lastCharacterIndex;
+            }
+          }
+          taskIdx--;
+        }
+        displayIdx--;
+      }
+    }
+    // 調整後の課題文に合うようにフォームの行の高さを調整する
+    UITextField.UnditedText = displayText;
+    CurrentInputText.UnditedText = displayText;
+    var taskLineCount = TaskTextContent.textInfo.lineCount;
+    var inputLineCount = CurrentInputText.textInfo.lineCount;
+    var taskHeight = TaskTextContent.preferredHeight;
+    var inputHeight = CurrentInputText.preferredHeight;
+    var lb = 0f;
+    var ub = 100f;
+    var loop = 0;
+    var taskTextInfo = TaskTextContent.GetTextInfo(displayText);
+    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 1000)
+    {
+      loop++;
+      var mid = (lb + ub) / 2.0f;
+      CurrentInputText.lineSpacing = mid;
+      inputHeight = CurrentInputText.preferredHeight;
+      if (taskHeight - inputHeight > 0)
+      {
+        lb = mid;
+      }
+      else
+      {
+        ub = mid;
       }
     }
   }
@@ -272,24 +387,18 @@ public class LongSentenceScript : MonoBehaviour
     // 現在のバーの位置を取得(0-1)
     var taskBarPos = scrollBarTask.value;
     var inputBarPos = scrollBarInput.value;
-    // UnityEngine.Debug.Log($"task -> {taskBarPos}, input -> {inputBarPos}");
     // 表示ウィンドウの高さを取得
     var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
     var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
-    // 課題文、入力文のコンテンツの高さと行数を取得
+    // 課題文、入力文のコンテンツの高さを取得
     var taskHeight = TaskTextContent.preferredHeight;
     var inputHeight = CurrentInputText.preferredHeight;
-    var taskLineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
-    var inputLineHeight = inputHeight / CurrentInputText.textInfo.lineCount;
     // スクロールバーの同期
     // inputPos は入力した文章の上からどれだけスクロールしたか
     var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
-    // UnityEngine.Debug.Log($"inputPos -> {inputPos}");
     // inputPos のスクロール量を Task のスクロールバーのほうで換算
     var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
     scrollBarTask.value = 1 - nextTaskScrollBarValue;
-    // scrollBarInput.value = nextInputBarPos;
-    // UnityEngine.Debug.Log($"高さ: {taskHeight}, {inputHeight}、行の高さ: {taskLineHeight}, {inputLineHeight}");
   }
 
   /// <summary>
@@ -303,10 +412,9 @@ public class LongSentenceScript : MonoBehaviour
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
     taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
-    taskText = Regex.Replace(taskText, newlinePattern, "⏎\n");
+    taskDisplayText = Regex.Replace(taskText, newlinePattern, "\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
-    taskWithRuby = Regex.Replace(convertedText, newlinePattern, "⏎\n");
-    displayText = (isUseRuby ? taskWithRuby : taskText);
+    taskWithRuby = Regex.Replace(convertedText, newlinePattern, "\n");
   }
 
   /// <summary>
@@ -338,26 +446,6 @@ public class LongSentenceScript : MonoBehaviour
       setBarPos = 0f;
     }
     scrollBar.value = setBarPos;
-  }
-
-  /// <summary>
-  /// ルビを消す
-  /// </summary>
-  private void HideRuby()
-  {
-    displayText = taskText + "\n";
-    isUseRuby = false;
-    UITextField.UnditedText = displayText;
-  }
-
-  /// <summary>
-  /// ルビを表示
-  /// </summary>
-  private void ShowRuby()
-  {
-    displayText = taskWithRuby + "\n";
-    isUseRuby = true;
-    UITextField.UnditedText = displayText;
   }
 
   /// <summary>
@@ -806,26 +894,6 @@ public class LongSentenceScript : MonoBehaviour
     var html = sb.ToString();
     var ret = html.Replace("&para;<br>", "⏎\n");
     return ret;
-  }
-
-  /// <summary>
-  /// ルビ切り替えボタンを押したときの挙動
-  /// </summary>
-  public void OnClickRubyButton()
-  {
-    var isPracticing = !isFinished && isShowInfo;
-    if (!isPracticing)
-    {
-      return;
-    }
-    if (isUseRuby)
-    {
-      HideRuby();
-    }
-    else
-    {
-      ShowRuby();
-    }
   }
 
   /// <summary>
