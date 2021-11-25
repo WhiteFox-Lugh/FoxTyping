@@ -66,7 +66,6 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject InputArea;
   [SerializeField] TMP_InputField UIInputField;
   [SerializeField] GameObject SectionSelectPanel;
-  [SerializeField] GameObject InputPanel;
   [SerializeField] GameObject ResultPanel;
   [SerializeField] GameObject TaskPanel;
   [SerializeField] GameObject InfoPanel;
@@ -76,7 +75,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject TaskVerticalBar;
   [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
-  private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
+  private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}| ]+)\}[\r|\r\n|\n]";
   private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
   private static List<int> sectionStartPosList;
   // ルビ利用するかどうか
@@ -89,6 +88,7 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskText;
   // 表示用
   private static string taskDisplayText;
+  private static LongWordsetData metadata;
   // スコア表示
   private int correctCount = 0;
   private int deleteCount = 0;
@@ -110,7 +110,9 @@ public class LongSentenceScript : MonoBehaviour
     if (WordsetData.AssetLongWordsetData != null)
     {
       var asset = WordsetData.AssetLongWordsetData;
-      docData = asset.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+      var filename = ConfigScript.LongSentenceTaskName;
+      docData = asset.LoadAsset<TextAsset>(filename).ToString();
+      metadata = WordsetData.LongWordsetDict[filename];
       GetSectionInfo();
       SelectSection();
     }
@@ -125,7 +127,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void InitUIPanel()
   {
-    InputPanel.SetActive(true);
     TaskPanel.SetActive(true);
     InfoPanel.SetActive(true);
     ResultPanel.SetActive(false);
@@ -237,7 +238,7 @@ public class LongSentenceScript : MonoBehaviour
     isShowInfo = true;
     // 課題文表示
     UITextField.UnditedText = displayText;
-    UIInputField.text = "";
+    UIInputField.text = taskText;
     // 入力フィールドアクティブ化
     UIInputField.interactable = true;
     UIInputField.ActivateInputField();
@@ -270,7 +271,7 @@ public class LongSentenceScript : MonoBehaviour
     UIInputField.text = taskText;
     var inputInfo = CurrentInputText.GetTextInfo(displayText);
     var inputLineInfo = inputInfo.lineInfo;
-    if (!isUseRuby)
+    if (!isUseRuby || metadata.Language.Equals("English"))
     {
       var prevIdx = Int32.MaxValue;
       for (int i = inputLineInfo.Length - 1; i >= 0; --i)
@@ -360,7 +361,7 @@ public class LongSentenceScript : MonoBehaviour
     var ub = 100f;
     var loop = 0;
     var taskTextInfo = TaskTextContent.GetTextInfo(displayText);
-    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 1000)
+    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 100)
     {
       loop++;
       var mid = (lb + ub) / 2.0f;
@@ -375,6 +376,7 @@ public class LongSentenceScript : MonoBehaviour
         ub = mid;
       }
     }
+    UnityEngine.Debug.Log(CurrentInputText.lineSpacing);
   }
 
   /// <summary>
@@ -492,7 +494,6 @@ public class LongSentenceScript : MonoBehaviour
     ResultPanel.SetActive(true);
     ScorePanel.SetActive(true);
     InfoPanel.SetActive(false);
-    InputPanel.SetActive(false);
     TaskPanel.SetActive(false);
     OperationPanel.SetActive(false);
     ResultOperationPanel.SetActive(true);
