@@ -21,6 +21,8 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_Dropdown UIUseYomigana;
   [SerializeField] private TMP_Dropdown UIInputType;
   [SerializeField] private TMP_InputField InputCPUSpeed;
+  [SerializeField] private TMP_Dropdown CountdownSec;
+  [SerializeField] private TMP_InputField NextWordIntervalTime;
   [SerializeField] private GameObject ConfigPanel;
   [SerializeField] private GameObject LongSentenceConfigPanel;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
@@ -88,6 +90,8 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UIInputType.value = ConfigScript.InputMode;
     longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
     InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
+    CountdownSec.value = ConfigScript.CountDownSecond;
+    NextWordIntervalTime.text = ConfigScript.DelayTime.ToString();
     SetLongSentenceTimeLimitUI();
   }
 
@@ -96,13 +100,14 @@ public class SinglePlayConfigOperate : MonoBehaviour
   /// </summary>
   private void SetCurrentSettings()
   {
-    CheckKpmSettings();
     ConfigScript.GameMode = UIGameMode.value;
     ConfigScript.DataSetName = valToShortWordset[UIDataSetName.value].WordsetFileName;
     ConfigScript.LongSentenceTaskName = valToLongWordset[UILongDataSetName.value].DocumentFileName;
     ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
     ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
+    ConfigScript.DelayTime = Int32.Parse(NextWordIntervalTime.text);
+    ConfigScript.CountDownSecond = CountdownSec.value;
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
     ConfigScript.InfoPanelMode = 0;
@@ -116,24 +121,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   {
     ConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.ShortSentence);
     LongSentenceConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.LongSentence);
-  }
-
-  /// <summary>
-  /// kpm 設定が正しいかチェック
-  /// </summary>
-  public void CheckKpmSettings()
-  {
-    if (int.TryParse(InputCPUSpeed.text, out int kpm))
-    {
-      if (kpm <= 0)
-      {
-        InputCPUSpeed.text = "1";
-      }
-    }
-    else
-    {
-      InputCPUSpeed.text = "300";
-    }
   }
 
   /// <summary>

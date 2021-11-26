@@ -18,9 +18,6 @@ public class ModeSelectScript : MonoBehaviour
     {
       LoadBeginnerModeScene();
     }
-    // else if(KeyCode.U == k){
-    //   LoadUserSettingsScene();
-    // }
     else if (KeyCode.Escape == kc)
     {
       LoadTitleScene();
@@ -41,14 +38,6 @@ public class ModeSelectScript : MonoBehaviour
   public void LoadBeginnerModeScene()
   {
     SceneManager.LoadScene("BeginnerModeScene");
-  }
-
-  /// <summary>
-  /// ユーザー関連の情報表示へシーン変更
-  /// </summary>
-  public void LoadUserSettingsScene()
-  {
-    SceneManager.LoadScene("UserConfigScene");
   }
 
   /// <summary>

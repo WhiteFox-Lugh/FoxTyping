@@ -249,12 +249,13 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private IEnumerator CountDown()
   {
-    countdownText.text = "3";
-    yield return new WaitForSeconds(1f);
-    countdownText.text = "2";
-    yield return new WaitForSeconds(1f);
-    countdownText.text = "1";
-    yield return new WaitForSeconds(1f);
+    var count = ConfigScript.CountDownSecond;
+    while (count > 0)
+    {
+      countdownText.text = count.ToString();
+      yield return new WaitForSeconds(1f);
+      count--;
+    }
     countdownText.text = "";
     ChangeSentence();
   }

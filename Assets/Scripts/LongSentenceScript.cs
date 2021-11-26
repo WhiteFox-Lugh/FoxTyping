@@ -219,12 +219,13 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private IEnumerator CountDown()
   {
-    UICountDownText.text = "3";
-    yield return new WaitForSeconds(1.0f);
-    UICountDownText.text = "2";
-    yield return new WaitForSeconds(1.0f);
-    UICountDownText.text = "1";
-    yield return new WaitForSeconds(1.0f);
+    var count = 3;
+    while (count > 0)
+    {
+      UICountDownText.text = count.ToString();
+      yield return new WaitForSeconds(1f);
+      count--;
+    }
     UICountDownText.text = "";
     AfterCountDown();
   }
