@@ -43,10 +43,12 @@ public class LongSentenceScript : MonoBehaviour
   private const string COLOR_REPLACE = "blue";
   // 正解、不正解の重み
   private const int CORRECT_SCORE = 1;
-  private const int MISS_COST = 30;
-  private double startTime;
-  private bool isShowInfo;
-  private bool isFinished;
+  private const int MISS_COST_JP = 30;
+  private const int MISS_COST_EN = 50;
+  private static int missCost;
+  private static double startTime;
+  private static bool isShowInfo;
+  private static bool isFinished;
   // AssetBundle
   private static string docData;
   // UI
@@ -113,6 +115,14 @@ public class LongSentenceScript : MonoBehaviour
       var filename = ConfigScript.LongSentenceTaskName;
       docData = asset.LoadAsset<TextAsset>(filename).ToString();
       metadata = WordsetData.LongWordsetDict[filename];
+      if (metadata.Language.Equals("Japanese"))
+      {
+        missCost = MISS_COST_JP;
+      }
+      else
+      {
+        missCost = MISS_COST_EN;
+      }
       GetSectionInfo();
       SelectSection();
     }
@@ -239,7 +249,7 @@ public class LongSentenceScript : MonoBehaviour
     isShowInfo = true;
     // 課題文表示
     UITextField.UnditedText = displayText;
-    UIInputField.text = taskText;
+    UIInputField.text = "";
     // 入力フィールドアクティブ化
     UIInputField.interactable = true;
     UIInputField.ActivateInputField();
@@ -531,11 +541,11 @@ public class LongSentenceScript : MonoBehaviour
     sbScore.Append($"スコア(F)： {score.ToString()}");
     sbDetail.Append($"正解数：{correctCount.ToString()} x {CORRECT_SCORE.ToString()}点\n")
             .Append($"<color=\"{COLOR_DELETE}\">削除：{deleteCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color> / ")
+            .Append($" x (-{missCost.ToString()}点)</color> / ")
             .Append($"<color=\"{COLOR_INSERT}\">余分：{insertCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color>\n")
+            .Append($" x (-{missCost.ToString()}点)</color>\n")
             .Append($"<color=\"{COLOR_REPLACE}\">置換：{replaceCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color>");
+            .Append($" x (-{missCost.ToString()}点)</color>");
     UIScoreText.text = sbScore.ToString();
     UIDetailText.text = sbDetail.ToString();
   }
@@ -546,7 +556,7 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private int GetOriginalScore()
   {
-    return correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
+    return correctCount - (deleteCount + insertCount + replaceCount) * missCost;
   }
 
   /// <summary>
@@ -725,7 +735,7 @@ public class LongSentenceScript : MonoBehaviour
       var delLen = diff2.before.Length;
       var eqLen = diff1.before.Length;
       // 脱字文字コスト + 正解数 よりも 余分文字コストのみの方がスコアが高くなる時置き換え
-      if (MISS_COST * delLen > (MISS_COST + 1) * eqLen)
+      if (missCost * delLen > (missCost + 1) * eqLen)
       {
         retBackTrace.RemoveRange(len - 2, 2);
         retBackTrace.Add(new Diff((int)JudgeType.insert, "", diff1.before));
