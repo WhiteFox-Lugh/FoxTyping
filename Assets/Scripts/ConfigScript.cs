@@ -303,7 +303,7 @@ public sealed class ConfigScript
   {
     set
     {
-      showTypeSentence = true;
+      showTypeSentence = value;
     }
     get
     {
