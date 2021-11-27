@@ -84,6 +84,23 @@ public class SinglePlayConfigOperate : MonoBehaviour
   }
 
   /// <summary>
+  /// ワードセットと入力方式のチェック
+  /// /// </summary>
+  public void CheckInputType(int val)
+  {
+    var wordsetLang = valToShortWordset[val].Language;
+    if (wordsetLang.Equals("English"))
+    {
+      UIInputType.value = (int)ConfigScript.InputType.roman;
+      UIInputType.interactable = false;
+    }
+    else
+    {
+      UIInputType.interactable = true;
+    }
+  }
+
+  /// <summary>
   /// 直前の練習内容を選択肢にセット
   /// </summary>
   private void SetPreviousSettings()
