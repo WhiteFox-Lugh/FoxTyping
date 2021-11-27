@@ -43,10 +43,12 @@ public class LongSentenceScript : MonoBehaviour
   private const string COLOR_REPLACE = "blue";
   // 正解、不正解の重み
   private const int CORRECT_SCORE = 1;
-  private const int MISS_COST = 30;
-  private double startTime;
-  private bool isShowInfo;
-  private bool isFinished;
+  private const int MISS_COST_JP = 30;
+  private const int MISS_COST_EN = 50;
+  private static int missCost;
+  private static double startTime;
+  private static bool isShowInfo;
+  private static bool isFinished;
   // AssetBundle
   private static string docData;
   // UI
@@ -66,7 +68,6 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject InputArea;
   [SerializeField] TMP_InputField UIInputField;
   [SerializeField] GameObject SectionSelectPanel;
-  [SerializeField] GameObject InputPanel;
   [SerializeField] GameObject ResultPanel;
   [SerializeField] GameObject TaskPanel;
   [SerializeField] GameObject InfoPanel;
@@ -76,7 +77,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject TaskVerticalBar;
   [SerializeField] GameObject InputVerticalBar;
   // 課題文章関係
-  private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}]+)\}[\r|\r\n|\n]";
+  private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}| ]+)\}[\r|\r\n|\n]";
   private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
   private static List<int> sectionStartPosList;
   // ルビ利用するかどうか
@@ -89,6 +90,7 @@ public class LongSentenceScript : MonoBehaviour
   private static string taskText;
   // 表示用
   private static string taskDisplayText;
+  private static LongWordsetData metadata;
   // スコア表示
   private int correctCount = 0;
   private int deleteCount = 0;
@@ -110,7 +112,17 @@ public class LongSentenceScript : MonoBehaviour
     if (WordsetData.AssetLongWordsetData != null)
     {
       var asset = WordsetData.AssetLongWordsetData;
-      docData = asset.LoadAsset<TextAsset>(ConfigScript.LongSentenceTaskName).ToString();
+      var filename = ConfigScript.LongSentenceTaskName;
+      docData = asset.LoadAsset<TextAsset>(filename).ToString();
+      metadata = WordsetData.LongWordsetDict[filename];
+      if (metadata.Language.Equals("Japanese"))
+      {
+        missCost = MISS_COST_JP;
+      }
+      else
+      {
+        missCost = MISS_COST_EN;
+      }
       GetSectionInfo();
       SelectSection();
     }
@@ -125,7 +137,6 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void InitUIPanel()
   {
-    InputPanel.SetActive(true);
     TaskPanel.SetActive(true);
     InfoPanel.SetActive(true);
     ResultPanel.SetActive(false);
@@ -218,12 +229,13 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private IEnumerator CountDown()
   {
-    UICountDownText.text = "3";
-    yield return new WaitForSeconds(1.0f);
-    UICountDownText.text = "2";
-    yield return new WaitForSeconds(1.0f);
-    UICountDownText.text = "1";
-    yield return new WaitForSeconds(1.0f);
+    var count = 3;
+    while (count > 0)
+    {
+      UICountDownText.text = count.ToString();
+      yield return new WaitForSeconds(1f);
+      count--;
+    }
     UICountDownText.text = "";
     AfterCountDown();
   }
@@ -270,7 +282,7 @@ public class LongSentenceScript : MonoBehaviour
     UIInputField.text = taskText;
     var inputInfo = CurrentInputText.GetTextInfo(displayText);
     var inputLineInfo = inputInfo.lineInfo;
-    if (!isUseRuby)
+    if (!isUseRuby || metadata.Language.Equals("English"))
     {
       var prevIdx = Int32.MaxValue;
       for (int i = inputLineInfo.Length - 1; i >= 0; --i)
@@ -360,7 +372,7 @@ public class LongSentenceScript : MonoBehaviour
     var ub = 100f;
     var loop = 0;
     var taskTextInfo = TaskTextContent.GetTextInfo(displayText);
-    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 1000)
+    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 100)
     {
       loop++;
       var mid = (lb + ub) / 2.0f;
@@ -375,6 +387,7 @@ public class LongSentenceScript : MonoBehaviour
         ub = mid;
       }
     }
+    UnityEngine.Debug.Log(CurrentInputText.lineSpacing);
   }
 
   /// <summary>
@@ -492,7 +505,6 @@ public class LongSentenceScript : MonoBehaviour
     ResultPanel.SetActive(true);
     ScorePanel.SetActive(true);
     InfoPanel.SetActive(false);
-    InputPanel.SetActive(false);
     TaskPanel.SetActive(false);
     OperationPanel.SetActive(false);
     ResultOperationPanel.SetActive(true);
@@ -529,11 +541,11 @@ public class LongSentenceScript : MonoBehaviour
     sbScore.Append($"スコア(F)： {score.ToString()}");
     sbDetail.Append($"正解数：{correctCount.ToString()} x {CORRECT_SCORE.ToString()}点\n")
             .Append($"<color=\"{COLOR_DELETE}\">削除：{deleteCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color> / ")
+            .Append($" x (-{missCost.ToString()}点)</color> / ")
             .Append($"<color=\"{COLOR_INSERT}\">余分：{insertCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color>\n")
+            .Append($" x (-{missCost.ToString()}点)</color>\n")
             .Append($"<color=\"{COLOR_REPLACE}\">置換：{replaceCount.ToString()}")
-            .Append($" x (-{MISS_COST.ToString()}点)</color>");
+            .Append($" x (-{missCost.ToString()}点)</color>");
     UIScoreText.text = sbScore.ToString();
     UIDetailText.text = sbDetail.ToString();
   }
@@ -544,7 +556,7 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private int GetOriginalScore()
   {
-    return correctCount - (deleteCount + insertCount + replaceCount) * MISS_COST;
+    return correctCount - (deleteCount + insertCount + replaceCount) * missCost;
   }
 
   /// <summary>
@@ -723,7 +735,7 @@ public class LongSentenceScript : MonoBehaviour
       var delLen = diff2.before.Length;
       var eqLen = diff1.before.Length;
       // 脱字文字コスト + 正解数 よりも 余分文字コストのみの方がスコアが高くなる時置き換え
-      if (MISS_COST * delLen > (MISS_COST + 1) * eqLen)
+      if (missCost * delLen > (missCost + 1) * eqLen)
       {
         retBackTrace.RemoveRange(len - 2, 2);
         retBackTrace.Add(new Diff((int)JudgeType.insert, "", diff1.before));

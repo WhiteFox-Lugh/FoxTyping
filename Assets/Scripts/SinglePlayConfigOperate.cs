@@ -21,8 +21,13 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_Dropdown UIUseYomigana;
   [SerializeField] private TMP_Dropdown UIInputType;
   [SerializeField] private TMP_InputField InputCPUSpeed;
+  [SerializeField] private TMP_Dropdown CountdownSec;
+  [SerializeField] private TMP_Dropdown InputStrings;
+  [SerializeField] private TMP_InputField NextWordIntervalTime;
   [SerializeField] private GameObject ConfigPanel;
   [SerializeField] private GameObject LongSentenceConfigPanel;
+  [SerializeField] private GameObject DetailSettingsPanel;
+  [SerializeField] private GameObject DetailSettingsBgPanel;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitSecond;
 
@@ -36,6 +41,9 @@ public class SinglePlayConfigOperate : MonoBehaviour
   void Awake()
   {
     ConfigScript.LoadConfig();
+    // 詳細設定パネルは非表示
+    DetailSettingsPanel.SetActive(false);
+    DetailSettingsBgPanel.SetActive(false);
     LoadWordsetMetadata();
     SetPreviousSettings();
   }
@@ -76,6 +84,23 @@ public class SinglePlayConfigOperate : MonoBehaviour
   }
 
   /// <summary>
+  /// ワードセットと入力方式のチェック
+  /// /// </summary>
+  public void CheckInputType(int val)
+  {
+    var wordsetLang = valToShortWordset[val].Language;
+    if (wordsetLang.Equals("English"))
+    {
+      UIInputType.value = (int)ConfigScript.InputType.roman;
+      UIInputType.interactable = false;
+    }
+    else
+    {
+      UIInputType.interactable = true;
+    }
+  }
+
+  /// <summary>
   /// 直前の練習内容を選択肢にセット
   /// </summary>
   private void SetPreviousSettings()
@@ -88,6 +113,9 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UIInputType.value = ConfigScript.InputMode;
     longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
     InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
+    CountdownSec.value = ConfigScript.CountDownSecond;
+    NextWordIntervalTime.text = ConfigScript.DelayTime.ToString();
+    InputStrings.value = ConfigScript.IsShowTypeSentence ? 1 : 0;
     SetLongSentenceTimeLimitUI();
   }
 
@@ -96,17 +124,19 @@ public class SinglePlayConfigOperate : MonoBehaviour
   /// </summary>
   private void SetCurrentSettings()
   {
-    CheckKpmSettings();
     ConfigScript.GameMode = UIGameMode.value;
     ConfigScript.DataSetName = valToShortWordset[UIDataSetName.value].WordsetFileName;
     ConfigScript.LongSentenceTaskName = valToLongWordset[UILongDataSetName.value].DocumentFileName;
     ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
     ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
+    ConfigScript.DelayTime = Int32.Parse(NextWordIntervalTime.text);
+    ConfigScript.CountDownSecond = CountdownSec.value;
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
     ConfigScript.InfoPanelMode = 0;
     ConfigScript.InputMode = UIInputType.value;
+    ConfigScript.IsShowTypeSentence = InputStrings.value == 1;
   }
 
   /// <summary>
@@ -116,24 +146,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   {
     ConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.ShortSentence);
     LongSentenceConfigPanel.SetActive(UIGameMode.value == (int)GameModeNumber.LongSentence);
-  }
-
-  /// <summary>
-  /// kpm 設定が正しいかチェック
-  /// </summary>
-  public void CheckKpmSettings()
-  {
-    if (int.TryParse(InputCPUSpeed.text, out int kpm))
-    {
-      if (kpm <= 0)
-      {
-        InputCPUSpeed.text = "1";
-      }
-    }
-    else
-    {
-      InputCPUSpeed.text = "300";
-    }
   }
 
   /// <summary>
@@ -148,7 +160,14 @@ public class SinglePlayConfigOperate : MonoBehaviour
     }
     else if (KeyCode.Escape == kc)
     {
-      ReturnModeSelectScene();
+      if (DetailSettingsPanel.activeSelf)
+      {
+        DetailSettingsClose();
+      }
+      else
+      {
+        ReturnModeSelectScene();
+      }
     }
   }
 
@@ -237,5 +256,23 @@ public class SinglePlayConfigOperate : MonoBehaviour
       longSentenceTimeLimitVal = LONG_MIN_TIME_LIMIT;
     }
     SetLongSentenceTimeLimitUI();
+  }
+
+  /// <summary>
+  /// 詳細設定を開く（パネルを表示）
+  /// </summary>
+  public void OnClickDetailSettingsButton()
+  {
+    DetailSettingsPanel.SetActive(true);
+    DetailSettingsBgPanel.SetActive(true);
+  }
+
+  /// <summary>
+  /// 詳細設定を閉じる
+  /// </summary>
+  public void DetailSettingsClose()
+  {
+    DetailSettingsPanel.SetActive(false);
+    DetailSettingsBgPanel.SetActive(false);
   }
 }

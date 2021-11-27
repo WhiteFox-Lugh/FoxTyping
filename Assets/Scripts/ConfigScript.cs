@@ -18,11 +18,13 @@ public sealed class ConfigScript
   private const int LONG_MAX_TIME_LIMIT = 60 * 60;
   private const int DEFAULT_LONG_TIME_LIMIT = 5 * 60;
   private const int CPU_KPM_MIN = 1;
-  private const int CPU_KPM_MAX = 10000;
+  private const int CPU_KPM_MAX = 2000;
   private const int CPU_KPM_DEFAULT = 200;
   private const int MIN_DELAY_TIME = 0;
   private const int MAX_DELAY_TIME = 3000;
   private const int DEFAULT_DELAY_TIME = 500;
+  private const int MIN_COUNTDOWN_SEC = 0;
+  private const int MAX_COUNTDOWN_SEC = 5;
   private static int gameMode = (int)SingleMode.shortSentence;
   private static int taskNum = DEFAULT_TASK_NUM;
   private static int infoPanel = (int)MiddlePanel.typingPerf;
@@ -32,6 +34,7 @@ public sealed class ConfigScript
   private static int cpuKpm = CPU_KPM_DEFAULT;
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
   private static bool showTypeSentence = true;
+  private static int countdownSec = 3;
 
   public static ConfigScript GetInstance()
   {
@@ -300,11 +303,40 @@ public sealed class ConfigScript
   {
     set
     {
-      showTypeSentence = true;
+      showTypeSentence = value;
     }
     get
     {
       return showTypeSentence;
+    }
+  }
+
+  /// 以下コンフィグ画面のみ
+  /// <summary>
+  /// カウントダウンの時間
+  /// </summary>
+  /// <value></value>
+  [JsonProperty]
+  public static int CountDownSecond
+  {
+    set
+    {
+      if (MIN_COUNTDOWN_SEC <= value && value <= MAX_COUNTDOWN_SEC)
+      {
+        countdownSec = value;
+      }
+      else if (value < MIN_COUNTDOWN_SEC)
+      {
+        countdownSec = MIN_COUNTDOWN_SEC;
+      }
+      else
+      {
+        countdownSec = MAX_COUNTDOWN_SEC;
+      }
+    }
+    get
+    {
+      return countdownSec;
     }
   }
 
@@ -318,7 +350,6 @@ public sealed class ConfigScript
     writer.Write(json);
     writer.Flush();
     writer.Close();
-    UnityEngine.Debug.Log(configFileName);
   }
 
   /// <summary>
@@ -356,4 +387,5 @@ public class JsonConfigVars
   public int InputMode { get; set; }
   public int DelayTime { get; set; }
   public bool IsShowTypeSentence { get; set; }
+  public int CountDownSecond { get; set; }
 }
