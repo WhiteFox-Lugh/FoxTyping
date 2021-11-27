@@ -392,18 +392,20 @@ public class TypingSoft : MonoBehaviour
     isSentenceMistyped = false;
     index = 0;
     sentenceLength = 0;
-    // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
-    // SetUITypeText(nextTypingSentence);
     CurrentTypingSentence = nextTypingSentence;
     cpuTypeString = nextTypingSentence;
     // UI 上のテキスト変更
     UIOriginSentence.text = originSentence;
     UIYomigana.text = typeSentence;
-    UIType.text = "";
     if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
     {
-      UIType.text = nextTypingSentence;
+      SetUITypeText(nextTypingSentence);
     }
+    else
+    {
+      SetUITypeText("");
+    }
+
     UpdateUITask();
     // 入力受け付け状態にする
     isInputValid = true;
@@ -423,7 +425,22 @@ public class TypingSoft : MonoBehaviour
     {
       if (currentTaskNumber + 1 < numOfTask)
       {
-        UINextWord.text = originSentenceList[currentTaskNumber + 1];
+        // 英語の時はタイピング文章をネクストワードとして表示
+        if (GenerateSentence.Lang.Equals("English"))
+        {
+          var judgeInfo = sentenceJudgeDataList[currentTaskNumber + 1];
+          var englishTypeSentence = "";
+          for (int i = 0; i < judgeInfo.Count; ++i)
+          {
+            englishTypeSentence += judgeInfo[i][0];
+          }
+          UINextWord.text = englishTypeSentence;
+        }
+        // 日本語の時は漢字まじりの方
+        else
+        {
+          UINextWord.text = originSentenceList[currentTaskNumber + 1];
+        }
       }
       else
       {

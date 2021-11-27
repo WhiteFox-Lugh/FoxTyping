@@ -12,7 +12,6 @@ public class GenerateSentence : MonoBehaviour
 {
   private const int minLength = 1;
   private const int maxLength = 50;
-  private static int lang;
   private static Dictionary<string, int> langMap = new Dictionary<string, int> {
     {"Japanese", 0},
     {"English", 1},
@@ -1041,6 +1040,12 @@ public class GenerateSentence : MonoBehaviour
     get;
   }
 
+  public static string Lang
+  {
+    private set;
+    get;
+  }
+
   /// <summary>
   /// ひらがな文をパースして、判定を作成
   /// <param name="sentenceHiragana">パースされるひらがな文字列</param>
@@ -1173,7 +1178,7 @@ public class GenerateSentence : MonoBehaviour
       var jsonStr = asset.LoadAsset<TextAsset>(dataName).ToString();
       var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
       DataSetName = problemData.sentenceDatasetScreenName;
-      lang = langMap[problemData.lang];
+      Lang = problemData.lang;
       foreach (var word in problemData.words)
       {
         var wordSection = word.wordSection;
