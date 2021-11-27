@@ -13,10 +13,10 @@ public sealed class ConfigScript
   private readonly static string configFileName = $"{Application.persistentDataPath}/foxtyping_config_data.json";
   private const int MIN_TASK_NUM = 5;
   private const int MAX_TASK_NUM = 100;
-  private const int DEFAULT_TASK_NUM = 30;
+  private const int DEFAULT_TASK_NUM = 20;
   private const int LONG_MIN_TIME_LIMIT = 1;
   private const int LONG_MAX_TIME_LIMIT = 60 * 60;
-  private const int DEFAULT_LONG_TIME_LIMIT = 5 * 60;
+  private const int DEFAULT_LONG_TIME_LIMIT = 300;
   private const int CPU_KPM_MIN = 1;
   private const int CPU_KPM_MAX = 2000;
   private const int CPU_KPM_DEFAULT = 200;
