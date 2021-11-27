@@ -299,6 +299,7 @@ public sealed class ConfigScript
   /// タイプ文字列をミスタイプ前から表示するか
   /// </summary>
   /// <value></value>
+  [JsonProperty]
   public static bool IsShowTypeSentence
   {
     set
