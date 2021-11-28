@@ -76,6 +76,10 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject ResultOperationPanel;
   [SerializeField] GameObject TaskVerticalBar;
   [SerializeField] GameObject InputVerticalBar;
+  private static Scrollbar taskVerticalBarComponent;
+  private static Scrollbar inputVerticalBarComponent;
+  private static float taskViewportHeight;
+  private static float inputWindowHeight;
   // 課題文章関係
   private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}| ]+)\}[\r|\r\n|\n]";
   private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
@@ -115,6 +119,8 @@ public class LongSentenceScript : MonoBehaviour
       var filename = ConfigScript.LongSentenceTaskName;
       docData = asset.LoadAsset<TextAsset>(filename).ToString();
       metadata = WordsetData.LongWordsetDict[filename];
+      taskVerticalBarComponent = TaskVerticalBar.GetComponent<Scrollbar>();
+      inputVerticalBarComponent = InputVerticalBar.GetComponent<Scrollbar>();
       if (metadata.Language.Equals("Japanese"))
       {
         missCost = MISS_COST_JP;
@@ -255,6 +261,9 @@ public class LongSentenceScript : MonoBehaviour
     UIInputField.ActivateInputField();
     // 開始時刻取得
     startTime = Time.realtimeSinceStartup;
+    // サイズ取得
+    taskViewportHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
   }
 
   /// <summary>
@@ -395,14 +404,9 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void AdjustScroll()
   {
-    var scrollBarTask = TaskVerticalBar.GetComponent<Scrollbar>();
-    var scrollBarInput = InputVerticalBar.GetComponent<Scrollbar>();
     // 現在のバーの位置を取得(0-1)
-    var taskBarPos = scrollBarTask.value;
-    var inputBarPos = scrollBarInput.value;
-    // 表示ウィンドウの高さを取得
-    var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
-    var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
+    var taskBarPos = taskVerticalBarComponent.value;
+    var inputBarPos = inputVerticalBarComponent.value;
     // 課題文、入力文のコンテンツの高さを取得
     var taskHeight = TaskTextContent.preferredHeight;
     var inputHeight = CurrentInputText.preferredHeight;
@@ -410,8 +414,8 @@ public class LongSentenceScript : MonoBehaviour
     // inputPos は入力した文章の上からどれだけスクロールしたか
     var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
     // inputPos のスクロール量を Task のスクロールバーのほうで換算
-    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
-    scrollBarTask.value = 1 - nextTaskScrollBarValue;
+    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskViewportHeight));
+    taskVerticalBarComponent.value = 1 - nextTaskScrollBarValue;
   }
 
   /// <summary>
@@ -436,20 +440,19 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   public void ScrollTask(int numOfLine)
   {
-    var scrollBar = TaskVerticalBar.GetComponent<Scrollbar>();
     // 現在のバーの位置を取得(0-1)
-    var currentBarPos = scrollBar.value;
+    var currentBarPos = taskVerticalBarComponent.value;
     // 表示ウィンドウの高さを取得
-    var windowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    var taskViewportHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
     // 課題文のコンテンツの高さと行数を取得
     var taskHeight = TaskTextContent.preferredHeight;
     var lineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
     // 現在表示している下限のy座標
-    var currentPosY = currentBarPos * (Math.Max(taskHeight, windowHeight) - windowHeight);
+    var currentPosY = currentBarPos * (Math.Max(taskHeight, taskViewportHeight) - taskViewportHeight);
     // スクロール後の位置座標
     var setPosY = currentPosY - numOfLine * lineHeight;
     // スクロール後のバーの位置
-    var setBarPos = setPosY / (Math.Max(taskHeight, windowHeight) - windowHeight);
+    var setBarPos = setPosY / (Math.Max(taskHeight, taskViewportHeight) - taskViewportHeight);
     if (setBarPos > 1f)
     {
       setBarPos = 1f;
@@ -458,7 +461,7 @@ public class LongSentenceScript : MonoBehaviour
     {
       setBarPos = 0f;
     }
-    scrollBar.value = setBarPos;
+    taskVerticalBarComponent.value = setBarPos;
   }
 
   /// <summary>
