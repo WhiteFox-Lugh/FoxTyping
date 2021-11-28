@@ -13,15 +13,33 @@ public sealed class WordsetDataManager : MonoBehaviour
   private const string ABMetaDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_metadata";
   private const string ABShortWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_short";
   private const string ABLongWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
+  [SerializeField] Button TitlePlayButton;
+  [SerializeField] Text NowLoadingText;
+  private const string NOW_LOADING = "Now Loading...";
+  private const string SUCCESS_TEXT = "Load Complete!";
+  private const string FAILED_TEXT = "Failed to load word data";
+  private static bool isTryWordsetLoading = false;
 
   private delegate void OnComplete(AssetBundle data);
-  void Start()
+  void Awake()
   {
+    isTryWordsetLoading = false;
+    if (TitlePlayButton != null)
+    {
+      TitlePlayButton.interactable = false;
+    }
+    if (NowLoadingText != null)
+    {
+      NowLoadingText.text = NOW_LOADING;
+    }
     StartCoroutine("LoadAssetBundleData");
   }
 
   public IEnumerator LoadAssetBundleData()
   {
+    bool isLoadSuccessMetadata = false;
+    bool isLoadSuccessShortData = false;
+    bool isLoadSuccessLongData = false;
     if (WordsetData.AssetMetaData == null)
     {
       var path = ABMetaDataPathLocal;
@@ -29,7 +47,14 @@ public sealed class WordsetDataManager : MonoBehaviour
       path = ABMetaDataPath;
 #endif
       yield return StartCoroutine(
-        FetchAssetBundleData(path, (AssetBundle data) => { WordsetData.AssetMetaData = data; })
+        FetchAssetBundleData(path, (AssetBundle data) =>
+        {
+          if (data != null)
+          {
+            WordsetData.AssetMetaData = data;
+            isLoadSuccessMetadata = true;
+          }
+        })
         );
     }
     if (WordsetData.AssetShortWordsetData == null)
@@ -39,7 +64,14 @@ public sealed class WordsetDataManager : MonoBehaviour
       path = ABShortWordsetDataPath;
 #endif
       yield return StartCoroutine(
-      FetchAssetBundleData(path, (AssetBundle data) => { WordsetData.AssetShortWordsetData = data; })
+      FetchAssetBundleData(path, (AssetBundle data) =>
+      {
+        if (data != null)
+        {
+          WordsetData.AssetShortWordsetData = data;
+          isLoadSuccessShortData = true;
+        }
+      })
       );
     }
     if (WordsetData.AssetLongWordsetData == null)
@@ -49,8 +81,28 @@ public sealed class WordsetDataManager : MonoBehaviour
       path = ABLongWordsetDataPath;
 #endif
       yield return StartCoroutine(
-      FetchAssetBundleData(path, (AssetBundle data) => { WordsetData.AssetLongWordsetData = data; })
+      FetchAssetBundleData(path, (AssetBundle data) =>
+      {
+        if (data != null)
+        {
+          WordsetData.AssetLongWordsetData = data;
+          isLoadSuccessLongData = true;
+        }
+      })
       );
+    }
+    isTryWordsetLoading = true;
+    if (TitlePlayButton != null)
+    {
+      TitlePlayButton.interactable = true;
+    }
+    if (isLoadSuccessMetadata && isLoadSuccessShortData && isLoadSuccessLongData)
+    {
+      NowLoadingText.text = SUCCESS_TEXT;
+    }
+    else
+    {
+      NowLoadingText.text = FAILED_TEXT;
     }
   }
 

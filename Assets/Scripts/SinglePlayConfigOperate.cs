@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class SinglePlayConfigOperate : MonoBehaviour
 {
   private const int TASK_UNIT = 5;
-  private const int LONG_MAX_TIME_LIMIT = 60 * 60;
+  private const int LONG_MAX_TIME_LIMIT = 10 * 60;
   private const int LONG_MIN_TIME_LIMIT = 1;
   private static int longSentenceTimeLimitVal = 300;
   private static Dictionary<int, ShortWordsetData> valToShortWordset = new Dictionary<int, ShortWordsetData>();

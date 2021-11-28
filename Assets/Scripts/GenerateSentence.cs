@@ -10,8 +10,12 @@ using UnityEngine.Networking;
 
 public class GenerateSentence : MonoBehaviour
 {
-  private const int minLength = 1;
-  private const int maxLength = 50;
+  private const int MIN_LEN_JP = 1;
+  private const int MAX_LEN_JP = 50;
+  private const int MIN_LEN_EN = 1;
+  private const int MAX_LEN_EN = 70;
+  private static int minLength = 1;
+  private static int maxLength = 50;
   private static Dictionary<string, int> langMap = new Dictionary<string, int> {
     {"Japanese", 0},
     {"English", 1},
@@ -1131,6 +1135,8 @@ public class GenerateSentence : MonoBehaviour
     string typeSentenceStr = "";
     var hiraganaSeparated = new List<string>();
     var retTypeJudge = new List<List<string>>();
+    minLength = Lang.Equals("English") ? MIN_LEN_EN : MIN_LEN_JP;
+    maxLength = Lang.Equals("English") ? MAX_LEN_EN : MAX_LEN_JP;
     while (!isOK && loopCount < retryLimit)
     {
       // ワードデータセットに欠陥がある可能性も含めて try で動かす

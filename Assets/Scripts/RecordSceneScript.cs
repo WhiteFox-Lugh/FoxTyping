@@ -15,6 +15,7 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UITimeText;
   [SerializeField] TextMeshProUGUI UIAccuracyText;
   [SerializeField] TextMeshProUGUI UIRank;
+  [SerializeField] TextMeshProUGUI UIWordsetName;
   [SerializeField] GameObject ScoreInfoPanel;
   [SerializeField] Material[] RankFontMaterials;
   private readonly int[] RankScore = new int[20] {
@@ -67,6 +68,7 @@ public class RecordSceneScript : MonoBehaviour
       int score = perf.GetNormalScore();
       UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
       UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
+      UIWordsetName.text = GenerateSentence.DataSetName;
       UIScoreText.text = score.ToString();
       for (int i = 0; i < RankScore.Count(); ++i)
       {
@@ -182,10 +184,12 @@ public class RecordSceneScript : MonoBehaviour
     var kpsText = perf.GetKpmAverageAndStdDev().kpsAvg.ToString("0.00");
     var scoreText = perf.GetNormalScore().ToString();
     var accuracyText = perf.GetAccuracy().ToString("0.00");
-    var tweetText = $"FoxTyping でスコア {scoreText} を出しました。\n精度: {accuracyText}％ / 平均速度: {kpsText}打/秒";
+    var strBuilder = new StringBuilder();
+    strBuilder.Append($"{GenerateSentence.DataSetName} でスコア {scoreText} を出しました。\n");
+    strBuilder.Append($"精度: {accuracyText}％ / 平均速度: {kpsText}打/秒 / ワード数: {ConfigScript.Tasks}");
     string url = "https://whitefox-lugh.github.io/FoxTyping/";
     string hashTag = "FoxTyping";
-    OpenTweetWindow(tweetText, hashTag, url);
+    OpenTweetWindow(strBuilder.ToString(), hashTag, url);
   }
 
   /// <summary>

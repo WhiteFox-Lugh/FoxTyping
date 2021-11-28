@@ -45,6 +45,7 @@ public class LongSentenceScript : MonoBehaviour
   private const int CORRECT_SCORE = 1;
   private const int MISS_COST_JP = 30;
   private const int MISS_COST_EN = 50;
+  private const int TASK_MAX_LENGTH = 15000;
   private static int missCost;
   private static double startTime;
   private static bool isShowInfo;
@@ -76,6 +77,10 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] GameObject ResultOperationPanel;
   [SerializeField] GameObject TaskVerticalBar;
   [SerializeField] GameObject InputVerticalBar;
+  private static Scrollbar taskVerticalBarComponent;
+  private static Scrollbar inputVerticalBarComponent;
+  private static float taskViewportHeight;
+  private static float inputWindowHeight;
   // 課題文章関係
   private static readonly string sectionRegex = @"\\[s|S]ection\{([\w|\p{P}| ]+)\}[\r|\r\n|\n]";
   private static readonly string rubyRegex = @"\\[r|R]uby\{(?<word>\w+)/(?<ruby>\w+)\}";
@@ -96,6 +101,7 @@ public class LongSentenceScript : MonoBehaviour
   private int deleteCount = 0;
   private int insertCount = 0;
   private int replaceCount = 0;
+  private int prevUpdateTime;
   // 制限時間
   private static int LimitSec
   {
@@ -115,6 +121,8 @@ public class LongSentenceScript : MonoBehaviour
       var filename = ConfigScript.LongSentenceTaskName;
       docData = asset.LoadAsset<TextAsset>(filename).ToString();
       metadata = WordsetData.LongWordsetDict[filename];
+      taskVerticalBarComponent = TaskVerticalBar.GetComponent<Scrollbar>();
+      inputVerticalBarComponent = InputVerticalBar.GetComponent<Scrollbar>();
       if (metadata.Language.Equals("Japanese"))
       {
         missCost = MISS_COST_JP;
@@ -210,6 +218,7 @@ public class LongSentenceScript : MonoBehaviour
     GUIUtility.systemCopyBuffer = "";
     // その他の初期化
     isUseRuby = ConfigScript.UseRuby;
+    prevUpdateTime = -1;
     GenerateTaskText();
     AdjustDisplaySettings();
     startTime = 0.0;
@@ -230,10 +239,11 @@ public class LongSentenceScript : MonoBehaviour
   private IEnumerator CountDown()
   {
     var count = 3;
+    var countdownSecondsCache = new WaitForSeconds(1f);
     while (count > 0)
     {
       UICountDownText.text = count.ToString();
-      yield return new WaitForSeconds(1f);
+      yield return countdownSecondsCache;
       count--;
     }
     UICountDownText.text = "";
@@ -255,6 +265,9 @@ public class LongSentenceScript : MonoBehaviour
     UIInputField.ActivateInputField();
     // 開始時刻取得
     startTime = Time.realtimeSinceStartup;
+    // サイズ取得
+    taskViewportHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
   }
 
   /// <summary>
@@ -266,9 +279,6 @@ public class LongSentenceScript : MonoBehaviour
     {
       // 入力中はタイマーを更新
       CheckTimer();
-      CheckInputStr();
-      // スクロール位置を調整
-      AdjustScroll();
     }
   }
 
@@ -395,14 +405,9 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   private void AdjustScroll()
   {
-    var scrollBarTask = TaskVerticalBar.GetComponent<Scrollbar>();
-    var scrollBarInput = InputVerticalBar.GetComponent<Scrollbar>();
     // 現在のバーの位置を取得(0-1)
-    var taskBarPos = scrollBarTask.value;
-    var inputBarPos = scrollBarInput.value;
-    // 表示ウィンドウの高さを取得
-    var taskWindowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
-    var inputWindowHeight = InputArea.GetComponent<RectTransform>().sizeDelta.y;
+    var taskBarPos = taskVerticalBarComponent.value;
+    var inputBarPos = inputVerticalBarComponent.value;
     // 課題文、入力文のコンテンツの高さを取得
     var taskHeight = TaskTextContent.preferredHeight;
     var inputHeight = CurrentInputText.preferredHeight;
@@ -410,8 +415,8 @@ public class LongSentenceScript : MonoBehaviour
     // inputPos は入力した文章の上からどれだけスクロールしたか
     var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
     // inputPos のスクロール量を Task のスクロールバーのほうで換算
-    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskWindowHeight));
-    scrollBarTask.value = 1 - nextTaskScrollBarValue;
+    var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskViewportHeight));
+    taskVerticalBarComponent.value = 1 - nextTaskScrollBarValue;
   }
 
   /// <summary>
@@ -424,7 +429,7 @@ public class LongSentenceScript : MonoBehaviour
     string newlinePattern = @"[\n|\r\n|\r]";
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
-    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
+    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1").Substring(0, TASK_MAX_LENGTH);
     taskDisplayText = Regex.Replace(taskText, newlinePattern, "\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "\n");
@@ -436,20 +441,17 @@ public class LongSentenceScript : MonoBehaviour
   /// </summary>
   public void ScrollTask(int numOfLine)
   {
-    var scrollBar = TaskVerticalBar.GetComponent<Scrollbar>();
     // 現在のバーの位置を取得(0-1)
-    var currentBarPos = scrollBar.value;
-    // 表示ウィンドウの高さを取得
-    var windowHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
+    var currentBarPos = taskVerticalBarComponent.value;
     // 課題文のコンテンツの高さと行数を取得
     var taskHeight = TaskTextContent.preferredHeight;
     var lineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
     // 現在表示している下限のy座標
-    var currentPosY = currentBarPos * (Math.Max(taskHeight, windowHeight) - windowHeight);
+    var currentPosY = currentBarPos * (Math.Max(taskHeight, taskViewportHeight) - taskViewportHeight);
     // スクロール後の位置座標
     var setPosY = currentPosY - numOfLine * lineHeight;
     // スクロール後のバーの位置
-    var setBarPos = setPosY / (Math.Max(taskHeight, windowHeight) - windowHeight);
+    var setBarPos = setPosY / (Math.Max(taskHeight, taskViewportHeight) - taskViewportHeight);
     if (setBarPos > 1f)
     {
       setBarPos = 1f;
@@ -458,7 +460,7 @@ public class LongSentenceScript : MonoBehaviour
     {
       setBarPos = 0f;
     }
-    scrollBar.value = setBarPos;
+    taskVerticalBarComponent.value = setBarPos;
   }
 
   /// <summary>
@@ -468,6 +470,13 @@ public class LongSentenceScript : MonoBehaviour
   {
     var elapsedTime = Time.realtimeSinceStartup - startTime;
     var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
+    // 毎フレーム処理すると重すぎる処理は1秒おきにする
+    if (elapsedTimeInt > prevUpdateTime)
+    {
+      prevUpdateTime = elapsedTimeInt;
+      CheckInputStr();
+      AdjustScroll();
+    }
     if (elapsedTimeInt >= LimitSec)
     {
       Finish();
