@@ -7,9 +7,9 @@ using UnityEngine.UI;
 
 public sealed class WordsetDataManager : MonoBehaviour
 {
-  private const string ABMetaDataPathLocal = "AssetBundleData/wordset_metadata";
-  private const string ABShortWordsetDataPathLocal = "AssetBundleData/wordset_short";
-  private const string ABLongWordsetDataPathLocal = "AssetBundleData/wordset_long";
+  private const string ABMetaDataPathLocal = "./docs/AssetBundleData/wordset_metadata";
+  private const string ABShortWordsetDataPathLocal = "./docs/AssetBundleData/wordset_short";
+  private const string ABLongWordsetDataPathLocal = "./docs/AssetBundleData/wordset_long";
   private const string ABMetaDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_metadata";
   private const string ABShortWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_short";
   private const string ABLongWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
@@ -18,7 +18,7 @@ public sealed class WordsetDataManager : MonoBehaviour
   private const string NOW_LOADING = "Now Loading...";
   private const string SUCCESS_TEXT = "Load Complete!";
   private const string FAILED_TEXT = "Failed to load word data";
-  private static bool isTryWordsetLoading = false;
+  public static bool isTryWordsetLoading = false;
 
   private delegate void OnComplete(AssetBundle data);
   void Awake()

@@ -10,7 +10,7 @@ public class TitleSelect : MonoBehaviour
   /// </summary>
   void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.P == kc)
+    if (KeyCode.P == kc && WordsetDataManager.isTryWordsetLoading)
     {
       LoadModeSelectScene();
     }
