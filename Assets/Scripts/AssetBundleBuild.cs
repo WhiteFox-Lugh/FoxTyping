@@ -1,6 +1,6 @@
 using System.IO;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 public class AssetBundleBuild
 {
@@ -9,7 +9,7 @@ public class AssetBundleBuild
   [MenuItem("Expansion/Build AssetBundleData")]
   public static void Build()
   {
-    string assetBundleDirectory = "./AssetBundleData";      // 出力先ディレクトリ
+    string assetBundleDirectory = "./docs/AssetBundleData";      // 出力先ディレクトリ
 
     // 出力先ディレクトリが無かったら作る
     if( !Directory.Exists(assetBundleDirectory) )
