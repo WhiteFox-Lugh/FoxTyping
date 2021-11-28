@@ -45,6 +45,7 @@ public class LongSentenceScript : MonoBehaviour
   private const int CORRECT_SCORE = 1;
   private const int MISS_COST_JP = 30;
   private const int MISS_COST_EN = 50;
+  private const int TASK_MAX_LENGTH = 15000;
   private static int missCost;
   private static double startTime;
   private static bool isShowInfo;
@@ -100,6 +101,7 @@ public class LongSentenceScript : MonoBehaviour
   private int deleteCount = 0;
   private int insertCount = 0;
   private int replaceCount = 0;
+  private int prevUpdateTime;
   // 制限時間
   private static int LimitSec
   {
@@ -216,6 +218,7 @@ public class LongSentenceScript : MonoBehaviour
     GUIUtility.systemCopyBuffer = "";
     // その他の初期化
     isUseRuby = ConfigScript.UseRuby;
+    prevUpdateTime = -1;
     GenerateTaskText();
     AdjustDisplaySettings();
     startTime = 0.0;
@@ -236,10 +239,11 @@ public class LongSentenceScript : MonoBehaviour
   private IEnumerator CountDown()
   {
     var count = 3;
+    var countdownSecondsCache = new WaitForSeconds(1f);
     while (count > 0)
     {
       UICountDownText.text = count.ToString();
-      yield return new WaitForSeconds(1f);
+      yield return countdownSecondsCache;
       count--;
     }
     UICountDownText.text = "";
@@ -275,9 +279,6 @@ public class LongSentenceScript : MonoBehaviour
     {
       // 入力中はタイマーを更新
       CheckTimer();
-      CheckInputStr();
-      // スクロール位置を調整
-      AdjustScroll();
     }
   }
 
@@ -428,7 +429,7 @@ public class LongSentenceScript : MonoBehaviour
     string newlinePattern = @"[\n|\r\n|\r]";
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
-    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1");
+    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1").Substring(0, TASK_MAX_LENGTH);
     taskDisplayText = Regex.Replace(taskText, newlinePattern, "\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "\n");
@@ -442,8 +443,6 @@ public class LongSentenceScript : MonoBehaviour
   {
     // 現在のバーの位置を取得(0-1)
     var currentBarPos = taskVerticalBarComponent.value;
-    // 表示ウィンドウの高さを取得
-    var taskViewportHeight = TaskViewport.GetComponent<RectTransform>().sizeDelta.y;
     // 課題文のコンテンツの高さと行数を取得
     var taskHeight = TaskTextContent.preferredHeight;
     var lineHeight = taskHeight / TaskTextContent.textInfo.lineCount;
@@ -471,6 +470,13 @@ public class LongSentenceScript : MonoBehaviour
   {
     var elapsedTime = Time.realtimeSinceStartup - startTime;
     var elapsedTimeInt = Convert.ToInt32(Math.Floor(elapsedTime));
+    // 毎フレーム処理すると重すぎる処理は1秒おきにする
+    if (elapsedTimeInt > prevUpdateTime)
+    {
+      prevUpdateTime = elapsedTimeInt;
+      CheckInputStr();
+      AdjustScroll();
+    }
     if (elapsedTimeInt >= LimitSec)
     {
       Finish();
