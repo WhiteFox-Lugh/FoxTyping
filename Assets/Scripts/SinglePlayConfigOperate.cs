@@ -113,7 +113,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UIInputType.value = ConfigScript.InputMode;
     longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
     InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
-    CountdownSec.value = ConfigScript.CountDownSecond;
+    CountdownSec.value = ConfigScript.CountDownSecond - 1;
     NextWordIntervalTime.text = ConfigScript.DelayTime.ToString();
     InputStrings.value = ConfigScript.IsShowTypeSentence ? 1 : 0;
     SetLongSentenceTimeLimitUI();
@@ -131,7 +131,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
     ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
     ConfigScript.DelayTime = Int32.Parse(NextWordIntervalTime.text);
-    ConfigScript.CountDownSecond = CountdownSec.value;
+    ConfigScript.CountDownSecond = CountdownSec.value + 1;
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
     ConfigScript.InfoPanelMode = 0;

@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Security.Permissions;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -56,46 +58,66 @@ public class SinglePlayTyping : MonoBehaviour
   }
 
   /// <summary>
+  /// 小さいパネルの切り替え
+  /// </summary>
+  public void ChangeSmallPanel()
+  {
+    if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.nextWord)
+    {
+      ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.assistSpeed;
+    }
+    else if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.assistSpeed)
+    {
+      ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.nextWord;
+    }
+  }
+
+  /// <summary>
+  /// 中段の大きいパネルの切り替え
+  /// </summary>
+  public void ChangeInfoPanel()
+  {
+    if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
+    {
+      ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.assistKeyboard;
+    }
+    else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.assistKeyboard)
+    {
+      ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
+    }
+  }
+
+  /// <summary>
   /// キーが入力されたとき等の処理
   /// </summary>
   void OnGUI()
   {
     Event e = Event.current;
+    // Esc: リトライか中断か
     if (e.type == EventType.KeyDown)
     {
-      // F1 : リトライ
-      if (e.keyCode == KeyCode.F1)
+      if (e.keyCode == KeyCode.Escape)
       {
-        TypingSoft.RetryPractice();
+        // カウントダウン中なら中断
+        if (TypingSoft.CurrentGameCondition == (int)TypingSoft.GameCondition.Countdown)
+        {
+          TypingSoft.CancelPractice();
+        }
+        // 練習中ならリトライ
+        else
+        {
+          TypingSoft.RetryPractice();
+        }
       }
-      // F2 : ワードパネル表示切替
+      // F2: 次ワード / CPU 切り替え
       else if (e.keyCode == KeyCode.F2)
       {
-        if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.nextWord)
-        {
-          ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.assistSpeed;
-        }
-        else if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.assistSpeed)
-        {
-          ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.nextWord;
-        }
+        ChangeSmallPanel();
       }
-      // F3 : 中段の大きいパネルの表示切り替え
-      else if (e.keyCode == KeyCode.F3)
+      // F8: 中段パネル切り替え
+      else if (e.keyCode == KeyCode.F8)
       {
-        if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
-        {
-          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.assistKeyboard;
-        }
-        else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.assistKeyboard)
-        {
-          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
-        }
-      }
-      // Esc : 中断
-      else if (e.keyCode == KeyCode.Escape)
-      {
-        TypingSoft.CancelPractice();
+        ChangeInfoPanel();
       }
     }
   }

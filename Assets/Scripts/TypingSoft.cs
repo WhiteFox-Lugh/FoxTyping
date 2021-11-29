@@ -67,6 +67,7 @@ public class TypingSoft : MonoBehaviour
   [SerializeField] private Text UICPUText;
   [SerializeField] private Text UITypeInfo;
   [SerializeField] private Text UINextWord;
+  [SerializeField] private Text UINextYomi;
   [SerializeField] private Text countdownText;
   [SerializeField] private GameObject DataPanel;
   [SerializeField] private GameObject AssistKeyboardPanel;
@@ -117,7 +118,8 @@ public class TypingSoft : MonoBehaviour
     Progress,
     Finished,
     Canceled,
-    Retry
+    Retry,
+    Countdown
   };
 
   public static int CurrentGameCondition
@@ -187,6 +189,12 @@ public class TypingSoft : MonoBehaviour
     InitText();
     GenerateTask();
     NowLoadingPanel.SetActive(false);
+    if (UINextWord != null && UINextYomi != null)
+    {
+      var firstWordInfo = GetNextWord(currentTaskNumber);
+      UINextWord.text = firstWordInfo.sentence;
+      UINextYomi.text = firstWordInfo.yomi;
+    }
     StartCoroutine(CountDown());
   }
 
@@ -218,10 +226,6 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = "";
     UIYomigana.text = "";
     UIType.text = "";
-    if (UINextWord != null)
-    {
-      UINextWord.text = "";
-    }
     if (ConfigScript.IsBeginnerMode)
     {
       INTERVAL = 0f;
@@ -249,6 +253,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private IEnumerator CountDown()
   {
+    CurrentGameCondition = (int)GameCondition.Countdown;
     var count = ConfigScript.CountDownSecond;
     while (count > 0)
     {
@@ -367,6 +372,7 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private void ChangeSentence()
   {
+    CurrentGameCondition = (int)GameCondition.Progress;
     // 文章などをセット
     originSentence = originSentenceList[currentTaskNumber];
     typeSentence = typeSentenceList[currentTaskNumber];
@@ -421,32 +427,35 @@ public class TypingSoft : MonoBehaviour
       UICPUText.text = "";
       StartCoroutine("CPUType");
     }
-    if (UINextWord != null)
+    if (UINextWord != null && UINextYomi != null)
     {
-      if (currentTaskNumber + 1 < numOfTask)
-      {
-        // 英語の時はタイピング文章をネクストワードとして表示
-        if (GenerateSentence.Lang.Equals("English"))
-        {
-          var judgeInfo = sentenceJudgeDataList[currentTaskNumber + 1];
-          var englishTypeSentence = "";
-          for (int i = 0; i < judgeInfo.Count; ++i)
-          {
-            englishTypeSentence += judgeInfo[i][0];
-          }
-          UINextWord.text = englishTypeSentence;
-        }
-        // 日本語の時は漢字まじりの方
-        else
-        {
-          UINextWord.text = originSentenceList[currentTaskNumber + 1];
-        }
-      }
-      else
-      {
-        UINextWord.text = "";
-      }
+      var nextWordInfo = GetNextWord(currentTaskNumber + 1);
+      UINextWord.text = nextWordInfo.sentence;
+      UINextYomi.text = nextWordInfo.yomi;
     }
+  }
+
+  /// <summary>
+  /// 次のワードを取得
+  /// </summary>
+  /// <param name="wordnumber">ワード番号(0-index)</param>
+  /// <returns>(原文, タイプ文[読み方])</returns>
+  private (string sentence, string yomi) GetNextWord(int wordnumber)
+  {
+    var nextWordBuilder = new StringBuilder();
+    var nextYomiBuilder = new StringBuilder();
+    // ワード数チェック
+    if (!(wordnumber < numOfTask))
+    {
+      nextWordBuilder.Append("***** END *****");
+      nextYomiBuilder.Append("");
+    }
+    else
+    {
+      nextWordBuilder.Append(originSentenceList[wordnumber]);
+      nextYomiBuilder.Append(typeSentenceList[wordnumber]);
+    }
+    return (nextWordBuilder.ToString(), nextYomiBuilder.ToString());
   }
 
   /// <summary>
