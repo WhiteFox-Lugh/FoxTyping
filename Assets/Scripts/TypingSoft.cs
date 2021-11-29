@@ -880,7 +880,6 @@ public class TypingSoft : MonoBehaviour
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
     && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
-      UnityEngine.Debug.Log($"KeyCode => {e.keyCode}");
       var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
       double currentTime = Time.realtimeSinceStartup;
       // タイピングで使用する文字以外は受け付けない
