@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
@@ -77,32 +78,6 @@ public class TypingSoft : MonoBehaviour
   private static GenerateSentence gs;
   // Assist Keyboard JIS
   private static AssistKeyboardJIS AKJIS;
-
-  // char からひらがなへの変換
-  // JIS かな用
-  private static readonly Dictionary<string, string> charToHiragana = new Dictionary<string, string> {
-    {"1", "ぬ"}, {"!", "ぬ"}, {"2", "ふ"}, {"\"", "ふ"}, {"3", "あ"}, {"#", "ぁ"},
-    {"4", "う"}, {"$", "ぅ"}, {"5", "え"}, {"%", "ぇ"}, {"6", "お"}, {"&", "ぉ"},
-    {"7", "や"}, {"\'", "ゃ"}, {"8", "ゆ"}, {"(", "ゅ"}, {"9", "よ"}, {")", "ょ"},
-    {"0", "わ"}, {"\t", "を"}, {"-", "ほ"}, {"=", "ほ"}, {"^", "へ"}, {"~", "へ"},
-    {"Yen", "ー"}, {"|", "ー"}, {"q", "た"}, {"Q", "た"}, {"w", "て"}, {"W", "て"},
-    {"e", "い"}, {"E", "ぃ"}, {"r", "す"}, {"R", "す"}, {"t", "か"}, {"T", "か"},
-    {"y", "ん"}, {"Y", "ん"}, {"u", "な"}, {"U", "な"}, {"i", "に"}, {"I", "に"},
-    {"o", "ら"}, {"O", "ら"}, {"p", "せ"}, {"P", "せ"}, {"@", "゛"}, {"`", "゛"},
-    {"[", "゜"}, {"{", "「"}, {"a", "ち"}, {"A", "ち"}, {"s", "と"}, {"S", "と"},
-    {"d", "し"}, {"D", "し"}, {"f", "は"}, {"F", "は"}, {"g", "き"}, {"G", "き"},
-    {"h", "く"}, {"H", "く"}, {"j", "ま"}, {"J", "ま"}, {"k", "の"}, {"K", "の"},
-    {"l", "り"}, {"L", "り"}, {";", "れ"}, {"+", "れ"}, {":", "け"}, {"*", "け"},
-    {"]", "む"}, {"}", "」"}, {"z", "つ"}, {"Z", "っ"}, {"x", "さ"}, {"X", "さ"},
-    {"c", "そ"}, {"C", "そ"}, {"v", "ひ"}, {"V", "ひ"}, {"b", "こ"}, {"B", "こ"},
-    {"n", "み"}, {"N", "み"}, {"m", "も"}, {"M", "も"}, {",", "ね"}, {"<", "、"},
-    {".", "る"}, {">", "。"}, {"/", "め"}, {"?", "・"}, {"\\", "ろ"}, {"_", "ろ"},
-    {" ", " "}
-  };
-  // JIS かな用
-  // 長音と「ろ」の識別用に OEM2 キーが押されたかのチェックを行う
-  private Queue<bool> JISKanaOem2keyLog = new Queue<bool>();
-  private const int OEM2KEY_LOG_FRAME = 30;
 
   // エラーコードとエラータイプ
   private enum ErrorType
@@ -208,7 +183,6 @@ public class TypingSoft : MonoBehaviour
     ErrorCode = (int)ErrorType.None;
     // データ初期化
     Performance = new TypingPerformance();
-    JISKanaOem2keyLog = new Queue<bool>();
     numOfTask = ConfigScript.Tasks;
     correctTypeNum = 0;
     misTypeNum = 0;
@@ -277,15 +251,6 @@ public class TypingSoft : MonoBehaviour
     }
     else
     {
-      // JIS かなモードの時は OEM2 キーが押されたかどうかを監視
-      if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
-      {
-        JISKanaOem2keyLog.Enqueue(Keyboard.current.oem2Key.wasPressedThisFrame);
-        if (JISKanaOem2keyLog.Count > OEM2KEY_LOG_FRAME)
-        {
-          JISKanaOem2keyLog.Dequeue();
-        }
-      }
       // テキストカラーの設定
       TextColorChange();
       // パネル表示
@@ -522,23 +487,10 @@ public class TypingSoft : MonoBehaviour
   private IEnumerator TypingCheck(string nextString, double keyDownTime)
   {
     lastJudgeTime = keyDownTime;
-    // JIS かなの OEM2 キー判定用に 1フレームだけ遅延させる
-    yield return null;
-    // OEM2 キーが押されているかどうかの判定
-    if (JISKanaOem2keyLog.Contains(true))
-    {
-      nextString = "\\";
-      // 多重判定防止のためのクリア
-      JISKanaOem2keyLog.Clear();
-    }
     // リザルト集積
     if (ConfigScript.InputMode == (int)ConfigScript.InputType.roman)
     {
       typedLetter.Append(nextString);
-    }
-    else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
-    {
-      typedLetter.Append(charToHiragana[nextString]);
     }
     typeTimeList.Add(keyDownTime);
 
@@ -577,20 +529,6 @@ public class TypingSoft : MonoBehaviour
 
         // 正解タイプ
         if (currentStr.Equals(judgeString))
-        {
-          isMistype = false;
-          indexAdd[index][i] = 1;
-        }
-        else
-        {
-          indexAdd[index][i] = 0;
-        }
-      }
-      // JIS かな
-      else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
-      {
-        string inputHiragana = charToHiragana[currentStr];
-        if (inputHiragana.Equals(judgeString))
         {
           isMistype = false;
           indexAdd[index][i] = 1;
@@ -760,7 +698,7 @@ public class TypingSoft : MonoBehaviour
         }
       }
     }
-    correctString += (ConfigScript.InputMode == 0) ? typeChar : charToHiragana[typeChar];
+    correctString += typeChar;
     // Space は打ったか打ってないかわかりにくいので表示上はアンダーバーに変更
     var UIStr = "";
     if (ConfigScript.IsBeginnerMode || ConfigScript.IsShowTypeSentence)
@@ -942,6 +880,7 @@ public class TypingSoft : MonoBehaviour
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
     && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
+      UnityEngine.Debug.Log($"KeyCode => {e.keyCode}");
       var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
       double currentTime = Time.realtimeSinceStartup;
       // タイピングで使用する文字以外は受け付けない
