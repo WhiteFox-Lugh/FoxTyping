@@ -11,7 +11,7 @@ using UnityEngine.Networking;
 public class GenerateSentence : MonoBehaviour
 {
   private const int MIN_LEN_JP = 1;
-  private const int MAX_LEN_JP = 50;
+  private const int MAX_LEN_JP = 40;
   private const int MIN_LEN_EN = 1;
   private const int MAX_LEN_EN = 70;
   private static int minLength = 1;

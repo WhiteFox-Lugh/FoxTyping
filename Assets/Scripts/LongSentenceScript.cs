@@ -152,6 +152,7 @@ public class LongSentenceScript : MonoBehaviour
     OperationPanel.SetActive(true);
     ResultOperationPanel.SetActive(false);
     SectionSelectPanel.SetActive(true);
+    UIInputField.text = "";
     UIInputField.interactable = false;
   }
 
@@ -503,6 +504,7 @@ public class LongSentenceScript : MonoBehaviour
   {
     var isPracticing = !isFinished && isShowInfo;
     if (!isPracticing) { return; }
+    UIInputField.interactable = false;
     // 終了時刻の取得
     var endTime = Time.realtimeSinceStartup;
     var elapsedTime = endTime - startTime;
@@ -518,7 +520,6 @@ public class LongSentenceScript : MonoBehaviour
     OperationPanel.SetActive(false);
     ResultOperationPanel.SetActive(true);
     UIResultTextField.text = UIInputField.text;
-    UIInputField.interactable = false;
     isFinished = true;
     // 得点計算と表示
     ShowScore();
@@ -532,6 +533,8 @@ public class LongSentenceScript : MonoBehaviour
     // 編集距離の計算
     string taskSentence = taskText;
     string userInputSentence = UIInputField.text;
+    // 取得後は破棄
+    UIInputField.text = "";
     List<Diff> diff = GetDiff(taskText, userInputSentence);
     var coloredText = ConvertDiffToHtml(diff);
     SetScoreDetail(diff);

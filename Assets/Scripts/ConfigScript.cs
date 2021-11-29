@@ -23,7 +23,7 @@ public sealed class ConfigScript
   private const int MIN_DELAY_TIME = 0;
   private const int MAX_DELAY_TIME = 3000;
   private const int DEFAULT_DELAY_TIME = 500;
-  private const int MIN_COUNTDOWN_SEC = 0;
+  private const int MIN_COUNTDOWN_SEC = 1;
   private const int MAX_COUNTDOWN_SEC = 5;
   private static int gameMode = (int)SingleMode.shortSentence;
   private static int taskNum = DEFAULT_TASK_NUM;
