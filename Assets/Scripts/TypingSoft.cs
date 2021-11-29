@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
@@ -103,6 +104,7 @@ public class TypingSoft : MonoBehaviour
   // 長音と「ろ」の識別用に OEM2 キーが押されたかのチェックを行う
   private Queue<bool> JISKanaOem2keyLog = new Queue<bool>();
   private const int OEM2KEY_LOG_FRAME = 30;
+  private readonly KeyCode[] keyCodeList = Enum.GetValues(typeof(KeyCode)).Cast<KeyCode>().ToArray();
 
   // エラーコードとエラータイプ
   private enum ErrorType
@@ -281,9 +283,23 @@ public class TypingSoft : MonoBehaviour
       if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
       {
         JISKanaOem2keyLog.Enqueue(Keyboard.current.oem2Key.wasPressedThisFrame);
+        if (Keyboard.current.oem2Key.wasPressedThisFrame)
+        {
+          Debug.Log("OEM2Key Detected");
+        }
         if (JISKanaOem2keyLog.Count > OEM2KEY_LOG_FRAME)
         {
           JISKanaOem2keyLog.Dequeue();
+        }
+        // *********************
+        // For debug
+        // *********************
+        foreach (var key in keyCodeList)
+        {
+          if (Input.GetKeyDown(key))
+          {
+            UnityEngine.Debug.Log($"Input => {key}");
+          }
         }
       }
       // テキストカラーの設定
@@ -942,6 +958,7 @@ public class TypingSoft : MonoBehaviour
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
     && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
+      UnityEngine.Debug.Log($"KeyCode => {e.keyCode}");
       var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
       double currentTime = Time.realtimeSinceStartup;
       // タイピングで使用する文字以外は受け付けない
