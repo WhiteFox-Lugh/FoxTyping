@@ -204,7 +204,7 @@ public class TypingSoft : MonoBehaviour
     UIOriginSentence.text = "";
     UIYomigana.text = "";
     UIType.text = "";
-    // InitKeyCodeQueue();
+    InitKeyCodeQueue();
     if (ConfigScript.IsBeginnerMode)
     {
       INTERVAL = 0f;
@@ -269,7 +269,8 @@ public class TypingSoft : MonoBehaviour
       }
       if (isInputValid)
       {
-        GetKeyCodeFromJS();
+        var jsKey = GetKeyCodeFromJS();
+        UnityEngine.Debug.Log($"JSKey => {jsKey}");
       }
       // アシストキーボード表示
       if (AssistKeyboardPanel != null)
@@ -373,7 +374,7 @@ public class TypingSoft : MonoBehaviour
     typedLetter = new StringBuilder();
     typeJudgeList = new List<int>();
     typeTimeList = new List<double>();
-    // InitKeyCodeQueue();
+    InitKeyCodeQueue();
     // 変数等の初期化
     isFirstInput = true;
     isIntervalEnded = false;
@@ -1052,10 +1053,18 @@ public class TypingSoft : MonoBehaviour
 
 #if UNITY_WEBGL && !UNITY_EDITOR
   [DllImport("__Internal")]
-  private static extern void GetKeyCodeFromJS();
+  private static extern string GetKeyCodeFromJS();
+
+  [DllImport("__Internal")]
+  private static extern void InitKeyCodeQueue();
 #else
   // editor 上ではダミーの関数を呼ぶ
-  private static void GetKeyCodeFromJS()
+  private static string GetKeyCodeFromJS()
+  {
+    return "syobon";
+  }
+
+  private static void InitKeyCodeQueue()
   {
     return;
   }
