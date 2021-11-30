@@ -50,34 +50,46 @@ public class BeginnerModeTyping : MonoBehaviour
   }
 
   /// <summary>
+  /// 中段の大きいパネルの切り替え
+  /// </summary>
+  public void ChangeInfoPanel()
+  {
+    if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.both)
+    {
+      ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
+    }
+    else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
+    {
+      ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.both;
+    }
+  }
+
+  /// <summary>
   /// キーが入力されたとき等の処理
   /// </summary>
   void OnGUI()
   {
     Event e = Event.current;
+    // Esc: リトライか中断か
     if (e.type == EventType.KeyDown)
     {
-      // F1 が押されたときは、リトライ
-      if (e.keyCode == KeyCode.F1)
+      if (e.keyCode == KeyCode.Escape)
       {
-        TypingSoft.RetryPractice();
-      }
-      // F2 が押されたときは、パネル表示の切り替え
-      else if (e.keyCode == KeyCode.F2)
-      {
-        if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.both)
+        // カウントダウン中なら中断
+        if (TypingSoft.CurrentGameCondition == (int)TypingSoft.GameCondition.Countdown)
         {
-          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.typingPerf;
+          TypingSoft.CancelPractice();
         }
-        else if (ConfigScript.InfoPanelMode == (int)ConfigScript.MiddlePanel.typingPerf)
+        // 練習中ならリトライ
+        else
         {
-          ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.both;
+          TypingSoft.RetryPractice();
         }
       }
-      // Esc : 中断
-      else if (e.keyCode == KeyCode.Escape)
+      // F8: 中段パネル切り替え
+      else if (e.keyCode == KeyCode.F8)
       {
-        TypingSoft.CancelPractice();
+        ChangeInfoPanel();
       }
     }
   }

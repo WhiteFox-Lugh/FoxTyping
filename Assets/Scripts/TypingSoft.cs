@@ -11,6 +11,9 @@ using UnityEngine.UI;
 
 public class TypingSoft : MonoBehaviour
 {
+
+  private const int BEGINNER_MODE_COUNTDOWN = 3;
+  private const float BEGINNER_NEXT_WORD_DELAY = 0.25f;
   private static double INTERVAL = 2.0F;
   // 問題表示関連
   private static List<string> originSentenceList = new List<string>();
@@ -228,7 +231,7 @@ public class TypingSoft : MonoBehaviour
   private IEnumerator CountDown()
   {
     CurrentGameCondition = (int)GameCondition.Countdown;
-    var count = ConfigScript.CountDownSecond;
+    var count = ConfigScript.IsBeginnerMode ? BEGINNER_MODE_COUNTDOWN : ConfigScript.CountDownSecond;
     while (count > 0)
     {
       countdownText.text = count.ToString();
@@ -301,7 +304,15 @@ public class TypingSoft : MonoBehaviour
   /// </summary>
   private IEnumerator DelayGenerateNewSentence()
   {
-    var delayVal = (float)(ConfigScript.DelayTime / 1000.0);
+    var delayVal = 1f;
+    if (ConfigScript.IsBeginnerMode)
+    {
+      delayVal = (float)BEGINNER_NEXT_WORD_DELAY;
+    }
+    else
+    {
+      delayVal = (float)(ConfigScript.DelayTime / 1000.0);
+    }
     yield return new WaitForSeconds(delayVal);
     ChangeSentence();
   }
@@ -880,7 +891,6 @@ public class TypingSoft : MonoBehaviour
     if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
     && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
     {
-      UnityEngine.Debug.Log($"KeyCode => {e.keyCode}");
       var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
       double currentTime = Time.realtimeSinceStartup;
       // タイピングで使用する文字以外は受け付けない
