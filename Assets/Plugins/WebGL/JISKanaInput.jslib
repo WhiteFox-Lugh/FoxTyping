@@ -9,7 +9,6 @@ mergeInto(LibraryManager.library, {
   GetKeyCodeFromJS: function() {
     var returnStr = "None";
     if (keyQueue.length > 0){
-      console.log("koyaya");
       returnStr = keyQueue[0];
       keyQueue.shift();
     }

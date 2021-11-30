@@ -110,7 +110,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UILongDataSetName.value = valToLongWordset.FirstOrDefault(x => x.Value.DocumentFileName.Equals(ConfigScript.LongSentenceTaskName)).Key;
     UIUseYomigana.value = Convert.ToInt32(ConfigScript.UseRuby);
     UISentenceNum.value = ConfigScript.Tasks / TASK_UNIT - 1;
-    UIInputType.value = (int)ConfigScript.InputType.roman;
+    UIInputType.value = ConfigScript.InputMode;
     longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
     InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
     CountdownSec.value = ConfigScript.CountDownSecond - 1;
@@ -135,7 +135,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.UseRuby = UIUseYomigana.value == 1;
     ConfigScript.IsBeginnerMode = false;
     ConfigScript.InfoPanelMode = 0;
-    ConfigScript.InputMode = (int)ConfigScript.InputType.roman;
+    ConfigScript.InputMode = UIInputType.value;
     ConfigScript.IsShowTypeSentence = InputStrings.value == 1;
   }
 

@@ -38,16 +38,6 @@
     </div>
   </div>
 
-  <form id="inputKey">
-    <input type="text" id="keycd" placeholder="keycode">
-    <input type="text" id="code" name="keyStr" placeholder="code">
-
-    <dl>
-      <dt>シフトキー</dt>
-      <dd><input type="text" id="shiftkey" placeholder="-"></dd>
-    </dl>
-  </form>
-
   <div class="container-fluid bg-light py-2">
     <div class="container py-2">
       <h3><i class="fas fa-info-circle"></i> FoxTyping について</h3>
@@ -139,23 +129,15 @@
   <script>
     let keyQueue = [];
     window.onload = () => {
-      // キーが押されたらここに入れる
-      let cur = {
-        keycd: "",
-        code: "",
-        onShift: "-"
-      };
-      // [イベント] キーが押し込まれた瞬間
       window.addEventListener("keydown", (e) => {
-        cur.keycd = e.keyCode;   // 押されたキー (Integer)
-        cur.code = e.code;      // 押されたキー (String)
-        cur.onShift = (e.shiftKey) ? "⭕" : "-";  // シフトキー (Boolean)
-
-        // フォームに値をセット
-        document.querySelector("#keycd").value = cur.keycd;
-        document.querySelector("#code").value = cur.code;
-        document.querySelector("#shiftkey").value = cur.onShift;
-        keyQueue.push(cur.code);
+        const onShift = e.shiftKey;
+        var keyCode = e.code;
+        if (keyCode !== "ShiftRight" && keyCode !== "ShiftLeft") {
+          if (onShift) {
+            keyCode = keyCode + "_SH";
+          }
+          keyQueue.push(keyCode);
+        }
       });
     }
   </script>
