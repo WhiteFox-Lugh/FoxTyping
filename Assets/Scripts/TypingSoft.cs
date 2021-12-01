@@ -102,7 +102,7 @@ public class TypingSoft : MonoBehaviour
     {"KeyF_SH", "は"}, {"KeyG_SH", "き"}, {"KeyH_SH", "く"}, {"KeyI_SH", "に"}, {"KeyJ_SH", "ま"},
     {"KeyK_SH", "の"}, {"KeyL_SH", "り"}, {"KeyM_SH", "も"}, {"KeyN_SH", "み"}, {"KeyO_SH", "ら"},
     {"KeyP_SH", "せ"}, {"KeyQ_SH", "た"}, {"KeyR_SH", "す"}, {"KeyS_SH", "と"}, {"KeyT_SH", "か"},
-    {"KeyU_SH", "な"}, {"KeyV_SH", "ひ"}, {"KeyW_SH", "て"}, {"KeyX_SH", "さ"}, {"KeyY_SG", "ん"},
+    {"KeyU_SH", "な"}, {"KeyV_SH", "ひ"}, {"KeyW_SH", "て"}, {"KeyX_SH", "さ"}, {"KeyY_SH", "ん"},
     {"KeyZ_SH", "っ"}, {"Digit1_SH", "ぬ"}, {"Digit2_SH", "ふ"}, {"Digit3_SH", "ぁ"}, {"Digit4_SH", "ぅ"},
     {"Digit5_SH", "ぇ"}, {"Digit6_SH", "ぉ"}, {"Digit7_SH", "ゃ"}, {"Digit8_SH", "ゅ"}, {"Digit9_SH", "ょ"},
     {"Digit0_SH", "を"}, {"Minus_SH", "ほ"}, {"Equal_SH", "へ"}, {"IntlYen_SH", "ー"}, {"BracketLeft_SH", "゛"},
