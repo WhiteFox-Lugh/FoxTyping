@@ -110,6 +110,29 @@ public class TypingSoft : MonoBehaviour
     {"Period_SH", "。"}, {"Slash_SH", "・"}, {"IntlRo_SH", "ろ"}, {"Space_SH", "　"}
   };
 
+  private static readonly Dictionary<string, string> JISKanaAlphabetNumMapping = new Dictionary<string, string>(){
+    {"KeyA", "a"}, {"KeyB", "b"}, {"KeyC", "c"}, {"KeyD", "d"}, {"KeyE", "e"},
+    {"KeyF", "f"}, {"KeyG", "g"}, {"KeyH", "h"}, {"KeyI", "i"}, {"KeyJ", "j"},
+    {"KeyK", "k"}, {"KeyL", "l"}, {"KeyM", "m"}, {"KeyN", "n"}, {"KeyO", "o"},
+    {"KeyP", "p"}, {"KeyQ", "q"}, {"KeyR", "r"}, {"KeyS", "s"}, {"KeyT", "t"},
+    {"KeyU", "u"}, {"KeyV", "v"}, {"KeyW", "w"}, {"KeyX", "x"}, {"KeyY", "y"},
+    {"KeyZ", "z"}, {"Digit1", "1"}, {"Digit2", "2"}, {"Digit3", "3"}, {"Digit4", "4"},
+    {"Digit5", "5"}, {"Digit6", "6"}, {"Digit7", "7"}, {"Digit8", "8"}, {"Digit9", "9"},
+    {"Digit0", "0"}, {"Minus", "-"}, {"Equal", "^"}, {"IntlYen", "\\"}, {"BracketLeft", "@"},
+    {"BracketRight", "["}, {"Semicolon", ";"}, {"Quote", ":"}, {"Backslash", "]"}, {"Comma", ","},
+    {"Period", "."}, {"Slash", "/"}, {"IntlRo", "\\"}, {"Space", "　"},
+    {"KeyA_SH", "A"}, {"KeyB_SH", "B"}, {"KeyC_SH", "C"}, {"KeyD_SH", "D"}, {"KeyE_SH", "E"},
+    {"KeyF_SH", "F"}, {"KeyG_SH", "G"}, {"KeyH_SH", "H"}, {"KeyI_SH", "I"}, {"KeyJ_SH", "J"},
+    {"KeyK_SH", "K"}, {"KeyL_SH", "L"}, {"KeyM_SH", "M"}, {"KeyN_SH", "N"}, {"KeyO_SH", "O"},
+    {"KeyP_SH", "P"}, {"KeyQ_SH", "Q"}, {"KeyR_SH", "R"}, {"KeyS_SH", "S"}, {"KeyT_SH", "T"},
+    {"KeyU_SH", "U"}, {"KeyV_SH", "V"}, {"KeyW_SH", "W"}, {"KeyX_SH", "X"}, {"KeyY_SG", "Y"},
+    {"KeyZ_SH", "Z"}, {"Digit1_SH", "!"}, {"Digit2_SH", "\""}, {"Digit3_SH", "#"}, {"Digit4_SH", "$"},
+    {"Digit5_SH", "%"}, {"Digit6_SH", "&"}, {"Digit7_SH", "'"}, {"Digit8_SH", "("}, {"Digit9_SH", ")"},
+    {"Digit0_SH", ""}, {"Minus_SH", "="}, {"Equal_SH", "~"}, {"IntlYen_SH", "|"}, {"BracketLeft_SH", "`"},
+    {"BracketRight_SH", "{"}, {"Semicolon_SH", "+"}, {"Quote_SH", "*"}, {"Backslash_SH", "}"}, {"Comma_SH", "<"},
+    {"Period_SH", ">"}, {"Slash_SH", "?"}, {"IntlRo_SH", "_"}, {"Space_SH", "　"}
+  };
+
   // エラーコードとエラータイプ
   private enum ErrorType
   {
