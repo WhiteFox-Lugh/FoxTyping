@@ -7,9 +7,10 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@Arthur_Lugh" />
   <meta name="twitter:creator" content="@Arthur_Lugh" />
+  <meta property="twitter:image" content="./assets/css/imgs/card.png" />
   <meta property="og:url" content="https://whitefox-lugh.github.io/" />
   <meta property="og:title" content="FoxTyping" />
-  <meta property="og:description" content="FoxTyping" />
+  <meta property="og:description" content="FoxTyping はタッチタイピングのスキル上達を支援するための練習サイトです。" />
   <meta property="og:image" content="./assets/css/imgs/card.png" />
   <title>FoxTyping</title>
   <link rel="stylesheet" href="./assets/css/bootstrap.css" />
@@ -53,19 +54,15 @@
     <div class="container py-2">
       <h3><i class="fas fa-vial"></i> ベータ版について</h3>
       <p>
+        <a
+          href="https://energetic-wolfsbane-e4a.notion.site/FoxTyping-Update-6c383e5753a842d391257d3f1ccf72c4">アップデート履歴</a>
+      </p>
+      <p>
         ベータ版は開発途中のバージョンとなっております。したがって、開発途中の機能や、製作者側が把握していないバグが存在する可能性が高いです。<br>
         遊ぶ際はご留意ください。
       </p>
       <p>
         課題文章が少ない、ランキング機能などがないなどの点につきましては、順次アップデートで追加していく予定です。
-      </p>
-      <p>
-        2021/11/28 追記<br>
-        バグとして、短文練習の JIS かな入力において「ろ」が認識されないことや、ブラウザによって一部キーがが正しく認識されない点が確認されました。
-      </p>
-      <p>
-        2021/11/30 追記<br>
-        短文練習における JIS かな入力を一時選択できないようにしました。
       </p>
     </div>
   </div>
@@ -126,6 +123,21 @@
     </div>
   </footer>
 
+  <script>
+    let keyQueue = [];
+    window.onload = () => {
+      window.addEventListener("keydown", (e) => {
+        const onShift = e.shiftKey;
+        var keyCode = e.code;
+        if (keyCode !== "ShiftRight" && keyCode !== "ShiftLeft") {
+          if (onShift) {
+            keyCode = keyCode + "_SH";
+          }
+          keyQueue.push(keyCode);
+        }
+      });
+    }
+  </script>
   <script>
     var container = document.querySelector("#unity-container");
     var canvas = document.querySelector("#unity-canvas");
