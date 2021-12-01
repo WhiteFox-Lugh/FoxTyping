@@ -1031,6 +1031,7 @@ public class GenerateSentence : MonoBehaviour
     {"ぷ", new string[2] {"ふ","゜"}},
     {"ぺ", new string[2] {"へ","゜"}},
     {"ぽ", new string[2] {"ほ","゜"}},
+    {"ゔ", new string[2] {"う","゛"}},
   };
 
   // 原文と読み方のセット
