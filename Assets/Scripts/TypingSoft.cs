@@ -83,10 +83,8 @@ public class TypingSoft : MonoBehaviour
   private static GenerateSentence gs;
   // Assist Keyboard JIS
   private static AssistKeyboardJIS AKJIS;
-  // JIS かな用 Shift キーフラグ
-  private static bool flagJISKanaShiftLeftKey = false;
-  private static bool flagJISKanaShiftRightKey = false;
-  // Shift キーを考慮しない時の JIS かなキーコードからひらがなへのマッピング
+
+  // JIS かなキーコードからひらがなへのマッピング
   private static readonly Dictionary<string, string> JISKanaMapping = new Dictionary<string, string>(){
     {"KeyA", "ち"}, {"KeyB", "こ"}, {"KeyC", "そ"}, {"KeyD", "し"}, {"KeyE", "い"},
     {"KeyF", "は"}, {"KeyG", "き"}, {"KeyH", "く"}, {"KeyI", "に"}, {"KeyJ", "ま"},
@@ -110,7 +108,9 @@ public class TypingSoft : MonoBehaviour
     {"Period_SH", "。"}, {"Slash_SH", "・"}, {"IntlRo_SH", "ろ"}, {"Space_SH", "　"}
   };
 
-  private static readonly Dictionary<string, string> JISKanaAlphabetNumMapping = new Dictionary<string, string>(){
+  // ローマ字のキー入力と対応文字
+  // JIS かな、アルファベット、数字、記号対応
+  private static readonly Dictionary<string, string> RomanJISArrayMapping = new Dictionary<string, string>(){
     {"KeyA", "a"}, {"KeyB", "b"}, {"KeyC", "c"}, {"KeyD", "d"}, {"KeyE", "e"},
     {"KeyF", "f"}, {"KeyG", "g"}, {"KeyH", "h"}, {"KeyI", "i"}, {"KeyJ", "j"},
     {"KeyK", "k"}, {"KeyL", "l"}, {"KeyM", "m"}, {"KeyN", "n"}, {"KeyO", "o"},
@@ -120,17 +120,41 @@ public class TypingSoft : MonoBehaviour
     {"Digit5", "5"}, {"Digit6", "6"}, {"Digit7", "7"}, {"Digit8", "8"}, {"Digit9", "9"},
     {"Digit0", "0"}, {"Minus", "-"}, {"Equal", "^"}, {"IntlYen", "\\"}, {"BracketLeft", "@"},
     {"BracketRight", "["}, {"Semicolon", ";"}, {"Quote", ":"}, {"Backslash", "]"}, {"Comma", ","},
-    {"Period", "."}, {"Slash", "/"}, {"IntlRo", "\\"}, {"Space", "　"},
+    {"Period", "."}, {"Slash", "/"}, {"IntlRo", "\\"}, {"Space", " "},
     {"KeyA_SH", "A"}, {"KeyB_SH", "B"}, {"KeyC_SH", "C"}, {"KeyD_SH", "D"}, {"KeyE_SH", "E"},
     {"KeyF_SH", "F"}, {"KeyG_SH", "G"}, {"KeyH_SH", "H"}, {"KeyI_SH", "I"}, {"KeyJ_SH", "J"},
     {"KeyK_SH", "K"}, {"KeyL_SH", "L"}, {"KeyM_SH", "M"}, {"KeyN_SH", "N"}, {"KeyO_SH", "O"},
     {"KeyP_SH", "P"}, {"KeyQ_SH", "Q"}, {"KeyR_SH", "R"}, {"KeyS_SH", "S"}, {"KeyT_SH", "T"},
-    {"KeyU_SH", "U"}, {"KeyV_SH", "V"}, {"KeyW_SH", "W"}, {"KeyX_SH", "X"}, {"KeyY_SG", "Y"},
+    {"KeyU_SH", "U"}, {"KeyV_SH", "V"}, {"KeyW_SH", "W"}, {"KeyX_SH", "X"}, {"KeyY_SH", "Y"},
     {"KeyZ_SH", "Z"}, {"Digit1_SH", "!"}, {"Digit2_SH", "\""}, {"Digit3_SH", "#"}, {"Digit4_SH", "$"},
     {"Digit5_SH", "%"}, {"Digit6_SH", "&"}, {"Digit7_SH", "'"}, {"Digit8_SH", "("}, {"Digit9_SH", ")"},
     {"Digit0_SH", ""}, {"Minus_SH", "="}, {"Equal_SH", "~"}, {"IntlYen_SH", "|"}, {"BracketLeft_SH", "`"},
     {"BracketRight_SH", "{"}, {"Semicolon_SH", "+"}, {"Quote_SH", "*"}, {"Backslash_SH", "}"}, {"Comma_SH", "<"},
-    {"Period_SH", ">"}, {"Slash_SH", "?"}, {"IntlRo_SH", "_"}, {"Space_SH", "　"}
+    {"Period_SH", ">"}, {"Slash_SH", "?"}, {"IntlRo_SH", "_"}, {"Space_SH", " "}
+  };
+
+  // US配列版
+  private static readonly Dictionary<string, string> RomanUSArrayMapping = new Dictionary<string, string>(){
+    {"KeyA", "a"}, {"KeyB", "b"}, {"KeyC", "c"}, {"KeyD", "d"}, {"KeyE", "e"},
+    {"KeyF", "f"}, {"KeyG", "g"}, {"KeyH", "h"}, {"KeyI", "i"}, {"KeyJ", "j"},
+    {"KeyK", "k"}, {"KeyL", "l"}, {"KeyM", "m"}, {"KeyN", "n"}, {"KeyO", "o"},
+    {"KeyP", "p"}, {"KeyQ", "q"}, {"KeyR", "r"}, {"KeyS", "s"}, {"KeyT", "t"},
+    {"KeyU", "u"}, {"KeyV", "v"}, {"KeyW", "w"}, {"KeyX", "x"}, {"KeyY", "y"},
+    {"KeyZ", "z"}, {"Digit1", "1"}, {"Digit2", "2"}, {"Digit3", "3"}, {"Digit4", "4"},
+    {"Digit5", "5"}, {"Digit6", "6"}, {"Digit7", "7"}, {"Digit8", "8"}, {"Digit9", "9"},
+    {"Digit0", "0"}, {"Minus", "-"}, {"Equal", "="}, {"BracketLeft", "["},
+    {"BracketRight", "]"}, {"Semicolon", ";"}, {"Quote", "'"}, {"Backslash", "\\"}, {"Comma", ","},
+    {"Period", "."}, {"Slash", "/"}, {"IntlRo", "\\"}, {"Space", " "},
+    {"KeyA_SH", "A"}, {"KeyB_SH", "B"}, {"KeyC_SH", "C"}, {"KeyD_SH", "D"}, {"KeyE_SH", "E"},
+    {"KeyF_SH", "F"}, {"KeyG_SH", "G"}, {"KeyH_SH", "H"}, {"KeyI_SH", "I"}, {"KeyJ_SH", "J"},
+    {"KeyK_SH", "K"}, {"KeyL_SH", "L"}, {"KeyM_SH", "M"}, {"KeyN_SH", "N"}, {"KeyO_SH", "O"},
+    {"KeyP_SH", "P"}, {"KeyQ_SH", "Q"}, {"KeyR_SH", "R"}, {"KeyS_SH", "S"}, {"KeyT_SH", "T"},
+    {"KeyU_SH", "U"}, {"KeyV_SH", "V"}, {"KeyW_SH", "W"}, {"KeyX_SH", "X"}, {"KeyY_SH", "Y"},
+    {"KeyZ_SH", "Z"}, {"Digit1_SH", "!"}, {"Digit2_SH", "@"}, {"Digit3_SH", "#"}, {"Digit4_SH", "$"},
+    {"Digit5_SH", "%"}, {"Digit6_SH", "^"}, {"Digit7_SH", "&"}, {"Digit8_SH", "*"}, {"Digit9_SH", "("},
+    {"Digit0_SH", ")"}, {"Minus_SH", "_"}, {"Equal_SH", "+"}, {"BracketLeft_SH", "{"},
+    {"BracketRight_SH", "}"}, {"Semicolon_SH", ":"}, {"Quote_SH", "\""}, {"Backslash_SH", "|"}, {"Comma_SH", "<"},
+    {"Period_SH", ">"}, {"Slash_SH", "?"}, {"Space_SH", " "}
   };
 
   // エラーコードとエラータイプ
@@ -249,8 +273,6 @@ public class TypingSoft : MonoBehaviour
     isInputValid = false;
     isIntervalEnded = false;
     isSentenceMistyped = false;
-    flagJISKanaShiftLeftKey = false;
-    flagJISKanaShiftRightKey = false;
     CurrentTypingSentence = "";
     cpuTypeString = "";
     UIOriginSentence.text = "";
@@ -319,33 +341,10 @@ public class TypingSoft : MonoBehaviour
       {
         ShowWordPanel(ConfigScript.WordPanelMode);
       }
-      // JIS かなの正誤判定
-      if (isInputValid && ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana)
+      // 正誤判定
+      if (isInputValid)
       {
-        var jsKey = GetKeyCodeFromJS();
-        if (!jsKey.Equals("None"))
-        {
-          // 最初のキーのときはレイテンシも測定
-          if (isFirstInput)
-          {
-            double currentTime = Time.realtimeSinceStartup;
-            if (!ConfigScript.IsBeginnerMode)
-            {
-              firstCharInputTime = currentTime;
-            }
-            // 1文字目の時は反応時間もここで計測
-            var latency = currentTime - lastSentenceUpdateTime;
-            Performance.AddLatencyTime(latency);
-            isFirstInput = false;
-          }
-          if (JISKanaMapping.ContainsKey(jsKey))
-          {
-            var hiragana = JISKanaMapping[jsKey];
-            double currentTime = Time.realtimeSinceStartup;
-            // 正誤チェック
-            StartCoroutine(TypingCheck(hiragana, currentTime));
-          }
-        }
+        GetKeyInput();
       }
       // アシストキーボード表示
       if (AssistKeyboardPanel != null)
@@ -359,6 +358,55 @@ public class TypingSoft : MonoBehaviour
         {
           AKJIS.SetNextHighlight(CurrentTypingSentence[0].ToString());
         }
+      }
+    }
+  }
+
+  /// <summary>
+  /// JS のキーコードを取得して Unity 用に変換
+  /// </summary>
+  private void GetKeyInput()
+  {
+    var jsKey = GetKeyCodeFromJS();
+    if (!String.IsNullOrEmpty(jsKey) && !jsKey.Equals("None"))
+    {
+      // 最初のキーのときはレイテンシも測定
+      if (isFirstInput)
+      {
+        double currentTime = Time.realtimeSinceStartup;
+        if (!ConfigScript.IsBeginnerMode)
+        {
+          firstCharInputTime = currentTime;
+        }
+        // 1文字目の時は反応時間もここで計測
+        var latency = currentTime - lastSentenceUpdateTime;
+        Performance.AddLatencyTime(latency);
+        isFirstInput = false;
+      }
+      // 正誤判定
+      // ローマ字
+      if (ConfigScript.InputMode == (int)ConfigScript.InputType.roman)
+      {
+        var keyStr = "";
+        if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.japanese)
+        {
+          keyStr = RomanJISArrayMapping[jsKey];
+        }
+        else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us)
+        {
+          keyStr = RomanUSArrayMapping[jsKey];
+        }
+        double currentTime = Time.realtimeSinceStartup;
+        // 正誤チェック
+        StartCoroutine(TypingCheck(keyStr, currentTime));
+      }
+      // JIS かな
+      else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && JISKanaMapping.ContainsKey(jsKey))
+      {
+        var hiragana = JISKanaMapping[jsKey];
+        double currentTime = Time.realtimeSinceStartup;
+        // 正誤チェック
+        StartCoroutine(TypingCheck(hiragana, currentTime));
       }
     }
   }
@@ -955,41 +1003,6 @@ public class TypingSoft : MonoBehaviour
   }
 
   /// <summary>
-  /// キーが入力されたとき等の処理
-  /// </summary>
-  void OnGUI()
-  {
-    // JIS かなのときは Shift キー以外取得はしない
-    if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana) { return; }
-    Event e = Event.current;
-    var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
-    && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
-    {
-      var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
-      double currentTime = Time.realtimeSinceStartup;
-      // タイピングで使用する文字以外は受け付けない
-      // Esc など画面遷移などで使うキーと競合を避ける
-      if (!inputStr.Equals(""))
-      {
-        if (isFirstInput)
-        {
-          if (!ConfigScript.IsBeginnerMode)
-          {
-            firstCharInputTime = currentTime;
-          }
-          // 1文字目の時は反応時間もここで計測
-          var latency = currentTime - lastSentenceUpdateTime;
-          Performance.AddLatencyTime(latency);
-          isFirstInput = false;
-        }
-        // 正誤チェック
-        StartCoroutine(TypingCheck(inputStr, currentTime));
-      }
-    }
-  }
-
-  /// <summary>
   /// 練習を中断するフラグを立てる
   /// </summary>
   public static void CancelPractice()
@@ -1117,6 +1130,43 @@ public class TypingSoft : MonoBehaviour
         return "";
     }
   }
+
+#if UNITY_EDITOR
+  /// <summary>
+  /// キーが入力されたとき等の処理(Local ダミー処理)
+  /// </summary>
+  void OnGUI()
+  {
+    // JIS かなのときは Shift キー以外取得はしない
+    if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana) { return; }
+    Event e = Event.current;
+    var isPushedShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    if (isInputValid && e.type == EventType.KeyDown && e.keyCode != KeyCode.None
+    && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+    {
+      var inputStr = ConvertKeyCodeToStr(e.keyCode, isPushedShiftKey);
+      double currentTime = Time.realtimeSinceStartup;
+      // タイピングで使用する文字以外は受け付けない
+      // Esc など画面遷移などで使うキーと競合を避ける
+      if (!inputStr.Equals(""))
+      {
+        if (isFirstInput)
+        {
+          if (!ConfigScript.IsBeginnerMode)
+          {
+            firstCharInputTime = currentTime;
+          }
+          // 1文字目の時は反応時間もここで計測
+          var latency = currentTime - lastSentenceUpdateTime;
+          Performance.AddLatencyTime(latency);
+          isFirstInput = false;
+        }
+        // 正誤チェック
+        StartCoroutine(TypingCheck(inputStr, currentTime));
+      }
+    }
+  }
+#endif
 
 #if UNITY_WEBGL && !UNITY_EDITOR
   [DllImport("__Internal")]
