@@ -13,7 +13,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   // finger_name -> GameObject のマップ
   private static Dictionary<string, GameObject> AFingers = new Dictionary<string, GameObject>();
   // string -> key_name[]
-  private static Dictionary<string, string[]> keyMapping = new Dictionary<string, string[]>() {
+  private static readonly Dictionary<string, string[]> keyMappingJIS = new Dictionary<string, string[]>() {
     {"0", new string[1] {"Key_0"}},
     {"1", new string[1] {"Key_1"}},
     {"2", new string[1] {"Key_2"}},
@@ -170,6 +170,101 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"　", new string[1]{"Key_Space"}}
   };
 
+  // US 配列での文字とキーのマッピング
+  private static readonly Dictionary<string, string[]> keyMappingUS = new Dictionary<string, string[]>() {
+    {"0", new string[1] {"Key_0"}},
+    {"1", new string[1] {"Key_1"}},
+    {"2", new string[1] {"Key_2"}},
+    {"3", new string[1] {"Key_3"}},
+    {"4", new string[1] {"Key_4"}},
+    {"5", new string[1] {"Key_5"}},
+    {"6", new string[1] {"Key_6"}},
+    {"7", new string[1] {"Key_7"}},
+    {"8", new string[1] {"Key_8"}},
+    {"9", new string[1] {"Key_9"}},
+    {"a", new string[1] {"Key_A"}},
+    {"b", new string[1] {"Key_B"}},
+    {"c", new string[1] {"Key_C"}},
+    {"d", new string[1] {"Key_D"}},
+    {"e", new string[1] {"Key_E"}},
+    {"f", new string[1] {"Key_F"}},
+    {"g", new string[1] {"Key_G"}},
+    {"h", new string[1] {"Key_H"}},
+    {"i", new string[1] {"Key_I"}},
+    {"j", new string[1] {"Key_J"}},
+    {"k", new string[1] {"Key_K"}},
+    {"l", new string[1] {"Key_L"}},
+    {"m", new string[1] {"Key_M"}},
+    {"n", new string[1] {"Key_N"}},
+    {"o", new string[1] {"Key_O"}},
+    {"p", new string[1] {"Key_P"}},
+    {"q", new string[1] {"Key_Q"}},
+    {"r", new string[1] {"Key_R"}},
+    {"s", new string[1] {"Key_S"}},
+    {"t", new string[1] {"Key_T"}},
+    {"u", new string[1] {"Key_U"}},
+    {"v", new string[1] {"Key_V"}},
+    {"w", new string[1] {"Key_W"}},
+    {"x", new string[1] {"Key_X"}},
+    {"y", new string[1] {"Key_Y"}},
+    {"z", new string[1] {"Key_Z"}},
+    {"A", new string[2] {"Key_A", "Key_RShift"}},
+    {"B", new string[2] {"Key_B", "Key_RShift"}},
+    {"C", new string[2] {"Key_C", "Key_RShift"}},
+    {"D", new string[2] {"Key_D", "Key_RShift"}},
+    {"E", new string[2] {"Key_E", "Key_RShift"}},
+    {"F", new string[2] {"Key_F", "Key_RShift"}},
+    {"G", new string[2] {"Key_G", "Key_RShift"}},
+    {"H", new string[2] {"Key_H", "Key_LShift"}},
+    {"I", new string[2] {"Key_I", "Key_LShift"}},
+    {"J", new string[2] {"Key_J", "Key_LShift"}},
+    {"K", new string[2] {"Key_K", "Key_LShift"}},
+    {"L", new string[2] {"Key_L", "Key_LShift"}},
+    {"M", new string[2] {"Key_M", "Key_LShift"}},
+    {"N", new string[2] {"Key_N", "Key_LShift"}},
+    {"O", new string[2] {"Key_O", "Key_LShift"}},
+    {"P", new string[2] {"Key_P", "Key_LShift"}},
+    {"Q", new string[2] {"Key_Q", "Key_RShift"}},
+    {"R", new string[2] {"Key_R", "Key_RShift"}},
+    {"S", new string[2] {"Key_S", "Key_RShift"}},
+    {"T", new string[2] {"Key_T", "Key_RShift"}},
+    {"U", new string[2] {"Key_U", "Key_LShift"}},
+    {"V", new string[2] {"Key_V", "Key_RShift"}},
+    {"W", new string[2] {"Key_W", "Key_RShift"}},
+    {"X", new string[2] {"Key_X", "Key_RShift"}},
+    {"Y", new string[2] {"Key_Y", "Key_LShift"}},
+    {"Z", new string[2] {"Key_Z", "Key_RShift"}},
+    {" ", new string[1] {"Key_Space"}},
+    {"-", new string[1] {"Key_Hyphen"}},
+    {",", new string[1] {"Key_Comma"}},
+    {".", new string[1] {"Key_Period"}},
+    {";", new string[1] {"Key_Semicolon"}},
+    {":", new string[2] {"Key_Semicolon", "Key_LShift"}},
+    {"[", new string[1] {"Key_At"}},
+    {"]", new string[1] {"Key_LBracket"}},
+    {"@", new string[2] {"Key_2", "Key_RShift"}},
+    {"/", new string[1] {"Key_Slash"}},
+    {"!", new string[2] {"Key_1", "Key_RShift"}},
+    {"?", new string[2] {"Key_Slash", "Key_LShift"}},
+    {"\"", new string[2] {"Key_Colon", "Key_LShift"}},
+    {"#", new string[2] {"Key_3", "Key_RShift"}},
+    {"$", new string[2] {"Key_4", "Key_RShift"}},
+    {"%", new string[2] {"Key_5", "Key_RShift"}},
+    {"&", new string[2] {"Key_7", "Key_LShift"}},
+    {"\'", new string[1] {"Key_Colon"}},
+    {"(", new string[2] {"Key_9", "Key_LShift"}},
+    {")", new string[2] {"Key_0", "Key_LShift"}},
+    {"=", new string[1] {"Key_Caret"}},
+    {"{", new string[2] {"Key_At", "Key_LShift"}},
+    {"}", new string[2] {"Key_LBracket", "Key_LShift"}},
+    {"+", new string[2] {"Key_Semicolon", "Key_LShift"}},
+    {"*", new string[2] {"Key_8", "Key_LShift"}},
+    {"<", new string[2] {"Key_Comma", "Key_LShift"}},
+    {">", new string[2] {"Key_Period", "Key_LShift"}},
+    {"_", new string[2] {"Key_Hyphen", "Key_LShift"}},
+    {"　", new string[1]{"Key_Space"}}
+  };
+
   // string -> key_name[]
   private static Dictionary<string, (int, char)> keyFingering = new Dictionary<string, (int, char)>() {
     {"Key_1", (5, 'L')},
@@ -222,11 +317,11 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_BackSlash", (5, 'R')},
     {"Key_Space", (1, 'B')},
     {"Key_RShift", (5, 'R')},
-    {"Key_LShift", (5, 'R')}
+    {"Key_LShift", (5, 'L')}
   };
 
   // string -> key_name[]
-  private static Dictionary<string, string> jisKanaKeyNameMap = new Dictionary<string, string>() {
+  private static readonly Dictionary<string, string> jisKanaKeyNameMap = new Dictionary<string, string>() {
     {"Key_1", "ぬ"},
     {"Key_Q", "た"},
     {"Key_A", "ち"},
@@ -280,6 +375,61 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_LShift", "Shift"}
   };
 
+  // US 配列のキーネームマッピング
+  private static readonly Dictionary<string, string> USArrayKeyNameMap = new Dictionary<string, string>() {
+    {"Key_1", "1"},
+    {"Key_Q", "Q"},
+    {"Key_A", "A"},
+    {"Key_Z", "Z"},
+    {"Key_2", "2"},
+    {"Key_W", "W"},
+    {"Key_S", "S"},
+    {"Key_X", "X"},
+    {"Key_3", "3"},
+    {"Key_E", "E"},
+    {"Key_D", "D"},
+    {"Key_C", "C"},
+    {"Key_4", "4"},
+    {"Key_R", "R"},
+    {"Key_F", "F"},
+    {"Key_V", "V"},
+    {"Key_5", "5"},
+    {"Key_T", "T"},
+    {"Key_G", "G"},
+    {"Key_B", "B"},
+    {"Key_6", "6"},
+    {"Key_Y", "Y"},
+    {"Key_H", "H"},
+    {"Key_N", "N"},
+    {"Key_7", "7"},
+    {"Key_U", "U"},
+    {"Key_J", "J"},
+    {"Key_M", "M"},
+    {"Key_8", "8"},
+    {"Key_I", "I"},
+    {"Key_K", "K"},
+    {"Key_Comma", ","},
+    {"Key_9", "9"},
+    {"Key_O", "O"},
+    {"Key_L", "L"},
+    {"Key_Period", "."},
+    {"Key_0", "0"},
+    {"Key_P", "P"},
+    {"Key_Semicolon", ";"},
+    {"Key_Slash", "/"},
+    {"Key_Hyphen", "-"},
+    {"Key_At", "["},
+    {"Key_Colon", "'"},
+    {"Key_BackSlash", ""},
+    {"Key_Caret", "="},
+    {"Key_LBracket", "]"},
+    {"Key_RBracket", ""},
+    {"Key_Yen", ""},
+    {"Key_Space", ""},
+    {"Key_RShift", "Shift"},
+    {"Key_LShift", "Shift"}
+  };
+
   // キーの色
   private static Color colorGray = new Color(180f / 255f, 180f / 255f, 180f / 255f, 1);
   private static Color colorWhite = new Color(1, 1, 1, 1);
@@ -318,11 +468,17 @@ public class AssistKeyboardJIS : MonoBehaviour
       {
         var obj = keyboardRows.transform.GetChild(j).gameObject;
         var keyName = obj.name;
-        if (ConfigScript.InputMode == 1 && jisKanaKeyNameMap.ContainsKey(keyName))
+        if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && jisKanaKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var kanaText = jisKanaKeyNameMap[keyName];
           keyTextObj.text = kanaText;
+        }
+        else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us && USArrayKeyNameMap.ContainsKey(keyName))
+        {
+          var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+          var keyText = USArrayKeyNameMap[keyName];
+          keyTextObj.text = keyText;
         }
         AKKeys.Add(keyName, obj);
       }
@@ -439,7 +595,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   /// </summary>
   public void SetAllKeyColorWhite()
   {
-    foreach (var kvp in keyMapping)
+    foreach (var kvp in keyMappingJIS)
     {
       var keyList = new List<string>(kvp.Value);
       foreach (var keyName in keyList)
@@ -469,7 +625,15 @@ public class AssistKeyboardJIS : MonoBehaviour
   {
     SetAllKeyColorWhite();
     SetAllFingerColorWhite();
-    var keyList = new List<string>(keyMapping[nextStr]);
+    var keyList = new List<string>();
+    if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.japanese)
+    {
+      keyList = new List<string>(keyMappingJIS[nextStr]);
+    }
+    else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us)
+    {
+      keyList = new List<string>(keyMappingUS[nextStr]);
+    }
     foreach (var keyName in keyList)
     {
       SetKeyColorHighlight(keyName);

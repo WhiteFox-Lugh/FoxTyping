@@ -35,6 +35,7 @@ public sealed class ConfigScript
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
   private static bool showTypeSentence = true;
   private static int countdownSec = 3;
+  private static int inputArray = 0;
 
   public static ConfigScript GetInstance()
   {
@@ -65,6 +66,16 @@ public sealed class ConfigScript
   {
     roman,
     jisKana
+  }
+
+  public static readonly string[] InputTypeString = new string[2] {
+    "ローマ字(Qwerty)", "JISかな"
+  };
+
+  public enum KeyArrayType
+  {
+    japanese,
+    us
   }
 
   // ワードパネルのすぐ下に何を表示するか
@@ -267,6 +278,31 @@ public sealed class ConfigScript
     get
     {
       return keyInputMode;
+    }
+  }
+
+  /// <summary>
+  /// 配列の指定
+  /// </summary>
+  /// <value></value>
+  [JsonProperty]
+  public static int InputArray
+  {
+    set
+    {
+      var enumLen = Enum.GetNames(typeof(KeyArrayType)).Length;
+      if (0 <= value && value < enumLen)
+      {
+        inputArray = value;
+      }
+      else
+      {
+        inputArray = (int)KeyArrayType.japanese;
+      }
+    }
+    get
+    {
+      return inputArray;
     }
   }
 

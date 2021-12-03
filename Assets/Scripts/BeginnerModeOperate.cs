@@ -109,6 +109,10 @@ public class BeginnerModeOperate : MonoBehaviour
     ConfigScript.DataSetName = beginnerDatasetFileName[buttonNumber];
     ConfigScript.Tasks = 30;
     ConfigScript.IsBeginnerMode = true;
+    // future update: ローマ字入力以外も対応できるようにする
+    ConfigScript.InputMode = (int)ConfigScript.InputType.roman;
+    // future update: US 配列にも対応する
+    ConfigScript.InputArray = (int)ConfigScript.KeyArrayType.japanese;
     prevChapterNum = buttonNumber / 100;
     SceneManager.LoadScene("BeginnerTypingScene");
   }

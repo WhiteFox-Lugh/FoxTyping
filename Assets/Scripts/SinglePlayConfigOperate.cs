@@ -30,6 +30,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private GameObject DetailSettingsBgPanel;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitMinute;
   [SerializeField] private TMP_InputField LongSentenceTimeLimitSecond;
+  [SerializeField] private TMP_Dropdown UIInputKeyArrayType;
 
   enum GameModeNumber
   {
@@ -85,18 +86,38 @@ public class SinglePlayConfigOperate : MonoBehaviour
 
   /// <summary>
   /// ワードセットと入力方式のチェック
-  /// /// </summary>
+  /// </summary>
+  /// <param name="val">ドロップダウンに対応する値</param>
   public void CheckInputType(int val)
   {
     var wordsetLang = valToShortWordset[val].Language;
+    // 英語のワードを選んだら、JISかなは選択不可
     if (wordsetLang.Equals("English"))
     {
-      UIInputType.value = (int)ConfigScript.InputType.roman;
       UIInputType.interactable = false;
+      UIInputType.value = (int)ConfigScript.InputType.roman;
     }
     else
     {
       UIInputType.interactable = true;
+    }
+  }
+
+  /// <summary>
+  /// 入力方式とキー配列の整合性のチェック
+  /// </summary>
+  /// <param name="val">ドロップダウンに対応する値</param>
+  public void CheckArrayType(int val)
+  {
+    // JIS かなを選択したら、JIS 配列のみ選択可能
+    if (val == (int)ConfigScript.InputType.jisKana)
+    {
+      UIInputKeyArrayType.interactable = false;
+      UIInputKeyArrayType.value = (int)ConfigScript.KeyArrayType.japanese;
+    }
+    else if (val == (int)ConfigScript.InputType.roman)
+    {
+      UIInputKeyArrayType.interactable = true;
     }
   }
 
@@ -116,6 +137,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     CountdownSec.value = ConfigScript.CountDownSecond - 1;
     NextWordIntervalTime.text = ConfigScript.DelayTime.ToString();
     InputStrings.value = ConfigScript.IsShowTypeSentence ? 1 : 0;
+    UIInputKeyArrayType.value = ConfigScript.InputArray;
     SetLongSentenceTimeLimitUI();
   }
 
@@ -137,6 +159,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.InfoPanelMode = 0;
     ConfigScript.InputMode = UIInputType.value;
     ConfigScript.IsShowTypeSentence = InputStrings.value == 1;
+    ConfigScript.InputArray = UIInputKeyArrayType.value;
   }
 
   /// <summary>
