@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class RecordSceneScript : MonoBehaviour
 {
-  [SerializeField] Text UIResultDetailText;
+  [SerializeField] TextMeshProUGUI UIResultDetailText;
   [SerializeField] TextMeshProUGUI UIAverageKPS;
   [SerializeField] TextMeshProUGUI UIKPSStdDev;
   [SerializeField] TextMeshProUGUI UIScoreText;
@@ -185,8 +185,9 @@ public class RecordSceneScript : MonoBehaviour
     var scoreText = perf.GetNormalScore().ToString();
     var accuracyText = perf.GetAccuracy().ToString("0.00");
     var strBuilder = new StringBuilder();
+    var inputTypeName = ConfigScript.InputTypeString[ConfigScript.InputMode];
     strBuilder.Append($"{GenerateSentence.DataSetName} でスコア {scoreText} を出しました。\n");
-    strBuilder.Append($"精度: {accuracyText}％ / 平均速度: {kpsText}打/秒 / ワード数: {ConfigScript.Tasks}");
+    strBuilder.Append($"精度: {accuracyText}％ / 平均速度: {kpsText}打/秒 / ワード数: {ConfigScript.Tasks} / 入力方式: {inputTypeName}");
     string url = "https://whitefox-lugh.github.io/FoxTyping/";
     string hashTag = "FoxTyping";
     OpenTweetWindow(strBuilder.ToString(), hashTag, url);

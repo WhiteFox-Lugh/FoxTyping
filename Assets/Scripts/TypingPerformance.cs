@@ -184,8 +184,9 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-    sb.Append("正解タイプ数: ").Append(typeInfo.correctTypeNum.ToString())
-      .Append(" / ミスタイプ数: ").Append(typeInfo.mistypeNum.ToString());
+    var correctCount = typeInfo.correctTypeNum.ToString();
+    var missCount = typeInfo.mistypeNum.ToString();
+    sb.Append($"<size=90%>正解タイプ数: {correctCount} / ミスタイプ数: {missCount}</size>");
     return sb.ToString();
   }
 
@@ -198,10 +199,12 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-    sb.Append("タイプ時間: ").Append(GetSentenceTypeTime(num).ToString("0.00")).Append("秒");
+    var typeTime = GetSentenceTypeTime(num).ToString("0.00");
+    sb.Append($"<size=90%>タイプ時間: {typeTime}秒</size>");
     if (!ConfigScript.IsBeginnerMode)
     {
-      sb.Append(" / Key Per Minute: ").Append(GetSentenceKPM(num).ToString("0"));
+      var kpmStr = GetSentenceKPM(num).ToString("0");
+      sb.Append($"<size=90%> / Key Per Minute: {kpmStr}");
     }
     return sb.ToString();
   }
@@ -215,7 +218,7 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var latencyInfo = LatencyList[num].ToString("0.000");
-    sb.Append($"反応時間: {latencyInfo}秒");
+    sb.Append($"<size=90%>反応時間: {latencyInfo}秒</size>");
     return sb.ToString();
   }
 
@@ -227,13 +230,14 @@ public class TypingPerformance
   public string ConvertDetailResult(int num)
   {
     var sb = new StringBuilder();
-    sb.Append(this.OriginSentenceList[num]).Append("\n");
-    sb.Append(GetColoredTypedSentence(num)).Append("\n");
-    sb.Append(GetCorrectAndMistypeNumString(num)).Append("\n");
-    sb.Append(GetTimeInfoString(num)).Append("\n");
+    sb.Append($"<size=100%>{this.OriginSentenceList[num]}\n");
+    sb.Append($"<size=100%>{GetColoredTypedSentence(num)}\n");
+    sb.Append("<size=90%>--------------------------------------------------\n");
+    sb.Append($"{GetCorrectAndMistypeNumString(num)}\n");
+    sb.Append($"{GetTimeInfoString(num)}\n");
     if (!ConfigScript.IsBeginnerMode)
     {
-      sb.Append(GetLatencyInfoString(num)).Append("\n");
+      sb.Append($"{GetLatencyInfoString(num)}\n");
     }
     sb.Append("\n");
     return sb.ToString();

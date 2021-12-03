@@ -68,6 +68,10 @@ public sealed class ConfigScript
     jisKana
   }
 
+  public static readonly string[] InputTypeString = new string[2] {
+    "ローマ字(Qwerty)", "JISかな"
+  };
+
   public enum KeyArrayType
   {
     japanese,
