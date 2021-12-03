@@ -82,7 +82,7 @@ public class TypingSoft : MonoBehaviour
   [SerializeField] private GameObject NextWordPanel;
   private static GenerateSentence gs;
   // Assist Keyboard JIS
-  private static AssistKeyboardJIS AKJIS;
+  private static AssistKeyboardJIS AssistKeyboardObj;
 
   // JIS かなキーコードからひらがなへのマッピング
   private static readonly Dictionary<string, string> JISKanaMapping = new Dictionary<string, string>(){
@@ -208,7 +208,7 @@ public class TypingSoft : MonoBehaviour
     NowLoadingPanel.SetActive(true);
     // コンポーネント読み込み
     gs = GameObject.Find("generateSentenceScript").GetComponent<GenerateSentence>();
-    AKJIS = GameObject.Find("AssistKeyboard").GetComponent<AssistKeyboardJIS>();
+    AssistKeyboardObj = GameObject.Find("AssistKeyboard").GetComponent<AssistKeyboardJIS>();
     // init より先に初期化すべき項目
     // ロード成功したかのフラグを false に
     var isLoadSuccess = false;
@@ -351,12 +351,12 @@ public class TypingSoft : MonoBehaviour
       {
         if (CurrentTypingSentence == "" || !isInputValid)
         {
-          AKJIS.SetAllKeyColorWhite();
-          AKJIS.SetAllFingerColorWhite();
+          AssistKeyboardObj.SetAllKeyColorWhite();
+          AssistKeyboardObj.SetAllFingerColorWhite();
         }
         else if (isInputValid)
         {
-          AKJIS.SetNextHighlight(CurrentTypingSentence[0].ToString());
+          AssistKeyboardObj.SetNextHighlight(CurrentTypingSentence[0].ToString());
         }
       }
     }
@@ -384,29 +384,30 @@ public class TypingSoft : MonoBehaviour
         isFirstInput = false;
       }
       // 正誤判定
+      var keyStr = "";
       // ローマ字
       if (ConfigScript.InputMode == (int)ConfigScript.InputType.roman)
       {
-        var keyStr = "";
-        if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.japanese)
+        if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.japanese && RomanJISArrayMapping.ContainsKey(jsKey))
         {
           keyStr = RomanJISArrayMapping[jsKey];
         }
-        else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us)
+        else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us && RomanUSArrayMapping.ContainsKey(jsKey))
         {
           keyStr = RomanUSArrayMapping[jsKey];
         }
-        double currentTime = Time.realtimeSinceStartup;
-        // 正誤チェック
-        StartCoroutine(TypingCheck(keyStr, currentTime));
       }
       // JIS かな
       else if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && JISKanaMapping.ContainsKey(jsKey))
       {
-        var hiragana = JISKanaMapping[jsKey];
+        keyStr = JISKanaMapping[jsKey];
+      }
+      // Function key などでなければ判定をする
+      if (!String.IsNullOrEmpty(keyStr))
+      {
         double currentTime = Time.realtimeSinceStartup;
         // 正誤チェック
-        StartCoroutine(TypingCheck(hiragana, currentTime));
+        StartCoroutine(TypingCheck(keyStr, currentTime));
       }
     }
   }

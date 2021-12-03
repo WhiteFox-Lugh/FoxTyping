@@ -122,22 +122,6 @@
       </div>
     </div>
   </footer>
-
-  <script>
-    let keyQueue = [];
-    window.onload = () => {
-      window.addEventListener("keydown", (e) => {
-        const onShift = e.shiftKey;
-        var keyCode = e.code;
-        if (keyCode !== "ShiftRight" && keyCode !== "ShiftLeft") {
-          if (onShift) {
-            keyCode = keyCode + "_SH";
-          }
-          keyQueue.push(keyCode);
-        }
-      });
-    }
-  </script>
   <script>
     var container = document.querySelector("#unity-container");
     var canvas = document.querySelector("#unity-canvas");
@@ -227,6 +211,21 @@
       });
     };
     document.body.appendChild(script);
+  </script>
+  <script>
+    let keyQueue = [];
+    window.onload = () => {
+      window.addEventListener("keydown", (e) => {
+        const onShift = e.shiftKey;
+        var keyCode = e.code;
+        if (keyCode !== "ShiftRight" && keyCode !== "ShiftLeft") {
+          if (onShift) {
+            keyCode = keyCode + "_SH";
+          }
+          keyQueue.push(keyCode);
+        }
+      });
+    }
   </script>
 </body>
 
