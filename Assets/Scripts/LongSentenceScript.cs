@@ -430,7 +430,9 @@ public class LongSentenceScript : MonoBehaviour
     string newlinePattern = @"[\n|\r\n|\r]";
     var docDataOrigin = docData.Substring(startIdx);
     var replacedDoc = Regex.Replace(docDataOrigin, sectionRegex, "");
-    taskText = Regex.Replace(replacedDoc, rubyRegex, "$1").Substring(0, TASK_MAX_LENGTH);
+    var rubyReplacedDoc = Regex.Replace(replacedDoc, rubyRegex, "$1");
+    var rubyReplacedDocLength = rubyReplacedDoc.Length;
+    taskText = rubyReplacedDoc.Substring(0, Math.Min(TASK_MAX_LENGTH, rubyReplacedDocLength));
     taskDisplayText = Regex.Replace(taskText, newlinePattern, "\n");
     var convertedText = Regex.Replace(replacedDoc, rubyRegex, replacement);
     taskWithRuby = Regex.Replace(convertedText, newlinePattern, "\n");
