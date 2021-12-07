@@ -14,6 +14,7 @@ public class GenerateSentence : MonoBehaviour
   private const int MAX_LEN_JP = 40;
   private const int MIN_LEN_EN = 1;
   private const int MAX_LEN_EN = 70;
+  private const string BASE_STR = "__BASE__";
   private static int minLength = 1;
   private static int maxLength = 50;
   private static Dictionary<string, int> langMap = new Dictionary<string, int> {
@@ -1035,7 +1036,7 @@ public class GenerateSentence : MonoBehaviour
   };
 
   // 原文と読み方のセット
-  private static Dictionary<int, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
+  private static Dictionary<string, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
 
   // データセット名
   // リザルト画面に表示する用として使いたい
@@ -1143,15 +1144,17 @@ public class GenerateSentence : MonoBehaviour
       // ワードデータセットに欠陥がある可能性も含めて try で動かす
       try
       {
-        int r1 = UnityEngine.Random.Range(0, wordSetDict[0].Count);
-        string tmpOriginSentenceStr = wordSetDict[0][r1].originSentence;
-        string tmpTypeSentenceStr = wordSetDict[0][r1].typeSentence;
+        var baseDict = wordSetDict[BASE_STR];
+        int r1 = UnityEngine.Random.Range(0, baseDict.Count);
+        string tmpOriginSentenceStr = baseDict[r1].originSentence;
+        string tmpTypeSentenceStr = baseDict[r1].typeSentence;
         foreach (var key in wordSetDict.Keys)
         {
+          var dictCache = wordSetDict[key];
           string replaceStr = "{" + key.ToString() + "}";
-          int r2 = UnityEngine.Random.Range(0, wordSetDict[key].Count);
-          tmpOriginSentenceStr = tmpOriginSentenceStr.Replace(replaceStr, wordSetDict[key][r2].originSentence);
-          tmpTypeSentenceStr = tmpTypeSentenceStr.Replace(replaceStr, wordSetDict[key][r2].typeSentence);
+          int r2 = UnityEngine.Random.Range(0, dictCache.Count);
+          tmpOriginSentenceStr = tmpOriginSentenceStr.Replace(replaceStr, dictCache[r2].originSentence);
+          tmpTypeSentenceStr = tmpTypeSentenceStr.Replace(replaceStr, dictCache[r2].typeSentence);
         }
         // 一定文字数に収まっていることをチェック
         // 短かったり長かったりする場合は再度生成
@@ -1180,7 +1183,7 @@ public class GenerateSentence : MonoBehaviour
   {
     try
     {
-      wordSetDict = new Dictionary<int, List<(string originSentence, string typeSentence)>>();
+      wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
       var asset = WordsetData.AssetShortWordsetData;
       var jsonStr = asset.LoadAsset<TextAsset>(dataName).ToString();
       var problemData = JsonUtility.FromJson<SentenceData>(jsonStr);
@@ -1221,7 +1224,7 @@ public class SentenceData
 [Serializable]
 public class Word
 {
-  public int wordSection;
+  public string wordSection;
   public string sentence;
   public string typeString;
 }
