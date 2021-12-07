@@ -17,9 +17,6 @@ public sealed class ConfigScript
   private const int LONG_MIN_TIME_LIMIT = 1;
   private const int LONG_MAX_TIME_LIMIT = 600;
   private const int DEFAULT_LONG_TIME_LIMIT = 300;
-  private const int CPU_KPM_MIN = 1;
-  private const int CPU_KPM_MAX = 2000;
-  private const int CPU_KPM_DEFAULT = 200;
   private const int MIN_DELAY_TIME = 0;
   private const int MAX_DELAY_TIME = 3000;
   private const int DEFAULT_DELAY_TIME = 500;
@@ -28,10 +25,8 @@ public sealed class ConfigScript
   private static int gameMode = (int)SingleMode.shortSentence;
   private static int taskNum = DEFAULT_TASK_NUM;
   private static int infoPanel = (int)MiddlePanel.typingPerf;
-  private static int wordPanel = (int)SmallPanel.nextWord;
   private static int keyInputMode = (int)InputType.roman;
   private static int longSentencePracticeTimeLimit = DEFAULT_LONG_TIME_LIMIT;
-  private static int cpuKpm = CPU_KPM_DEFAULT;
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
   private static bool showTypeSentence = true;
   private static int countdownSec = 3;
@@ -76,13 +71,6 @@ public sealed class ConfigScript
   {
     japanese,
     us
-  }
-
-  // ワードパネルのすぐ下に何を表示するか
-  public enum SmallPanel
-  {
-    nextWord,
-    assistSpeed
   }
 
   // シングルプレイでのモード
@@ -155,31 +143,6 @@ public sealed class ConfigScript
     }
   }
 
-
-  // ワードすぐ下の小さいパネルの表示
-  // 0 : 次のワード
-  // 1 : CPU 速度
-  [JsonProperty]
-  public static int WordPanelMode
-  {
-    set
-    {
-      var enumLen = Enum.GetNames(typeof(SmallPanel)).Length;
-      if (0 <= value && value < enumLen)
-      {
-        wordPanel = value;
-      }
-      else
-      {
-        wordPanel = (int)SmallPanel.nextWord;
-      }
-    }
-    get
-    {
-      return wordPanel;
-    }
-  }
-
   // 短文打つモードでのデータセットのファイル名
   [JsonProperty]
   public static string DataSetName
@@ -224,31 +187,6 @@ public sealed class ConfigScript
     set;
     get;
   } = true;
-
-  // CPU の kpm 設定
-  [JsonProperty]
-  public static int CPUKpm
-  {
-    set
-    {
-      if (CPU_KPM_MIN <= value && value <= CPU_KPM_MAX)
-      {
-        cpuKpm = value;
-      }
-      else if (value < CPU_KPM_MIN)
-      {
-        cpuKpm = CPU_KPM_MIN;
-      }
-      else if (value > CPU_KPM_MAX)
-      {
-        cpuKpm = CPU_KPM_MAX;
-      }
-    }
-    get
-    {
-      return cpuKpm;
-    }
-  }
 
   // 初心者モードであるか
   public static bool IsBeginnerMode
@@ -415,12 +353,10 @@ public class JsonConfigVars
   public int GameMode { get; set; }
   public int Tasks { get; set; }
   public int InfoPanelMode { get; set; }
-  public int WordPanelMode { get; set; }
   public string DataSetName { get; set; }
   public string LongSentenceTaskName { get; set; }
   public int LongSentenceTimeLimit { get; set; }
   public bool UseRuby { get; set; }
-  public int CPUKpm { get; set; }
   public int InputMode { get; set; }
   public int DelayTime { get; set; }
   public bool IsShowTypeSentence { get; set; }

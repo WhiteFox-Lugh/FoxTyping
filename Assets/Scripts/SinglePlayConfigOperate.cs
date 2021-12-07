@@ -20,7 +20,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
   [SerializeField] private TMP_Dropdown UISentenceNum;
   [SerializeField] private TMP_Dropdown UIUseYomigana;
   [SerializeField] private TMP_Dropdown UIInputType;
-  [SerializeField] private TMP_InputField InputCPUSpeed;
   [SerializeField] private TMP_Dropdown CountdownSec;
   [SerializeField] private TMP_Dropdown InputStrings;
   [SerializeField] private TMP_InputField NextWordIntervalTime;
@@ -133,7 +132,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     UISentenceNum.value = ConfigScript.Tasks / TASK_UNIT - 1;
     UIInputType.value = ConfigScript.InputMode;
     longSentenceTimeLimitVal = ConfigScript.LongSentenceTimeLimit;
-    InputCPUSpeed.text = ConfigScript.CPUKpm.ToString();
     CountdownSec.value = ConfigScript.CountDownSecond - 1;
     NextWordIntervalTime.text = ConfigScript.DelayTime.ToString();
     InputStrings.value = ConfigScript.IsShowTypeSentence ? 1 : 0;
@@ -151,7 +149,6 @@ public class SinglePlayConfigOperate : MonoBehaviour
     ConfigScript.LongSentenceTaskName = valToLongWordset[UILongDataSetName.value].DocumentFileName;
     ConfigScript.Tasks = (UISentenceNum.value + 1) * TASK_UNIT;
     ConfigScript.LongSentenceTimeLimit = longSentenceTimeLimitVal;
-    ConfigScript.CPUKpm = Int32.Parse(InputCPUSpeed.text);
     ConfigScript.DelayTime = Int32.Parse(NextWordIntervalTime.text);
     ConfigScript.CountDownSecond = CountdownSec.value + 1;
     ConfigScript.UseRuby = UIUseYomigana.value == 1;

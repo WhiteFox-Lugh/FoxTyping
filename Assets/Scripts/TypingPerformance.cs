@@ -2,11 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 public class TypingPerformance
 {
-  // ALPHA: 正確さから倍率への関数の定数
-  const double ALPHA = 0.25;
+  // LB: どんなにミスっても kpm のこの割合はセンテンススコアとして保証する値
+  const double PARAM_LB = 0.3;
+  // UB: 1文字でもミスった時のセンテンススコアの保証割合上限値
+  const double PARAM_UB = 1.0;
+  // GRAD: 傾き
+  const double PARAM_GRAD = 30;
+  // INFL_PT: 変曲点
+  const double PARAM_INFL_PT = 0.85;
   // BETA: ノーマルスコアの加重平均の重み
   const double BETA = 0.95;
   // CONFIDENCE_WORD_NUM: スコア計算でこの値以上のときスコアを保証
@@ -204,7 +211,7 @@ public class TypingPerformance
     if (!ConfigScript.IsBeginnerMode)
     {
       var kpmStr = GetSentenceKPM(num).ToString("0");
-      sb.Append($"<size=90%> / Key Per Minute: {kpmStr}");
+      sb.Append($"<size=90%> / KPM: {kpmStr}");
     }
     return sb.ToString();
   }
@@ -250,19 +257,15 @@ public class TypingPerformance
   /// </summary>
   private static double FuncAcc((int correct, int miss) typeInfo)
   {
-    double accuracy = 100.0 * typeInfo.correct / (typeInfo.correct + typeInfo.miss);
+    double accuracy = typeInfo.correct / (typeInfo.correct + typeInfo.miss);
     double ret;
-    if (accuracy >= 99.99)
+    if (accuracy == 1.0)
     {
       ret = 1.0;
     }
-    else if (accuracy >= 95.0)
-    {
-      ret = ALPHA * 1.0 / (1.0 + Math.Exp(-(accuracy - 95.0))) + (1.0 - ALPHA);
-    }
     else
     {
-      ret = (1.0 - ALPHA / 2.0) * Math.Exp((accuracy - 95.0) * ALPHA / (4.0 - 2.0 * ALPHA));
+      ret = PARAM_LB + (PARAM_UB - PARAM_LB) / (1.0 + Math.Exp(-PARAM_GRAD * (accuracy - PARAM_INFL_PT)));
     }
     return ret;
   }
@@ -274,7 +277,8 @@ public class TypingPerformance
   /// </summary>
   private double GetSentenceScore(int num)
   {
-    return GetSentenceKPM(num) * FuncAcc(GetSentenceCorrectAndMistypeNum(num));
+    double score = GetSentenceKPM(num) * FuncAcc(GetSentenceCorrectAndMistypeNum(num));
+    return score;
   }
 
 
