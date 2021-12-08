@@ -58,21 +58,6 @@ public class SinglePlayTyping : MonoBehaviour
   }
 
   /// <summary>
-  /// 小さいパネルの切り替え
-  /// </summary>
-  public void ChangeSmallPanel()
-  {
-    if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.nextWord)
-    {
-      ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.assistSpeed;
-    }
-    else if (ConfigScript.WordPanelMode == (int)ConfigScript.SmallPanel.assistSpeed)
-    {
-      ConfigScript.WordPanelMode = (int)ConfigScript.SmallPanel.nextWord;
-    }
-  }
-
-  /// <summary>
   /// 中段の大きいパネルの切り替え
   /// </summary>
   public void ChangeInfoPanel()
@@ -108,11 +93,6 @@ public class SinglePlayTyping : MonoBehaviour
         {
           TypingSoft.RetryPractice();
         }
-      }
-      // F2: 次ワード / CPU 切り替え
-      else if (e.keyCode == KeyCode.F2)
-      {
-        ChangeSmallPanel();
       }
       // F8: 中段パネル切り替え
       else if (e.keyCode == KeyCode.F8)

@@ -70,14 +70,12 @@ public class TypingSoft : MonoBehaviour
   [SerializeField] private Text UISTT;
   [SerializeField] private Text UITask;
   [SerializeField] private Text UIAccuracy;
-  [SerializeField] private Text UICPUText;
   [SerializeField] private Text UITypeInfo;
   [SerializeField] private Text UINextWord;
   [SerializeField] private Text UINextYomi;
   [SerializeField] private Text countdownText;
   [SerializeField] private GameObject DataPanel;
   [SerializeField] private GameObject AssistKeyboardPanel;
-  [SerializeField] private GameObject CPUPanel;
   [SerializeField] private GameObject NowLoadingPanel;
   [SerializeField] private GameObject NextWordPanel;
   private static GenerateSentence gs;
@@ -283,10 +281,6 @@ public class TypingSoft : MonoBehaviour
     {
       INTERVAL = 0f;
     }
-    if (UICPUText != null)
-    {
-      UICPUText.text = "";
-    }
   }
 
   /// <summary>
@@ -336,10 +330,6 @@ public class TypingSoft : MonoBehaviour
       if (DataPanel != null && AssistKeyboardPanel != null)
       {
         ShowMiddlePanel(ConfigScript.InfoPanelMode);
-      }
-      if (CPUPanel != null && NextWordPanel != null)
-      {
-        ShowWordPanel(ConfigScript.WordPanelMode);
       }
       // 正誤判定
       if (isInputValid)
@@ -529,12 +519,6 @@ public class TypingSoft : MonoBehaviour
     {
       firstCharInputTime = lastSentenceUpdateTime;
     }
-    // CPU Start
-    if (UICPUText != null)
-    {
-      UICPUText.text = "";
-      StartCoroutine("CPUType");
-    }
     if (UINextWord != null && UINextYomi != null)
     {
       var nextWordInfo = GetNextWord(currentTaskNumber + 1);
@@ -564,28 +548,6 @@ public class TypingSoft : MonoBehaviour
       nextYomiBuilder.Append(typeSentenceList[wordnumber]);
     }
     return (nextWordBuilder.ToString(), nextYomiBuilder.ToString());
-  }
-
-  /// <summary>
-  /// CPU のタイピング処理
-  /// </summary>
-  private IEnumerator CPUType()
-  {
-    var idx = 0;
-    float waitTime = (float)(60.0 / ConfigScript.CPUKpm);
-    // 1文字目を打つまでは待機
-    while (isFirstInput && !isIntervalEnded)
-    {
-      yield return null;
-    }
-    // 残りの文字列処理
-    while (isInputValid && idx < cpuTypeString.Length)
-    {
-      UICPUText.text += cpuTypeString[idx].ToString();
-      idx++;
-      yield return new WaitForSeconds(waitTime);
-    }
-    yield return null;
   }
 
   /// <summary>
@@ -747,7 +709,7 @@ public class TypingSoft : MonoBehaviour
   /// <param name="sentenceTypeTime">現在の文章を打つのにかかった時間</param>
   /// <returns>現在の文章の KPM</returns>
   /// </summary>
-  private double GetSentenceKeyPerMinute(double sentenceTypeTime)
+  private double GetSentenceKPM(double sentenceTypeTime)
   {
     return 60.0 * sentenceLength / (1.0 * sentenceTypeTime);
   }
@@ -774,10 +736,10 @@ public class TypingSoft : MonoBehaviour
       if (UIKPM != null)
       {
         keyPerMin = GetKeyPerMinute();
-        double sectionKPM = GetSentenceKeyPerMinute(sentenceTypeTime);
+        double sectionKPM = GetSentenceKPM(sentenceTypeTime);
         int intKPM = Convert.ToInt32(Math.Floor(keyPerMin));
-        int intSectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
-        UpdateUIKeyPerMinute(intKPM, intSectionKPM);
+        int intsectionKPM = Convert.ToInt32(Math.Floor(sectionKPM));
+        UpdateUIKeyPerMinute(intKPM, intsectionKPM);
       }
     }
     isInputValid = false;
@@ -929,7 +891,7 @@ public class TypingSoft : MonoBehaviour
   {
     if (UIKPM != null)
     {
-      UIKPM.text = $"タイプ速度(ワード) : {intSentenceKPM.ToString()} kpm\n" + $"平均タイプ速度 : {intKPMAll.ToString()} kpm";
+      UIKPM.text = $"タイプ速度(ワード) : {intSentenceKPM.ToString()} KPM\n" + $"平均タイプ速度 : {intKPMAll.ToString()} KPM";
     }
   }
 
@@ -982,24 +944,6 @@ public class TypingSoft : MonoBehaviour
     {
       DataPanel.SetActive(false);
       AssistKeyboardPanel.SetActive(false);
-    }
-  }
-
-  /// <summary>
-  /// ワード関連の UI 表示を更新
-  /// <param name="activePanelVal">表示をアクティブにするパネルの番号</param>
-  /// </summary>
-  private void ShowWordPanel(int activePanelVal)
-  {
-    if (activePanelVal == 0)
-    {
-      CPUPanel.SetActive(false);
-      NextWordPanel.SetActive(true);
-    }
-    else if (activePanelVal == 1)
-    {
-      CPUPanel.SetActive(true);
-      NextWordPanel.SetActive(false);
     }
   }
 
@@ -1179,7 +1123,7 @@ public class TypingSoft : MonoBehaviour
   // editor 上ではダミーの関数を呼ぶ
   private static string GetKeyCodeFromJS()
   {
-    return "syobon";
+    return "";
   }
 
   private static void InitKeyCodeQueue()

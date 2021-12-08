@@ -62,7 +62,7 @@ public class LongSentenceScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIScoreText;
   [SerializeField] TextMeshProUGUI UIDetailText;
   [SerializeField] TextMeshProUGUI TaskTextContent;
-  [SerializeField] RubyTextMeshProUGUI CurrentInputText;
+  [SerializeField] TextMeshProUGUI CurrentInputText;
   [SerializeField] TextMeshProUGUI PreviewText;
   [SerializeField] TMP_Dropdown DropdownSectionSelect;
   [SerializeField] GameObject TaskViewport;
@@ -372,33 +372,6 @@ public class LongSentenceScript : MonoBehaviour
         displayIdx--;
       }
     }
-    // 調整後の課題文に合うようにフォームの行の高さを調整する
-    UITextField.UnditedText = displayText;
-    CurrentInputText.UnditedText = displayText;
-    var taskLineCount = TaskTextContent.textInfo.lineCount;
-    var inputLineCount = CurrentInputText.textInfo.lineCount;
-    var taskHeight = TaskTextContent.preferredHeight;
-    var inputHeight = CurrentInputText.preferredHeight;
-    var lb = 0f;
-    var ub = 100f;
-    var loop = 0;
-    var taskTextInfo = TaskTextContent.GetTextInfo(displayText);
-    while (Math.Abs(taskHeight - inputHeight) > 1e-8 && loop < 100)
-    {
-      loop++;
-      var mid = (lb + ub) / 2.0f;
-      CurrentInputText.lineSpacing = mid;
-      inputHeight = CurrentInputText.preferredHeight;
-      if (taskHeight - inputHeight > 0)
-      {
-        lb = mid;
-      }
-      else
-      {
-        ub = mid;
-      }
-    }
-    UnityEngine.Debug.Log(CurrentInputText.lineSpacing);
   }
 
   /// <summary>
@@ -414,7 +387,7 @@ public class LongSentenceScript : MonoBehaviour
     var inputHeight = CurrentInputText.preferredHeight;
     // スクロールバーの同期
     // inputPos は入力した文章の上からどれだけスクロールしたか
-    var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos;
+    var inputPos = (Math.Max(inputHeight, inputWindowHeight) - inputWindowHeight) * inputBarPos * (float)1.1;
     // inputPos のスクロール量を Task のスクロールバーのほうで換算
     var nextTaskScrollBarValue = Math.Min(1, inputPos / (taskHeight - taskViewportHeight));
     taskVerticalBarComponent.value = 1 - nextTaskScrollBarValue;
