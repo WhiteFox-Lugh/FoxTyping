@@ -259,7 +259,7 @@ public class TypingPerformance
   {
     double accuracy = typeInfo.correct / (typeInfo.correct + typeInfo.miss);
     double ret;
-    if (accuracy == 1.0)
+    if (accuracy >= 0.999)
     {
       ret = 1.0;
     }
