@@ -83,6 +83,57 @@
 
   <div class="container-fluid bg-white py-2">
     <div class="container py-2">
+      <h3><i class="fas fa-question-circle"></i> 質問集</h3>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card my-2">
+            <div class="card-body">
+              <h5 class="card-title">短文練習でのスコアの計算は？</h5>
+              <p class="card-text">
+                打鍵スピード(kpm)と正確さがベースとなっています。<br>
+                まず1文ずつ独立にスコアを計算し、そのあと、特定のワードの重み付き平均をとって評価します。<br>
+                1文ごとに独立して計算しているため、1文をノーミスで打てるとスコアが高くなりやすいかもしれませんね。
+              </p>
+            </div>
+          </div>
+          <div class="card my-2">
+            <div class="card-body">
+              <h5 class="card-title">KPMって何？</h5>
+              <p class="card-text">
+                Key Per Minute の略で、1分間あたりの打鍵数を意味します。<br>
+                例えば 300 KPM は1分間で300打鍵のスピードであることを意味します。秒速に直すと60で割って5.0打/秒となります。<br>
+                似たような用語として CPM (Character Per Minute) もありますが、こちらは1分間あたりの「文字数」を意味します。<br>
+                1文字あたり2打鍵以上かかる文字が存在する言語ではこちらを使うのが望ましいと考えられます。
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card my-2">
+            <div class="card-body">
+              <h5 class="card-title">短文練習で文章が表示されてから最初の文字を打つまでの時間（反応時間）はスコアに影響しますか？</h5>
+              <p class="card-text">
+                文章が切り替わってから2秒以内に最初の文字を打てば、その間の時間は計測に含めません（スコアに影響はありません）。<br>
+                2秒以上経過するか、最初の文字を打ち始めると、画面一番上の文章の文字の色が少し変わります。
+              </p>
+            </div>
+          </div>
+          <div class="card my-2">
+            <div class="card-body">
+              <h5 class="card-title">短文練習の結果に表示される「標準偏差」って何ですか？</h5>
+              <p class="card-text">
+                ここではあなたの打鍵速度の「ばらつき」を表すものだと思ってください。標準偏差の値が小さいほど、あなたの打鍵速度にばらつきがなく、安定しているといえます。<br>
+                打鍵速度が速くなるほどばらつきも大きくなる傾向にあるので参考程度に見ておいてください。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid bg-light py-2">
+    <div class="container py-2">
       <h3><i class="fas fa-wrench"></i> 素材・出典</h3>
       <ul>
         <li>
@@ -95,6 +146,32 @@
           <a href="https://etc.usf.edu/lit2go/" target="_blank">Lit2Go</a>: 長文課題文章（英文）
         </li>
       </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid bg-white py-2">
+    <div class="container py-2">
+      <h3><i class="fas fa-feather-alt"></i> 開発者</h3>
+
+      <div class="card card-testimonial bg-light">
+        <div class="card-body d-flex flex-row align-items-center pb-3">
+          <img src="./assets/css/imgs/developer_icon.png" class="img-avatar rounded-circle" alt="Avatar image">
+          <div class="d-flex flex-column">
+            <span class="person small ml-2"><strong>白狐(びゃっこ)</strong></span>
+            <span class="person-role small text-muted ml-2">
+              <a class="text-twitter" href="https://twitter.com/Arthur_Lugh">
+                <i class="fab fa-twitter"></i>
+              </a></span>
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          <p class="card-text">
+            タイピングゲーム作りながらいろんなことしてる狐。<br>
+            人間をやめるのが目標。
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -112,13 +189,6 @@
           </p>
         </div>
         <div class="col-md-4">
-          <ul class="nav justify-content-center justify-content-md-end">
-            <li class="nav-item">
-              <a class="nav-link text-white" href="https://twitter.com/Arthur_Lugh">
-                <i class="fab fa-twitter"></i>
-              </a>
-            </li>
-          </ul>
         </div>
       </div>
     </div>
