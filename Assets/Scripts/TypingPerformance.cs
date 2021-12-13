@@ -257,7 +257,7 @@ public class TypingPerformance
   /// </summary>
   private static double FuncAcc((int correct, int miss) typeInfo)
   {
-    double accuracy = typeInfo.correct / (typeInfo.correct + typeInfo.miss);
+    double accuracy = 1.0 * typeInfo.correct / (typeInfo.correct + typeInfo.miss);
     double ret;
     if (accuracy >= 0.999)
     {
@@ -265,7 +265,7 @@ public class TypingPerformance
     }
     else
     {
-      ret = PARAM_LB + (PARAM_UB - PARAM_LB) / (1.0 + Math.Exp(-PARAM_GRAD * (accuracy - PARAM_INFL_PT)));
+      ret = PARAM_LB + 1.0 * (PARAM_UB - PARAM_LB) / (1.0 + Math.Exp(-PARAM_GRAD * (accuracy - PARAM_INFL_PT)));
     }
     return ret;
   }
