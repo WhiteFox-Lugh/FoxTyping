@@ -14,10 +14,12 @@ public class TypingPerformance
   const double PARAM_GRAD = 30;
   // INFL_PT: 変曲点
   const double PARAM_INFL_PT = 0.85;
-  // BETA: ノーマルスコアの加重平均の重み
-  const double BETA = 0.95;
+  // ワード数の設定差分
+  const int WORD_UNIT = 5;
   // CONFIDENCE_WORD_NUM: スコア計算でこの値以上のときスコアを保証
   const int CONFIDENCE_WORD_NUM = 20;
+  // SCORE_WEIGHT: スコアの重み
+  private readonly double[] SCORE_WEIGHT = { 1.5, 1.25, 1, 0.75, 0.5 };
   // 原文のリスト
   public List<string> OriginSentenceList
   {
@@ -191,9 +193,8 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
-    var correctCount = typeInfo.correctTypeNum.ToString();
     var missCount = typeInfo.mistypeNum.ToString();
-    sb.Append($"<size=90%>正解タイプ数: {correctCount} / ミスタイプ数: {missCount}</size>");
+    sb.Append($"<size=80%>ミスタイプ: {missCount}");
     return sb.ToString();
   }
 
@@ -207,11 +208,11 @@ public class TypingPerformance
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
     var typeTime = GetSentenceTypeTime(num).ToString("0.00");
-    sb.Append($"<size=90%>タイプ時間: {typeTime}秒</size>");
+    sb.Append($"<size=80%>タイプ時間: {typeTime}秒");
     if (!ConfigScript.IsBeginnerMode)
     {
       var kpmStr = GetSentenceKPM(num).ToString("0");
-      sb.Append($"<size=90%> / KPM: {kpmStr}");
+      sb.Append($"<size=80%> / KPM: {kpmStr}");
     }
     return sb.ToString();
   }
@@ -225,7 +226,7 @@ public class TypingPerformance
   {
     var sb = new StringBuilder();
     var latencyInfo = LatencyList[num].ToString("0.000");
-    sb.Append($"<size=90%>反応時間: {latencyInfo}秒</size>");
+    sb.Append($"<size=80%>反応時間: {latencyInfo}秒");
     return sb.ToString();
   }
 
@@ -239,14 +240,13 @@ public class TypingPerformance
     var sb = new StringBuilder();
     sb.Append($"<size=100%>{this.OriginSentenceList[num]}\n");
     sb.Append($"<size=100%>{GetColoredTypedSentence(num)}\n");
-    sb.Append("<size=90%>--------------------------------------------------\n");
-    sb.Append($"{GetCorrectAndMistypeNumString(num)}\n");
-    sb.Append($"{GetTimeInfoString(num)}\n");
+    sb.Append("<size=50%>-------------------------------------------------------------------------\n");
+    sb.Append($"{GetCorrectAndMistypeNumString(num)} / ");
     if (!ConfigScript.IsBeginnerMode)
     {
-      sb.Append($"{GetLatencyInfoString(num)}\n");
+      sb.Append($"{GetLatencyInfoString(num)} / ");
     }
-    sb.Append("\n");
+    sb.Append($"{GetTimeInfoString(num)}\n\n");
     return sb.ToString();
   }
 
@@ -305,31 +305,22 @@ public class TypingPerformance
   public int GetNormalScore()
   {
     var sortedScoreList = GetSortedScoreList();
-    var len = sortedScoreList.Count();
     double numerator = 0.0;
-    double denominator = 0.0;
-    double weight = BETA;
-    // 指定ワード数以上かそれ未満で使う部分を変更
-    if (len > CONFIDENCE_WORD_NUM)
-    {
-      var startIndex = (len - CONFIDENCE_WORD_NUM) / 5;
-      sortedScoreList = sortedScoreList.GetRange(startIndex, CONFIDENCE_WORD_NUM);
-    }
-    // 30ワード未満は0ptを補完
-    else if (len < CONFIDENCE_WORD_NUM)
+    // 指定ワード数未満の場合は 0 点を補完
+    if (sortedScoreList.Count() < CONFIDENCE_WORD_NUM)
     {
       while (sortedScoreList.Count() < CONFIDENCE_WORD_NUM)
       {
         sortedScoreList.Add(0);
       }
     }
-    for (int i = 0; i < CONFIDENCE_WORD_NUM; ++i)
+    var len = sortedScoreList.Count();
+    // memo: len は 5の倍数
+    for (int i = 0; i < len; ++i)
     {
-      numerator += sortedScoreList[i] * weight;
-      denominator += weight;
-      weight *= BETA;
+      numerator += SCORE_WEIGHT[i / (len / WORD_UNIT)] * sortedScoreList[i];
     }
-    int ret = Convert.ToInt32(Math.Floor(numerator / denominator));
+    int ret = Convert.ToInt32(Math.Floor(numerator / len));
     return ret;
   }
 

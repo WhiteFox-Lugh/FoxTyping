@@ -18,9 +18,15 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] TextMeshProUGUI UIWordsetName;
   [SerializeField] GameObject ScoreInfoPanel;
   [SerializeField] Material[] RankFontMaterials;
+  [SerializeField] Toggle DefaultToggle;
+  [SerializeField] Toggle DetailToggle;
   private readonly int[] RankScore = new int[20] {
     1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
     500, 450, 400, 350, 300, 250, 200, 150, 100, 0
+  };
+  private readonly int[] RankScoreJISKana = new int[20] {
+    800, 760, 720, 680, 640, 600, 560, 520, 480, 440,
+    400, 360, 320, 280, 240, 200, 160, 120, 80, 0
   };
 
   private readonly string[] RankName = new string[20] {
@@ -42,6 +48,14 @@ public class RecordSceneScript : MonoBehaviour
     if (ScoreInfoPanel != null)
     {
       ScoreInfoPanel.SetActive(false);
+    }
+    if (DefaultToggle != null && DetailToggle != null)
+    {
+      // OnValueChanged を強制動作させることで Panel を取得しなくて済む
+      DefaultToggle.isOn = !DefaultToggle.isOn;
+      DefaultToggle.isOn = true;
+      DetailToggle.isOn = !DetailToggle.isOn;
+      DetailToggle.isOn = false;
     }
     SetResult();
     SetResultDetail();
@@ -72,7 +86,8 @@ public class RecordSceneScript : MonoBehaviour
       UIScoreText.text = score.ToString();
       for (int i = 0; i < RankScore.Count(); ++i)
       {
-        if (score >= RankScore[i])
+        if ((ConfigScript.InputMode == (int)ConfigScript.InputType.roman && score >= RankScore[i]) ||
+        (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && score >= RankScoreJISKana[i]))
         {
           UIRank.text = RankName[i];
           UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
