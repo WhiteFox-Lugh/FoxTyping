@@ -1,25 +1,38 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class RecordSceneScript : MonoBehaviour
 {
-  [SerializeField] TextMeshProUGUI UIResultDetailText;
-  [SerializeField] TextMeshProUGUI UIAverageKPS;
-  [SerializeField] TextMeshProUGUI UIKPSStdDev;
-  [SerializeField] TextMeshProUGUI UIScoreText;
-  [SerializeField] TextMeshProUGUI UITimeText;
-  [SerializeField] TextMeshProUGUI UIAccuracyText;
-  [SerializeField] TextMeshProUGUI UIRank;
-  [SerializeField] TextMeshProUGUI UIWordsetName;
-  [SerializeField] GameObject ScoreInfoPanel;
-  [SerializeField] Material[] RankFontMaterials;
-  [SerializeField] Toggle DefaultToggle;
-  [SerializeField] Toggle DetailToggle;
+  [SerializeField] private TextMeshProUGUI UIResultDetailText;
+  [SerializeField] private TextMeshProUGUI UIAverageKPS;
+  [SerializeField] private TextMeshProUGUI UIKPSStdDev;
+  [SerializeField] private TextMeshProUGUI UIScoreText;
+  [SerializeField] private TextMeshProUGUI UITimeText;
+  [SerializeField] private TextMeshProUGUI UIAccuracyText;
+  [SerializeField] private TextMeshProUGUI UIRank;
+  [SerializeField] private TextMeshProUGUI UIWordsetName;
+  [SerializeField] private GameObject ScoreInfoPanel;
+  [SerializeField] private Material[] RankFontMaterials;
+  [SerializeField] private Toggle DefaultToggle;
+  [SerializeField] private Toggle DetailToggle;
+  [SerializeField] private Button WordButtonPrefab;
+  [SerializeField] private Button ReplayButton;
+  [SerializeField] private Transform WordButtonList;
+  // 詳細表示
+  [SerializeField] private TextMeshProUGUI DetailResultWordNumText;
+  [SerializeField] private TextMeshProUGUI DetailResultWordSentenceText;
+  [SerializeField] private TextMeshProUGUI DetailResultWordReplayText;
   private readonly int[] RankScore = new int[20] {
     1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
     500, 450, 400, 350, 300, 250, 200, 150, 100, 0
@@ -39,6 +52,8 @@ public class RecordSceneScript : MonoBehaviour
   private readonly int[] RankFontMaterialNum = new int[20] {
     0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6
   };
+  private static int DetailCurrentWordNum = 0;
+  private static List<Button> WordButtonObjList = new List<Button>();
 
   /// <summary>
   /// 初期化など
@@ -58,7 +73,8 @@ public class RecordSceneScript : MonoBehaviour
       DetailToggle.isOn = false;
     }
     SetResult();
-    SetResultDetail();
+    SetDetailResult();
+    SetWordResult();
   }
 
   /// <summary>
@@ -98,9 +114,9 @@ public class RecordSceneScript : MonoBehaviour
   }
 
   /// <summary>
-  /// 詳細リザルトの表示処理
+  /// 簡易リザルトのワードごとの情報表示処理
   /// </summary>
-  private void SetResultDetail()
+  private void SetWordResult()
   {
     var sb = new StringBuilder();
     var perf = TypingSoft.Performance;
@@ -113,6 +129,122 @@ public class RecordSceneScript : MonoBehaviour
       }
     }
     UIResultDetailText.text = sb.ToString();
+  }
+
+  /// <summary>
+  /// 詳細表示パネルの整備
+  /// </summary>
+  private void SetDetailResult()
+  {
+    var perf = TypingSoft.Performance;
+    int len = perf.OriginSentenceList.Count();
+    WordButtonObjList = new List<Button>();
+    for (int i = 0; i < len; ++i)
+    {
+      if (perf.IsSentenceInfoValid(i))
+      {
+        // ボタンをリストに追加する
+        var wordButton = Instantiate(WordButtonPrefab) as Button;
+        wordButton.transform.SetParent(WordButtonList, false);
+        var buttonTextComponent = wordButton.transform.Find("WordButtonText").GetComponent<TextMeshProUGUI>();
+        var wordNumberStr = (i + 1).ToString();
+        var originSentence = perf.OriginSentenceList[i];
+        var wordLabel = originSentence.Substring(0, Math.Min(8, originSentence.Length));
+        var buttonLabel = $"{wordNumberStr}\n{wordLabel}...";
+        buttonTextComponent.text = buttonLabel;
+        int n = i;
+        wordButton.GetComponent<Button>().onClick.AddListener(() => OnClickWordButton(n));
+        WordButtonObjList.Add(wordButton);
+      }
+    }
+    // デフォルトで No.1 の結果を表示させる
+    OnClickWordButton(0);
+  }
+
+  /// <summary>
+  /// 各ワードボタンが押された時の処理
+  /// </summary>
+  /// <param name="number">0-indexed のボタン番号</param>
+  public void OnClickWordButton(int number)
+  {
+    DetailCurrentWordNum = number;
+    var perf = TypingSoft.Performance;
+    var typeSentenceList = perf.TypedSentenceList[number];
+    var typeJudgeList = perf.TypeJudgeList[number];
+    var strBuilder = new StringBuilder();
+    if (typeSentenceList.Count() == typeJudgeList.Count())
+    {
+      for (int i = 0; i < typeSentenceList.Count(); ++i)
+      {
+        if (typeJudgeList[i] == 1)
+        {
+          strBuilder.Append(typeSentenceList[i].ToString());
+        }
+      }
+    }
+    DetailResultWordNumText.text = $"No.{number + 1}";
+    DetailResultWordSentenceText.text = perf.OriginSentenceList[number];
+    DetailResultWordReplayText.text = strBuilder.ToString();
+  }
+
+  /// <summary>
+  /// リプレイボタンを押したときの挙動
+  /// </summary>
+  public void OnClickReplayButton()
+  {
+    StartCoroutine("DoWordReplay");
+  }
+
+  private IEnumerator DoWordReplay()
+  {
+    // ワード切り替え無効
+    foreach (var btn in WordButtonObjList)
+    {
+      btn.interactable = false;
+    }
+    // リプレイボタンを終わるまで押せないようにする
+    ReplayButton.interactable = false;
+    DetailResultWordReplayText.text = "";
+    // Wait を計算
+    var perf = TypingSoft.Performance;
+    var waitTimeList = new List<float>();
+    var correctIdxList = new List<int>();
+    var typedSentenceList = perf.TypedSentenceList[DetailCurrentWordNum];
+    var judgeList = perf.TypeJudgeList[DetailCurrentWordNum];
+    var timeList = perf.TypeTimeList[DetailCurrentWordNum];
+    if (typedSentenceList.Count() == judgeList.Count())
+    {
+      double prevTime = -1.0;
+      for (int i = 0; i < typedSentenceList.Count(); ++i)
+      {
+        if (judgeList[i] == 1)
+        {
+          if (waitTimeList.Count() == 0)
+          {
+            waitTimeList.Add(0.5f);
+          }
+          else
+          {
+            waitTimeList.Add((float)(timeList[i] - prevTime));
+          }
+          correctIdxList.Add(i);
+          prevTime = timeList[i];
+        }
+      }
+      for (int i = 0; i < waitTimeList.Count(); ++i)
+      {
+        yield return new WaitForSeconds(waitTimeList[i]);
+        DetailResultWordReplayText.text += typedSentenceList[correctIdxList[i]].ToString();
+      }
+    }
+    yield return null;
+    // ワード切り替え有効
+    foreach (var btn in WordButtonObjList)
+    {
+      btn.interactable = true;
+    }
+    // リプレイボタン有効
+    ReplayButton.interactable = true;
   }
 
   /// <summary>
