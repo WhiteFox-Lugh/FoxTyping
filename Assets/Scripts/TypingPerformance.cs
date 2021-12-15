@@ -156,6 +156,34 @@ public class TypingPerformance
   }
 
   /// <summary>
+  /// チャート表示用の KPS の値を取得する
+  /// </summary>
+  /// <param name="wordNum">0-index でのワード番号</param>
+  /// <returns></returns>
+  public List<double> GetKPSList(int wordNum)
+  {
+    var retList = new List<double>();
+    var prevTime = -1.0;
+    for (int i = 0; i < TypeTimeList[wordNum].Count; ++i)
+    {
+      if (TypeJudgeList[wordNum][i] == 1)
+      {
+        if (prevTime < 0)
+        {
+          prevTime = TypeTimeList[wordNum][i];
+        }
+        else
+        {
+          double kps = 1.0 / (TypeTimeList[wordNum][i] - prevTime);
+          prevTime = TypeTimeList[wordNum][i];
+          retList.Add(kps);
+        }
+      }
+    }
+    return retList;
+  }
+
+  /// <summary>
   /// num 番目のセンテンスに対してミスタイプを色付けした文を返す
   /// <param name="num">確認したいセンテンス番号(0-index)</param>
   /// <returns>ミスタイプを赤くハイライトした string</returns>

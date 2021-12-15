@@ -5,12 +5,14 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting;
 using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using XCharts;
 
 public class RecordSceneScript : MonoBehaviour
 {
@@ -33,6 +35,7 @@ public class RecordSceneScript : MonoBehaviour
   [SerializeField] private TextMeshProUGUI DetailResultWordNumText;
   [SerializeField] private TextMeshProUGUI DetailResultWordSentenceText;
   [SerializeField] private TextMeshProUGUI DetailResultWordReplayText;
+  [SerializeField] private LineChart KPSLineChart;
   private readonly int[] RankScore = new int[20] {
     1000, 950, 900, 850, 800, 750, 700, 650, 600, 550,
     500, 450, 400, 350, 300, 250, 200, 150, 100, 0
@@ -64,6 +67,10 @@ public class RecordSceneScript : MonoBehaviour
     {
       ScoreInfoPanel.SetActive(false);
     }
+    if (KPSLineChart != null)
+    {
+      SetWordKPSChart(0);
+    }
     if (DefaultToggle != null && DetailToggle != null)
     {
       // OnValueChanged を強制動作させることで Panel を取得しなくて済む
@@ -82,6 +89,31 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Update()
   {
+  }
+
+  /// <summary>
+  /// ワードごとの KPS グラフの表示
+  /// /// </summary>
+  private void SetWordKPSChart(int wordNum)
+  {
+    KPSLineChart.RemoveData();
+    KPSLineChart.AddSerie(SerieType.Line);
+    var yVal = TypingSoft.Performance.GetKPSList(wordNum);
+    var typedText = GetTypedSentence(wordNum);
+    KPSLineChart.xAxis0.splitNumber = typedText.Length;
+    KPSLineChart.xAxis0.boundaryGap = false;
+    for (int i = 0; i < typedText.Length; ++i)
+    {
+      KPSLineChart.AddXAxisData(typedText[i].ToString());
+      if (i == 0)
+      {
+        KPSLineChart.AddData(0, 0);
+      }
+      else
+      {
+        KPSLineChart.AddData(0, yVal[i - 1]);
+      }
+    }
   }
 
   /// <summary>
@@ -168,9 +200,23 @@ public class RecordSceneScript : MonoBehaviour
   public void OnClickWordButton(int number)
   {
     DetailCurrentWordNum = number;
+    var typedText = GetTypedSentence(number);
+    DetailResultWordNumText.text = $"No.{number + 1}";
     var perf = TypingSoft.Performance;
-    var typeSentenceList = perf.TypedSentenceList[number];
-    var typeJudgeList = perf.TypeJudgeList[number];
+    DetailResultWordSentenceText.text = perf.OriginSentenceList[number];
+    DetailResultWordReplayText.text = typedText;
+    SetWordKPSChart(number);
+  }
+
+  /// <summary>
+  /// 指定されたワードの正しいタイプ文字だけを抽出する
+  /// </summary>
+  /// <param name="wordNum">0-indexed のワード番号</param>
+  private string GetTypedSentence(int wordNum)
+  {
+    var perf = TypingSoft.Performance;
+    var typeSentenceList = perf.TypedSentenceList[wordNum];
+    var typeJudgeList = perf.TypeJudgeList[wordNum];
     var strBuilder = new StringBuilder();
     if (typeSentenceList.Count() == typeJudgeList.Count())
     {
@@ -182,9 +228,7 @@ public class RecordSceneScript : MonoBehaviour
         }
       }
     }
-    DetailResultWordNumText.text = $"No.{number + 1}";
-    DetailResultWordSentenceText.text = perf.OriginSentenceList[number];
-    DetailResultWordReplayText.text = strBuilder.ToString();
+    return strBuilder.ToString();
   }
 
   /// <summary>
