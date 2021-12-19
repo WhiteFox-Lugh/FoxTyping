@@ -134,7 +134,7 @@
 
   <div class="container-fluid bg-light py-2">
     <div class="container py-2">
-      <h3><i class="fas fa-wrench"></i> 素材・出典</h3>
+      <h3><i class="fas fa-wrench"></i> 素材・出典・ライブラリ</h3>
       <ul>
         <li>
           <a href="https://fonts.google.com/noto#sans-jpan" target="_blank">Noto Fonts</a>: フォント
@@ -144,6 +144,16 @@
         </li>
         <li>
           <a href="https://etc.usf.edu/lit2go/" target="_blank">Lit2Go</a>: 長文課題文章（英文）
+        </li>
+        <li>
+          <a href="https://github.com/jp-netsis/RubyTextMeshPro" target="_blank">RubyTextMeshPro</a>: Copyright (c) 2019
+          jp-netsis / <a href="https://github.com/jp-netsis/RubyTextMeshPro/blob/main/LICENSE"
+            target="_blank">License</a>
+        </li>
+        <li>
+          <a href="https://github.com/monitor1394/unity-ugui-XCharts" target="_blank">unity-ugui-XCharts
+          </a> : Copyright (c) 2018 monitor1394 / <a
+            href="https://github.com/monitor1394/unity-ugui-XCharts/blob/2.0/LICENSE" target="_blank">License</a>
         </li>
       </ul>
     </div>
@@ -273,10 +283,10 @@
       canvas.style.width = "{{{ WIDTH }}}px";
       canvas.style.height = "{{{ HEIGHT }}}px";
     }
-  
-  #if BACKGROUND_FILENAME
+
+    #if BACKGROUND_FILENAME
     canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
-  #endif
+    #endif
     loadingBar.style.display = "block";
 
     var script = document.createElement("script");
