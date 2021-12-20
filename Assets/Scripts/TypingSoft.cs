@@ -205,7 +205,6 @@ public class TypingSoft : MonoBehaviour
     // Now Loading を表示
     NowLoadingPanel.SetActive(true);
     // コンポーネント読み込み
-    gs = GameObject.Find("generateSentenceScript").GetComponent<GenerateSentence>();
     AssistKeyboardObj = GameObject.Find("AssistKeyboard").GetComponent<AssistKeyboardJIS>();
     // init より先に初期化すべき項目
     // ロード成功したかのフラグを false に
@@ -216,7 +215,7 @@ public class TypingSoft : MonoBehaviour
     // ゲームコンディションを in progress にする
     CurrentGameCondition = (int)GameCondition.Progress;
     // ワードデータセットの読み込み
-    isLoadSuccess = gs.LoadSentenceData(ConfigScript.DataSetName);
+    isLoadSuccess = GenerateSentence.LoadSentenceData(ConfigScript.DataSetName);
     if (isLoadSuccess)
     {
       GameMain();
@@ -451,7 +450,7 @@ public class TypingSoft : MonoBehaviour
     while (generatedNum < numOfTask)
     {
       // 例文生成
-      var t = gs.Generate();
+      var t = GenerateSentence.Generate();
       if (!t.isGenerateSuccess)
       {
         continue;

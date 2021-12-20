@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 
-public class GenerateSentence : MonoBehaviour
+public class GenerateSentence
 {
   private const int MIN_LEN_JP = 1;
   private const int MAX_LEN_JP = 40;
@@ -17,13 +17,13 @@ public class GenerateSentence : MonoBehaviour
   private const string BASE_STR = "__BASE__";
   private static int minLength = 1;
   private static int maxLength = 50;
-  private static Dictionary<string, int> langMap = new Dictionary<string, int> {
+  private static readonly Dictionary<string, int> langMap = new Dictionary<string, int> {
     {"Japanese", 0},
     {"English", 1},
   };
 
   // ひらがな -> ローマ字マッピング
-  private static Dictionary<string, string[]> romanTypeMap = new Dictionary<string, string[]> {
+  private static readonly Dictionary<string, string[]> romanTypeMap = new Dictionary<string, string[]> {
     {"あ", new string[1] {"a"}},
     {"い", new string[2] {"i", "yi"}},
     {"う", new string[3] {"u", "wu", "whu"}},
@@ -1010,7 +1010,7 @@ public class GenerateSentence : MonoBehaviour
   };
 
   /// JIS かな入力で2打鍵必要なもののマッピング
-  private static Dictionary<string, string[]> jisKanaMap = new Dictionary<string, string[]> {
+  private static readonly Dictionary<string, string[]> jisKanaMap = new Dictionary<string, string[]> {
     {"が", new string[2] {"か","゛"}},
     {"ぎ", new string[2] {"き","゛"}},
     {"ぐ", new string[2] {"く","゛"}},
@@ -1132,7 +1132,7 @@ public class GenerateSentence : MonoBehaviour
   /// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
   /// <returns>(原文, ひらがな文, タイピング判定器)</returns>
   /// </summary>
-  public (bool isGenerateSuccess, string originSentence, string typeSentence, List<List<string>> typeJudge) Generate()
+  public static (bool isGenerateSuccess, string originSentence, string typeSentence, List<List<string>> typeJudge) Generate()
   {
     bool isOK = false;
     const int retryLimit = 100;
@@ -1183,7 +1183,7 @@ public class GenerateSentence : MonoBehaviour
   /// <param name="dataName">データセットのファイル名</param>
   /// <returns>読み込みが成功すれば true、さもなくば false</returns>
   /// </summary>
-  public bool LoadSentenceData(string dataName)
+  public static bool LoadSentenceData(string dataName)
   {
     try
     {
