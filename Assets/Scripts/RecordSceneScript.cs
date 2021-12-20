@@ -71,6 +71,8 @@ public class RecordSceneScript : MonoBehaviour
     {
       SetWordKPSChart(0);
     }
+    SetResult();
+    SetWordResult();
     if (DefaultToggle != null && DetailToggle != null)
     {
       // OnValueChanged を強制動作させることで Panel を取得しなくて済む
@@ -78,10 +80,8 @@ public class RecordSceneScript : MonoBehaviour
       DefaultToggle.isOn = true;
       DetailToggle.isOn = !DetailToggle.isOn;
       DetailToggle.isOn = false;
+      SetDetailResult();
     }
-    SetResult();
-    SetDetailResult();
-    SetWordResult();
   }
 
   /// <summary>

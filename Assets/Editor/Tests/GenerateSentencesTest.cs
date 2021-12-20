@@ -1,15 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Reflection;
+using System.Text;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
-using System.Reflection;
 using Assert = UnityEngine.Assertions.Assert;
 
 public class GenerateSentencesTest
 {
-
-  // テスト集
+  [Description("ローマ字日本語&英語のテスト")]
   [TestCase("きゃっしゅ", new int[2] { 3, 40 })]
   [TestCase("きゅうきょ", new int[3] { 3, 3, 3 })]
   [TestCase("ぎゃんぐ", new int[2] { 3, 3 })]
@@ -218,8 +219,9 @@ public class GenerateSentencesTest
   [TestCase("the quick brown fox jumps over the lazy dog.", new int[44] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })]
   [TestCase("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.", new int[44] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })]
   [TestCase("3.1415926535897", new int[15] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })]
-  [TestCase(" -,.;:[]@/!?\"#$%&\'()=~|`{}+*<>_", new int[31] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1})]
-  public void GenerateSentenceTestAll(string testStr, int[] expectedPattern){
+  [TestCase(" -,.;:[]@/!?\"#$%&\'()=~|`{}+*<>_", new int[31] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })]
+  public void GenerateSentenceTestRoman(string testStr, int[] expectedPattern)
+  {
     int LEN = expectedPattern.Length;
     var gsClass = typeof(GenerateSentence);
     Assert.IsNotNull(gsClass);
@@ -233,5 +235,43 @@ public class GenerateSentencesTest
     {
       Assert.AreEqual(expectedPattern[i], matrix[i].Count);
     }
+  }
+
+  [Description("JISかな用のテスト")]
+  [TestCase("あいうえおかきくけこさしすせそたちつてと", "あいうえおかきくけこさしすせそたちつてと")]
+  [TestCase("なにぬねのはひふへほまみむめもやゆよらりるれろわをん", "なにぬねのはひふへほまみむめもやゆよらりるれろわをん")]
+  [TestCase("がぎぐげござじずぜぞだぢづでどばびぶべぼ", "か゛き゛く゛け゛こ゛さ゛し゛す゛せ゛そ゛た゛ち゛つ゛て゛と゛は゛ひ゛ふ゛へ゛ほ゛")]
+  [TestCase("ぱぴぷぺぽぁぃぅぇぉゃゅょっー、。・「」", "は゜ひ゜ふ゜へ゜ほ゜ぁぃぅぇぉゃゅょっー、。・「」")]
+  public void GenerateSentenceTestJisKana(string testStr, string expectedStr)
+  {
+    var gsClass = typeof(GenerateSentence);
+    Assert.IsNotNull(gsClass);
+    MethodInfo builder = gsClass.GetMethod("ConstructJISKanaTypeSentence", BindingFlags.NonPublic | BindingFlags.Static);
+    Assert.IsNotNull(builder);
+
+    // 生成した判定のチェック
+    var matrix = (List<List<string>>)builder.Invoke(this, new object[] { testStr });
+    var strBuilder = new StringBuilder();
+    for (int i = 0; i < matrix.Count; ++i)
+    {
+      for (int j = 0; j < matrix[i].Count; ++j)
+      {
+        strBuilder.Append(matrix[i][j]);
+      }
+    }
+    Assert.AreEqual(expectedStr, strBuilder.ToString());
+  }
+
+  [Description("ワードセットで入力不能な文字列がないかのチェック（ローマ字）")]
+  [TestCase("FoxTypingOfficial")]
+  [TestCase("FoxTypingOfficialEnglish")]
+  public void WordsetCheckerRoman(string fileName)
+  {
+    var gsClass = typeof(GenerateSentence);
+    Assert.IsNotNull(gsClass);
+    MethodInfo loader = gsClass.GetMethod("LoadSentenceData");
+    Assert.IsNotNull(loader);
+    bool isLoadSuccess = (bool)loader.Invoke(this, new object[] { fileName });
+    Assert.IsTrue(isLoadSuccess);
   }
 }
