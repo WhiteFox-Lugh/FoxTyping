@@ -1,15 +1,42 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Assert = UnityEngine.Assertions.Assert;
 
 public class GenerateSentencesTest
 {
+  private static readonly HashSet<string> romanValidChar = new HashSet<string> {
+    "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "が", "ぎ", "ぐ", "げ", "ご",
+    "さ", "し", "す", "せ", "そ", "ざ", "じ", "ず", "ぜ", "ぞ", "た", "ち", "つ", "て", "と",
+    "だ", "ぢ", "づ", "で", "ど", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ",
+    "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ", "ま", "み", "む", "め", "も",
+    "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ", "を", "ん", "ぁ", "ぃ", "ぅ", "ぇ",
+    "ぉ", "ゃ", "ゅ", "ょ", "っ", "ゔ", "、", "。", "！", "!", "？", "?", "-", "ー", " ",
+    "　", "\'", "\"", "#", "$", "%", ",", ".", ";", ":", "(", ")",
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f", "g",
+    "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
+    "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+    "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+  };
+
+  private static readonly HashSet<string> jisKanaValidChar = new HashSet<string> {
+    "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "が", "ぎ", "ぐ", "げ", "ご",
+    "さ", "し", "す", "せ", "そ", "ざ", "じ", "ず", "ぜ", "ぞ", "た", "ち", "つ", "て", "と",
+    "だ", "ぢ", "づ", "で", "ど", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ",
+    "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ", "ま", "み", "む", "め", "も",
+    "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ", "を", "ん", "ぁ", "ぃ", "ぅ", "ぇ",
+    "ぉ", "ゃ", "ゅ", "ょ", "っ", "ゔ", "、", "。", "「", "」", "ー", "・"
+  };
+
   [Description("ローマ字日本語&英語のテスト")]
   [TestCase("きゃっしゅ", new int[2] { 3, 40 })]
   [TestCase("きゅうきょ", new int[3] { 3, 3, 3 })]
@@ -267,11 +294,69 @@ public class GenerateSentencesTest
   [TestCase("FoxTypingOfficialEnglish")]
   public void WordsetCheckerRoman(string fileName)
   {
-    var gsClass = typeof(GenerateSentence);
-    Assert.IsNotNull(gsClass);
-    MethodInfo loader = gsClass.GetMethod("LoadSentenceData");
-    Assert.IsNotNull(loader);
-    bool isLoadSuccess = (bool)loader.Invoke(this, new object[] { fileName });
-    Assert.IsTrue(isLoadSuccess);
+    var sectionRegex = @"\{__[\w|_]+__\}";
+    var jsonStr = AssetDatabase.LoadAssetAtPath<TextAsset>($"Assets/Wordset/Short/{fileName}.json");
+    var problemData = JsonUtility.FromJson<SentenceData>(jsonStr.text);
+    var wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
+    foreach (var word in problemData.words)
+    {
+      var wordSection = word.wordSection;
+      var wordInfo = (word.sentence, word.typeString);
+      if (wordSetDict.ContainsKey(wordSection))
+      {
+        wordSetDict[wordSection].Add(wordInfo);
+      }
+      else
+      {
+        wordSetDict[wordSection] = new List<(string, string)>() { wordInfo };
+      }
+    }
+    foreach (var key in wordSetDict.Keys)
+    {
+      var dictCache = wordSetDict[key];
+      foreach (var wordInfo in dictCache)
+      {
+        var tSentence = Regex.Replace(wordInfo.typeSentence, sectionRegex, "");
+        foreach (var ch in tSentence)
+        {
+          Assert.IsTrue(romanValidChar.Contains(ch.ToString()));
+        }
+      }
+    }
+  }
+
+  [Description("ワードセットで入力不能な文字列がないかのチェック（JISかな）")]
+  [TestCase("FoxTypingOfficial")]
+  public void WordsetCheckerJISKana(string fileName)
+  {
+    var sectionRegex = @"\{__[\w|_]+__\}";
+    var jsonStr = AssetDatabase.LoadAssetAtPath<TextAsset>($"Assets/Wordset/Short/{fileName}.json");
+    var problemData = JsonUtility.FromJson<SentenceData>(jsonStr.text);
+    var wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
+    foreach (var word in problemData.words)
+    {
+      var wordSection = word.wordSection;
+      var wordInfo = (word.sentence, word.typeString);
+      if (wordSetDict.ContainsKey(wordSection))
+      {
+        wordSetDict[wordSection].Add(wordInfo);
+      }
+      else
+      {
+        wordSetDict[wordSection] = new List<(string, string)>() { wordInfo };
+      }
+    }
+    foreach (var key in wordSetDict.Keys)
+    {
+      var dictCache = wordSetDict[key];
+      foreach (var wordInfo in dictCache)
+      {
+        var tSentence = Regex.Replace(wordInfo.typeSentence, sectionRegex, "");
+        foreach (var ch in tSentence)
+        {
+          Assert.IsTrue(jisKanaValidChar.Contains(ch.ToString()));
+        }
+      }
+    }
   }
 }
