@@ -122,25 +122,35 @@ public class RecordSceneScript : MonoBehaviour
   private void SetResult()
   {
     var perf = TypingSoft.Performance;
+    var dataName = GenerateSentence.DataSetName;
     UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
     UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
-    UIWordsetName.text = GenerateSentence.DataSetName;
+    UIWordsetName.text = dataName;
     if (!ConfigScript.IsBeginnerMode)
     {
+      var isRated = WordsetData.ShortWordsetDict[ConfigScript.DataSetName].IsRated;
       var kpsPerf = perf.GetKpmAverageAndStdDev();
       int score = perf.GetNormalScore();
       UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
       UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
       UIScoreText.text = score.ToString();
-      for (int i = 0; i < RankScore.Count(); ++i)
+      if (isRated)
       {
-        if ((ConfigScript.InputMode == (int)ConfigScript.InputType.roman && score >= RankScore[i]) ||
-        (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && score >= RankScoreJISKana[i]))
+        for (int i = 0; i < RankScore.Count(); ++i)
         {
-          UIRank.text = RankName[i];
-          UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
-          break;
+          if ((ConfigScript.InputMode == (int)ConfigScript.InputType.roman && score >= RankScore[i]) ||
+          (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && score >= RankScoreJISKana[i]))
+          {
+            UIRank.text = RankName[i];
+            UIRank.fontMaterial = RankFontMaterials[RankFontMaterialNum[i]];
+            break;
+          }
         }
+      }
+      else
+      {
+        UIRank.text = "-----";
+        UIRank.fontMaterial = RankFontMaterials[RankFontMaterials.Count() - 1];
       }
     }
   }
