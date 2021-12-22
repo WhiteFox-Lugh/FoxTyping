@@ -1185,8 +1185,8 @@ public class GenerateSentence
   /// </summary>
   public static bool LoadSentenceData(string dataName)
   {
-    try
-    {
+    // try
+    // {
       wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
       var asset = WordsetData.AssetShortWordsetData;
       var jsonStr = asset.LoadAsset<TextAsset>(dataName).ToString();
@@ -1206,12 +1206,12 @@ public class GenerateSentence
           wordSetDict[wordSection] = new List<(string, string)>() { wordInfo };
         }
       }
-    }
-    catch (Exception e)
-    {
-      Debug.Log(e);
-      return false;
-    }
+    // }
+    // catch (Exception e)
+    // {
+    //   Debug.Log(e);
+    //   return false;
+    // }
     return true;
   }
 }

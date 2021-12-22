@@ -332,6 +332,7 @@ public sealed class ConfigScript
   /// </summary>
   public static void LoadConfig()
   {
+    UnityEngine.Debug.Log(configFileName);
     if (File.Exists(configFileName))
     {
       var reader = new StreamReader(configFileName);
