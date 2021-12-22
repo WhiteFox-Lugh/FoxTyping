@@ -292,6 +292,7 @@ public class GenerateSentencesTest
   [Description("ワードセットで入力不能な文字列がないかのチェック（ローマ字）")]
   [TestCase("FoxTypingOfficial")]
   [TestCase("FoxTypingOfficialEnglish")]
+  [TestCase("Idiom_Jp")]
   public void WordsetCheckerRoman(string fileName)
   {
     var sectionRegex = @"\{__[\w|_]+__\}";
@@ -327,6 +328,7 @@ public class GenerateSentencesTest
 
   [Description("ワードセットで入力不能な文字列がないかのチェック（JISかな）")]
   [TestCase("FoxTypingOfficial")]
+  [TestCase("Idiom_Jp")]
   public void WordsetCheckerJISKana(string fileName)
   {
     var sectionRegex = @"\{__[\w|_]+__\}";
