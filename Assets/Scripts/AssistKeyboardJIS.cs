@@ -640,4 +640,17 @@ public class AssistKeyboardJIS : MonoBehaviour
       SetFingerColorHighlight(keyName);
     }
   }
+
+  /// <summary>
+  /// 複数のキーと指をハイライトする
+  /// </summary>
+  /// <param name="keyList"></param>
+  public void SetHighlights(IReadOnlyCollection<string> keyList)
+  {
+    foreach (var keyName in keyList)
+    {
+      SetKeyColorHighlight(keyName);
+      SetFingerColorHighlight(keyName);
+    }
+  }
 }
