@@ -430,6 +430,60 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_LShift", "Shift"}
   };
 
+  private static readonly Dictionary<string, string> JISArrayKeyNameMap = new Dictionary<string, string>() {
+    {"Key_1", "1"},
+    {"Key_Q", "Q"},
+    {"Key_A", "A"},
+    {"Key_Z", "Z"},
+    {"Key_2", "2"},
+    {"Key_W", "W"},
+    {"Key_S", "S"},
+    {"Key_X", "X"},
+    {"Key_3", "3"},
+    {"Key_E", "E"},
+    {"Key_D", "D"},
+    {"Key_C", "C"},
+    {"Key_4", "4"},
+    {"Key_R", "R"},
+    {"Key_F", "F"},
+    {"Key_V", "V"},
+    {"Key_5", "5"},
+    {"Key_T", "T"},
+    {"Key_G", "G"},
+    {"Key_B", "B"},
+    {"Key_6", "6"},
+    {"Key_Y", "Y"},
+    {"Key_H", "H"},
+    {"Key_N", "N"},
+    {"Key_7", "7"},
+    {"Key_U", "U"},
+    {"Key_J", "J"},
+    {"Key_M", "M"},
+    {"Key_8", "8"},
+    {"Key_I", "I"},
+    {"Key_K", "K"},
+    {"Key_Comma", ","},
+    {"Key_9", "9"},
+    {"Key_O", "O"},
+    {"Key_L", "L"},
+    {"Key_Period", "."},
+    {"Key_0", "0"},
+    {"Key_P", "P"},
+    {"Key_Semicolon", ";"},
+    {"Key_Slash", "/"},
+    {"Key_Hyphen", "-"},
+    {"Key_At", "@"},
+    {"Key_Colon", ":"},
+    {"Key_BackSlash", "_"},
+    {"Key_Caret", "^"},
+    {"Key_LBracket", "["},
+    {"Key_RBracket", "]"},
+    {"Key_Yen", ""},
+    {"Key_Space", ""},
+    {"Key_RShift", "Shift"},
+    {"Key_LShift", "Shift"}
+  };
+
   // キーの色
   private static Color colorGray = new Color(180f / 255f, 180f / 255f, 180f / 255f, 1);
   private static Color colorWhite = new Color(1, 1, 1, 1);
@@ -449,7 +503,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    GetAllKeys();
+    GetAllKeys(ConfigScript.InputMode, ConfigScript.InputArray);
     GetAllFingers();
     SetAllKeyColorWhite();
     SetAllFingerColorWhite();
@@ -458,7 +512,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   /// <summary>
   /// キーのオブジェクトを取得する
   /// </summary>
-  private void GetAllKeys()
+  public void GetAllKeys(int inputType, int arrayType)
   {
     AKKeys = new Dictionary<string, GameObject>();
     for (int i = 0; i < AKParent.transform.childCount; ++i)
@@ -468,13 +522,19 @@ public class AssistKeyboardJIS : MonoBehaviour
       {
         var obj = keyboardRows.transform.GetChild(j).gameObject;
         var keyName = obj.name;
-        if (ConfigScript.InputMode == (int)ConfigScript.InputType.jisKana && jisKanaKeyNameMap.ContainsKey(keyName))
+        if (inputType == (int)ConfigScript.InputType.jisKana && jisKanaKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var kanaText = jisKanaKeyNameMap[keyName];
           keyTextObj.text = kanaText;
         }
-        else if (ConfigScript.InputArray == (int)ConfigScript.KeyArrayType.us && USArrayKeyNameMap.ContainsKey(keyName))
+        else if (arrayType == (int)ConfigScript.KeyArrayType.japanese && JISArrayKeyNameMap.ContainsKey(keyName))
+        {
+          var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+          var keyText = JISArrayKeyNameMap[keyName];
+          keyTextObj.text = keyText;
+        }
+        else if (arrayType == (int)ConfigScript.KeyArrayType.us && USArrayKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var keyText = USArrayKeyNameMap[keyName];
