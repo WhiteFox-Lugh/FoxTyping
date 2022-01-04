@@ -25,6 +25,14 @@ public class TitleSelect : MonoBehaviour
   }
 
   /// <summary>
+  /// GitHub のポートフォリオに飛んでいく
+  /// </summary>
+  public void onClickIcon()
+  {
+    Application.OpenURL("https://whitefox-lugh.github.io/");
+  }
+
+  /// <summary>
   /// イベント発生時の処理。主にキーボード入力処理
   /// </summary>
   void OnGUI()
