@@ -331,6 +331,7 @@ public class GenerateSentencesTest
   [TestCase("FoxTypingOfficial")]
   [TestCase("Idiom_Jp")]
   [TestCase("Cocktail")]
+  [TestCase("Informatics")]
   public void WordsetCheckerJISKana(string fileName)
   {
     var sectionRegex = @"\{__[\w|_]+__\}";
