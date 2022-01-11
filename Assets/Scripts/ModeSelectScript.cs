@@ -10,18 +10,9 @@ public class ModeSelectScript : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.S == kc)
-    {
-      LoadSinglePlayScene();
-    }
-    else if (KeyCode.B == kc)
-    {
-      LoadBeginnerModeScene();
-    }
-    else if (KeyCode.Escape == kc)
-    {
-      LoadTitleScene();
-    }
+    if (KeyCode.S == kc) { LoadSinglePlayScene(); }
+    else if (KeyCode.B == kc) { LoadBeginnerModeScene(); }
+    else if (KeyCode.Escape == kc) { LoadTitleScene(); }
   }
 
   /// <summary>

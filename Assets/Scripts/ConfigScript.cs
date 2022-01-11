@@ -11,15 +11,19 @@ public sealed class ConfigScript
 {
   private readonly static ConfigScript instance = new ConfigScript();
   private readonly static string configFileName = $"{Application.persistentDataPath}/foxtyping_config_data.json";
+  // ワード数の最小値、最大値、デフォルトの設定
   private const int MIN_TASK_NUM = 5;
   private const int MAX_TASK_NUM = 100;
   private const int DEFAULT_TASK_NUM = 20;
+  // 長文での制限時間の最小値、最大値、デフォルト値の設定
   private const int LONG_MIN_TIME_LIMIT = 1;
   private const int LONG_MAX_TIME_LIMIT = 600;
   private const int DEFAULT_LONG_TIME_LIMIT = 300;
+  // 短文練習で次のワードを表示するまでの Delay
   private const int MIN_DELAY_TIME = 0;
   private const int MAX_DELAY_TIME = 3000;
   private const int DEFAULT_DELAY_TIME = 500;
+  // カウントダウン時間
   private const int MIN_COUNTDOWN_SEC = 1;
   private const int MAX_COUNTDOWN_SEC = 5;
   private static int gameMode = (int)SingleMode.shortSentence;
@@ -28,27 +32,77 @@ public sealed class ConfigScript
   private static int keyInputMode = (int)InputType.roman;
   private static int longSentencePracticeTimeLimit = DEFAULT_LONG_TIME_LIMIT;
   private static int wordChangeDelayTime = DEFAULT_DELAY_TIME;
-  private static bool showTypeSentence = true;
   private static int countdownSec = 3;
   private static int inputArray = 0;
 
-  public static ConfigScript GetInstance()
-  {
-    return instance;
-  }
-
+  /// <summary>
+  /// コンストラクタ
+  /// </summary>
   private ConfigScript()
   {
 
   }
 
+  /// <summary>
+  /// インスタンスの取得
+  /// </summary>
+  /// <returns>インスタンス</returns>
+  public static ConfigScript GetInstance()
+  {
+    return instance;
+  }
+
+  /// <summary>
+  /// シングルプレイでのモード
+  /// </summary>
   public enum SingleMode
   {
     shortSentence,
     longSentence
   }
 
-  // 画面中段の表示
+  /// <summary>
+  /// シングルプレイの練習形態
+  /// </summary>
+  /// <value>SingleMode の値</value>
+  [JsonProperty]
+  public static int GameMode
+  {
+    set
+    {
+      var enumLen = Enum.GetNames(typeof(SingleMode)).Length;
+      // 値が SingleMode に含まれるものであるかの Validation
+      if (0 <= value && value < enumLen) { gameMode = value; }
+      else { gameMode = (int)SingleMode.shortSentence; }
+    }
+    get
+    {
+      return gameMode;
+    }
+  }
+
+  /// <summary>
+  /// 短文練習でのワード数設定
+  /// </summary>
+  /// <value>ワード数</value>
+  [JsonProperty]
+  public static int Tasks
+  {
+    set
+    {
+      // 値の Validation
+      if (MIN_TASK_NUM <= value && value <= MAX_TASK_NUM) { taskNum = value; }
+      else { taskNum = DEFAULT_TASK_NUM; }
+    }
+    get
+    {
+      return taskNum;
+    }
+  }
+
+  /// <summary>
+  /// 画面中段の表示
+  /// </summary>
   public enum MiddlePanel
   {
     typingPerf,
@@ -57,85 +111,23 @@ public sealed class ConfigScript
     none
   }
 
-  public enum InputType
-  {
-    roman,
-    jisKana
-  }
-
-  public static readonly string[] InputTypeString = new string[2] {
-    "ローマ字(Qwerty)", "JISかな"
-  };
-
-  public enum KeyArrayType
-  {
-    japanese,
-    us
-  }
-
-  // シングルプレイでのモード
-  // SingleMode を参照
-  [JsonProperty]
-  public static int GameMode
-  {
-    set
-    {
-      var enumLen = Enum.GetNames(typeof(SingleMode)).Length;
-      if (0 <= value && value < enumLen)
-      {
-        gameMode = value;
-      }
-      else
-      {
-        gameMode = (int)SingleMode.shortSentence;
-      }
-    }
-    get
-    {
-      return gameMode;
-    }
-  }
-
-
-  // 短文で何個ワードを打つか
-  [JsonProperty]
-  public static int Tasks
-  {
-    set
-    {
-      if (MIN_TASK_NUM <= value && value <= MAX_TASK_NUM)
-      {
-        taskNum = value;
-      }
-      else
-      {
-        taskNum = DEFAULT_TASK_NUM;
-      }
-    }
-    get
-    {
-      return taskNum;
-    }
-  }
-
-  // 画面中段の表示
-  // 0 : タイピングパフォーマンス情報
-  // 1 : アシストキーボード
-  // 2 : 両方表示
-  // 3 : なにも表示しない
+  /// <summary>
+  /// 画面中段の表示
+  /// </summary>
+  /// <value>
+  /// 0 : タイピングパフォーマンス情報
+  /// 1 : アシストキーボード
+  /// 2 : 両方表示
+  /// 3 : なにも表示しない
+  /// </value>
   [JsonProperty]
   public static int InfoPanelMode
   {
     set
     {
-      if (0 <= value && value <= 3)
-      {
-        infoPanel = value;
-      }
-      else
-      {
-        infoPanel = (int)MiddlePanel.typingPerf;
-      }
+      // 値の Validation
+      if (0 <= value && value <= 3) { infoPanel = value; }
+      else { infoPanel = (int)MiddlePanel.typingPerf; }
     }
     get
     {
@@ -143,7 +135,10 @@ public sealed class ConfigScript
     }
   }
 
-  // 短文打つモードでのデータセットのファイル名
+  /// <summary>
+  /// 短文練習のワードセットのファイル名
+  /// </summary>
+  /// <value>ワードセットファイル名(拡張子なし)</value>
   [JsonProperty]
   public static string DataSetName
   {
@@ -151,7 +146,10 @@ public sealed class ConfigScript
     get;
   } = "FoxTypingOfficial";
 
-  // 長文打つモードでのデータセットのファイル名
+  /// <summary>
+  /// 長文練習の文章ファイル名
+  /// </summary>
+  /// <value>ファイル名(拡張子なし)</value>
   [JsonProperty]
   public static string LongSentenceTaskName
   {
@@ -159,12 +157,16 @@ public sealed class ConfigScript
     get;
   } = "Constitution";
 
-  // 長文モードでの制限時間(s)
+  /// <summary>
+  /// 長文モードでの制限時間
+  /// </summary>
+  /// <value>制限時間(秒)</value>
   [JsonProperty]
   public static int LongSentenceTimeLimit
   {
     set
     {
+      // 値の Validation
       if (LONG_MIN_TIME_LIMIT <= value && value <= LONG_MAX_TIME_LIMIT)
       {
         longSentencePracticeTimeLimit = value;
@@ -180,38 +182,56 @@ public sealed class ConfigScript
     }
   }
 
-  // 長文モードでルビを使用するか
+  /// <summary>
+  /// 長文モードでのルビ使用
+  /// </summary>
+  /// <value>ルビを使用するかどうか true / false</value>
   [JsonProperty]
-  public static bool UseRuby
-  {
-    set;
-    get;
-  } = true;
+  public static bool UseRuby { set; get; } = true;
 
-  // 初心者モードであるか
+  /// <summary>
+  /// ビギナーモードでの練習であるかどうか
+  /// </summary>
+  /// <value>true ならビギナーモード / false なら通常の練習</value>
   public static bool IsBeginnerMode
   {
     set;
     get;
   } = false;
 
-  // 入力モード
-  // 0: Roman
-  // 1: Kana
+  /// <summary>
+  /// 入力方式
+  /// </summary>
+  public enum InputType
+  {
+    roman,
+    jisKana
+  }
+
+  /// <summary>
+  /// 入力方式の名称
+  /// </summary>
+  /// <value></value>
+  public static readonly string[] InputTypeString = new string[2] {
+    "ローマ字(Qwerty)", "JISかな"
+  };
+
+  /// <summary>
+  /// 入力モード
+  /// </summary>
+  /// <value>
+  /// 0: Roman
+  /// 1: Kana
+  /// </value>
   [JsonProperty]
   public static int InputMode
   {
     set
     {
       var enumLen = Enum.GetNames(typeof(InputType)).Length;
-      if (0 <= value && value < enumLen)
-      {
-        keyInputMode = value;
-      }
-      else
-      {
-        keyInputMode = (int)InputType.roman;
-      }
+      // 値が InputType に含まれるかどうかの Validation
+      if (0 <= value && value < enumLen) { keyInputMode = value; }
+      else { keyInputMode = (int)InputType.roman; }
     }
     get
     {
@@ -220,23 +240,27 @@ public sealed class ConfigScript
   }
 
   /// <summary>
-  /// 配列の指定
+  /// キー配列
   /// </summary>
-  /// <value></value>
+  public enum KeyArrayType
+  {
+    japanese,
+    us
+  }
+
+  /// <summary>
+  /// キー配列の指定
+  /// </summary>
+  /// <value>KeyArrayType の値</value>
   [JsonProperty]
   public static int InputArray
   {
     set
     {
       var enumLen = Enum.GetNames(typeof(KeyArrayType)).Length;
-      if (0 <= value && value < enumLen)
-      {
-        inputArray = value;
-      }
-      else
-      {
-        inputArray = (int)KeyArrayType.japanese;
-      }
+      // 値が KeyArrayType に含まれるかどうかの Vaildation
+      if (0 <= value && value < enumLen) { inputArray = value; }
+      else { inputArray = (int)KeyArrayType.japanese; }
     }
     get
     {
@@ -244,24 +268,19 @@ public sealed class ConfigScript
     }
   }
 
+  /// <summary>
+  /// 次のセンテンスに移行するまでのディレイ
+  /// </summary>
+  /// <value>ディレイ時間</value>
   [JsonProperty]
-  // 次のセンテンスに移行するまでの休止時間
   public static int DelayTime
   {
     set
     {
-      if (MIN_DELAY_TIME <= value && value <= MAX_DELAY_TIME)
-      {
-        wordChangeDelayTime = value;
-      }
-      else if (value < MIN_DELAY_TIME)
-      {
-        wordChangeDelayTime = MIN_DELAY_TIME;
-      }
-      else if (value > MAX_DELAY_TIME)
-      {
-        wordChangeDelayTime = MAX_DELAY_TIME;
-      }
+      // 値の Validation
+      if (MIN_DELAY_TIME <= value && value <= MAX_DELAY_TIME) { wordChangeDelayTime = value; }
+      else if (value < MIN_DELAY_TIME) { wordChangeDelayTime = MIN_DELAY_TIME; }
+      else if (value > MAX_DELAY_TIME) { wordChangeDelayTime = MAX_DELAY_TIME; }
     }
     get
     {
@@ -274,40 +293,22 @@ public sealed class ConfigScript
   /// </summary>
   /// <value></value>
   [JsonProperty]
-  public static bool IsShowTypeSentence
-  {
-    set
-    {
-      showTypeSentence = value;
-    }
-    get
-    {
-      return showTypeSentence;
-    }
-  }
+  public static bool IsShowTypeSentence { set; get; } = true;
 
   /// 以下コンフィグ画面のみ
   /// <summary>
   /// カウントダウンの時間
   /// </summary>
-  /// <value></value>
+  /// <value>カウントダウン時間</value>
   [JsonProperty]
   public static int CountDownSecond
   {
     set
     {
-      if (MIN_COUNTDOWN_SEC <= value && value <= MAX_COUNTDOWN_SEC)
-      {
-        countdownSec = value;
-      }
-      else if (value < MIN_COUNTDOWN_SEC)
-      {
-        countdownSec = MIN_COUNTDOWN_SEC;
-      }
-      else
-      {
-        countdownSec = MAX_COUNTDOWN_SEC;
-      }
+      // 値の Validation
+      if (MIN_COUNTDOWN_SEC <= value && value <= MAX_COUNTDOWN_SEC) { countdownSec = value; }
+      else if (value < MIN_COUNTDOWN_SEC) { countdownSec = MIN_COUNTDOWN_SEC; }
+      else { countdownSec = MAX_COUNTDOWN_SEC; }
     }
     get
     {
@@ -328,7 +329,7 @@ public sealed class ConfigScript
   }
 
   /// <summary>
-  /// 設定を読み込む
+  /// JSON ファイルから設定を読み込む
   /// </summary>
   public static void LoadConfig()
   {
@@ -349,6 +350,9 @@ public sealed class ConfigScript
   }
 }
 
+/// <summary>
+/// 設定保存用の JSON ファイルに記載するプロパティを記載したクラス
+/// </summary>
 public class JsonConfigVars
 {
   public int GameMode { get; set; }

@@ -21,29 +21,13 @@ public class TypingPerformance
   // SCORE_WEIGHT: スコアの重み
   private readonly double[] SCORE_WEIGHT = { 1.5, 1.25, 1, 0.75, 0.5 };
   // 原文のリスト
-  public List<string> OriginSentenceList
-  {
-    private set;
-    get;
-  }
+  public List<string> OriginSentenceList { private set; get; }
   // 実際に打った文のリスト
-  public List<string> TypedSentenceList
-  {
-    private set;
-    get;
-  }
+  public List<string> TypedSentenceList { private set; get; }
   // 正誤判定
-  public List<List<int>> TypeJudgeList
-  {
-    private set;
-    get;
-  }
+  public List<List<int>> TypeJudgeList { private set; get; }
   // タイプした時刻
-  public List<List<double>> TypeTimeList
-  {
-    private set;
-    get;
-  }
+  public List<List<double>> TypeTimeList { private set; get; }
   // Latency
   public List<double> LatencyList
   {

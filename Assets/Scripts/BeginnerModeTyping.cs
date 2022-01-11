@@ -4,14 +4,17 @@ using UnityEngine.SceneManagement;
 
 public class BeginnerModeTyping : MonoBehaviour
 {
-
-  // Start is called before the first frame update
+  /// <summary>
+  /// 初期化処理
+  /// </summary>
   void Awake()
   {
     ConfigScript.InfoPanelMode = (int)ConfigScript.MiddlePanel.both;
   }
 
-  // Update is called once per frame
+  /// <summary>
+  /// フレームごとの処理
+  /// </summary>
   void Update()
   {
     if (TypingSoft.CurrentGameCondition == (int)TypingSoft.GameCondition.Finished)

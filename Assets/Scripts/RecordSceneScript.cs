@@ -63,14 +63,9 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
-    if (ScoreInfoPanel != null)
-    {
-      ScoreInfoPanel.SetActive(false);
-    }
-    if (KPSLineChart != null)
-    {
-      SetWordKPSChart(0);
-    }
+    if (ScoreInfoPanel != null) { ScoreInfoPanel.SetActive(false); }
+    // 最初のワードをチャートに表示
+    if (KPSLineChart != null) { SetWordKPSChart(0); }
     SetResult();
     SetWordResult();
     if (DefaultToggle != null && DetailToggle != null)
@@ -85,15 +80,9 @@ public class RecordSceneScript : MonoBehaviour
   }
 
   /// <summary>
-  /// 1フレームごとの更新処理。現時点ではなし
+  /// ワードごとの KPS 折れ線表示
   /// </summary>
-  void Update()
-  {
-  }
-
-  /// <summary>
-  /// ワードごとの KPS グラフの表示
-  /// /// </summary>
+  /// <param name="wordNum">ワード番号(0-index)</param>
   private void SetWordKPSChart(int wordNum)
   {
     KPSLineChart.RemoveData();
@@ -102,17 +91,12 @@ public class RecordSceneScript : MonoBehaviour
     var typedText = GetTypedSentence(wordNum);
     KPSLineChart.xAxis0.splitNumber = typedText.Length;
     KPSLineChart.xAxis0.boundaryGap = false;
+
     for (int i = 0; i < typedText.Length; ++i)
     {
       KPSLineChart.AddXAxisData(typedText[i].ToString());
-      if (i == 0)
-      {
-        KPSLineChart.AddData(0, 0);
-      }
-      else
-      {
-        KPSLineChart.AddData(0, yVal[i - 1]);
-      }
+      if (i == 0) { KPSLineChart.AddData(0, 0); }
+      else { KPSLineChart.AddData(0, yVal[i - 1]); }
     }
   }
 
@@ -121,19 +105,23 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void SetResult()
   {
+    // パフォーマンスの取得
     var perf = TypingSoft.Performance;
     var dataName = GenerateSentence.DataSetName;
+
     UIAccuracyText.text = perf.GetAccuracy().ToString("0.00") + " %";
     UITimeText.text = perf.GetElapsedTime().ToString("0.00") + " 秒";
     UIWordsetName.text = dataName;
+
     if (!ConfigScript.IsBeginnerMode)
     {
-      var isRated = WordsetData.ShortWordsetDict[ConfigScript.DataSetName].IsRated;
       var kpsPerf = perf.GetKpmAverageAndStdDev();
       int score = perf.GetNormalScore();
       UIAverageKPS.text = kpsPerf.kpsAvg.ToString("0.00") + " 打/秒";
       UIKPSStdDev.text = kpsPerf.kpsStdDev.ToString("0.00") + " 打/秒";
       UIScoreText.text = score.ToString();
+      var isRated = WordsetData.ShortWordsetDict[ConfigScript.DataSetName].IsRated;
+      // ランクを表示するワードセットならスコアからランクを割り出す
       if (isRated)
       {
         for (int i = 0; i < RankScore.Count(); ++i)
@@ -165,10 +153,7 @@ public class RecordSceneScript : MonoBehaviour
     int len = perf.OriginSentenceList.Count();
     for (int i = 0; i < len; ++i)
     {
-      if (perf.IsSentenceInfoValid(i))
-      {
-        sb.Append(perf.ConvertDetailResult(i));
-      }
+      if (perf.IsSentenceInfoValid(i)) { sb.Append(perf.ConvertDetailResult(i)); }
     }
     UIResultDetailText.text = sb.ToString();
   }
@@ -249,6 +234,10 @@ public class RecordSceneScript : MonoBehaviour
     StartCoroutine("DoWordReplay");
   }
 
+  /// <summary>
+  /// ワードごとのリプレイ
+  /// </summary>
+  /// <returns></returns>
   private IEnumerator DoWordReplay()
   {
     // ワード切り替え無効
@@ -273,14 +262,8 @@ public class RecordSceneScript : MonoBehaviour
       {
         if (judgeList[i] == 1)
         {
-          if (waitTimeList.Count() == 0)
-          {
-            waitTimeList.Add(0.5f);
-          }
-          else
-          {
-            waitTimeList.Add((float)(timeList[i] - prevTime));
-          }
+          if (waitTimeList.Count() == 0) { waitTimeList.Add(0.5f); }
+          else { waitTimeList.Add((float)(timeList[i] - prevTime)); }
           correctIdxList.Add(i);
           prevTime = timeList[i];
         }
@@ -307,14 +290,8 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Escape == kc)
-    {
-      ReturnConfigScene();
-    }
-    else if (KeyCode.F2 == kc)
-    {
-      Retry();
-    }
+    if (KeyCode.Escape == kc) { ReturnConfigScene(); }
+    else if (KeyCode.F2 == kc) { Retry(); }
   }
 
   /// <summary>
@@ -322,14 +299,8 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   public void Retry()
   {
-    if (ConfigScript.IsBeginnerMode)
-    {
-      SceneManager.LoadScene("BeginnerTypingScene");
-    }
-    else
-    {
-      SceneManager.LoadScene("TypingScene");
-    }
+    if (ConfigScript.IsBeginnerMode) { SceneManager.LoadScene("BeginnerTypingScene"); }
+    else { SceneManager.LoadScene("TypingScene"); }
   }
 
   /// <summary>
@@ -337,14 +308,8 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void ReturnConfigScene()
   {
-    if (ConfigScript.IsBeginnerMode)
-    {
-      SceneManager.LoadScene("BeginnerModeScene");
-    }
-    else
-    {
-      SceneManager.LoadScene("SinglePlayConfigScene");
-    }
+    if (ConfigScript.IsBeginnerMode) { SceneManager.LoadScene("BeginnerModeScene"); }
+    else { SceneManager.LoadScene("SinglePlayConfigScene"); }
   }
 
   /// <summary>
@@ -395,7 +360,7 @@ public class RecordSceneScript : MonoBehaviour
   }
 
   /// <summary>
-  /// スコア横の ? ボタンを押したときにヘルプを開く
+  /// スコアについての説明パネルを開く
   /// </summary>
   public void OnClickScoreHelpButton()
   {
@@ -403,7 +368,7 @@ public class RecordSceneScript : MonoBehaviour
   }
 
   /// <summary>
-  /// スコア横の ? ボタンを押したときにヘルプを開く
+  /// スコアについての説明パネルを閉じる
   /// </summary>
   public void OnClickScoreHelpCloseButton()
   {

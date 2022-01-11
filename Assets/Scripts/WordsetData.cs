@@ -12,6 +12,10 @@ using UnityEngine.Networking;
 public sealed class WordsetData
 {
   private static AssetBundle _assetMetaData;
+  public static AssetBundle AssetShortWordsetData { get; set; }
+  public static AssetBundle AssetLongWordsetData { get; set; }
+  public static Dictionary<string, ShortWordsetData> ShortWordsetDict { get; private set; } = new Dictionary<string, ShortWordsetData>();
+  public static Dictionary<string, LongWordsetData> LongWordsetDict { get; private set; } = new Dictionary<string, LongWordsetData>();
   public static AssetBundle AssetMetaData
   {
     get
@@ -24,12 +28,14 @@ public sealed class WordsetData
       var jsonStr = _assetMetaData.LoadAsset<TextAsset>("Dataset").ToString();
       var problemData = JsonUtility.FromJson<Metadata>(jsonStr);
       var sDict = new Dictionary<string, ShortWordsetData>();
+      // 短文練習のワードセットデータの読み込み
       foreach (var item in problemData.ShortWordsetDataList)
       {
         var filename = item.WordsetFileName;
         sDict.Add(filename, item);
       }
       var lDict = new Dictionary<string, LongWordsetData>();
+      // 長文練習の文章データ読み込み
       foreach (var item in problemData.LongWordsetDataList)
       {
         var filename = item.DocumentFileName;
@@ -39,10 +45,6 @@ public sealed class WordsetData
       LongWordsetDict = lDict;
     }
   }
-  public static AssetBundle AssetShortWordsetData { get; set; }
-  public static AssetBundle AssetLongWordsetData { get; set; }
-  public static Dictionary<string, ShortWordsetData> ShortWordsetDict { get; private set; } = new Dictionary<string, ShortWordsetData>();
-  public static Dictionary<string, LongWordsetData> LongWordsetDict { get; private set; } = new Dictionary<string, LongWordsetData>();
 }
 
 [Serializable]

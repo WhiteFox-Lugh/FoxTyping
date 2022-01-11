@@ -10,6 +10,7 @@ using UnityEngine.Networking;
 
 public class GenerateSentence
 {
+  // ワードの長さ制限
   private const int MIN_LEN_JP = 1;
   private const int MAX_LEN_JP = 40;
   private const int MIN_LEN_EN = 1;
@@ -1042,19 +1043,17 @@ public class GenerateSentence
   // 原文と読み方のセット
   private static Dictionary<string, List<(string originSentence, string typeSentence)>> wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
 
-  // データセット名
-  // リザルト画面に表示する用として使いたい
-  public static string DataSetName
-  {
-    private set;
-    get;
-  }
+  /// <summary>
+  /// リザルト画面に表示する用のデータセット名
+  /// </summary>
+  /// <value>データセット名</value>
+  public static string DataSetName { private set; get; }
 
-  public static string Lang
-  {
-    private set;
-    get;
-  }
+  /// <summary>
+  /// ワードセットの言語
+  /// </summary>
+  /// <value>言語名(string)</value>
+  public static string Lang { private set; get; }
 
   /// <summary>
   /// ひらがな文をパースして、判定を作成
@@ -1074,11 +1073,13 @@ public class GenerateSentence
       uni = sentenceHiragana[i].ToString();
       bi = (i + 1 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 2) : "";
       tri = (i + 2 < sentenceHiragana.Length) ? sentenceHiragana.Substring(i, 3) : "";
+      // 3文字でのマッチング
       if (romanTypeMap.ContainsKey(tri))
       {
         validTypeList = romanTypeMap[tri].ToList();
         i += 3;
       }
+      // 2文字でのマッチング
       else if (romanTypeMap.ContainsKey(bi))
       {
         validTypeList = romanTypeMap[bi].ToList();
@@ -1110,6 +1111,7 @@ public class GenerateSentence
     for (int i = 0; i < sentenceHiragana.Length; ++i)
     {
       var hiragana = sentenceHiragana[i].ToString();
+      // 2打鍵必要なものは分割
       if (jisKanaMap.ContainsKey(hiragana))
       {
         var mappingList = jisKanaMap[hiragana].ToList();
@@ -1126,7 +1128,6 @@ public class GenerateSentence
     }
     return judge;
   }
-
 
   /// <summary>
   /// タイピング表示に必要な原文、ひらがな読みの文と、判定器を生成
@@ -1148,10 +1149,12 @@ public class GenerateSentence
       // ワードデータセットに欠陥がある可能性も含めて try で動かす
       try
       {
+        // {__BASE__} からワードをランダムに選択
         var baseDict = wordSetDict[BASE_STR];
         int r1 = UnityEngine.Random.Range(0, baseDict.Count);
         string tmpOriginSentenceStr = baseDict[r1].originSentence;
         string tmpTypeSentenceStr = baseDict[r1].typeSentence;
+        // {__key__} を含むワードの置換
         foreach (var key in wordSetDict.Keys)
         {
           var dictCache = wordSetDict[key];
@@ -1185,8 +1188,8 @@ public class GenerateSentence
   /// </summary>
   public static bool LoadSentenceData(string dataName)
   {
-    // try
-    // {
+    try
+    {
       wordSetDict = new Dictionary<string, List<(string originSentence, string typeSentence)>>();
       var asset = WordsetData.AssetShortWordsetData;
       var jsonStr = asset.LoadAsset<TextAsset>(dataName).ToString();
@@ -1206,12 +1209,12 @@ public class GenerateSentence
           wordSetDict[wordSection] = new List<(string, string)>() { wordInfo };
         }
       }
-    // }
-    // catch (Exception e)
-    // {
-    //   Debug.Log(e);
-    //   return false;
-    // }
+    }
+    catch (Exception e)
+    {
+      Debug.Log(e);
+      return false;
+    }
     return true;
   }
 }

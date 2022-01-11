@@ -37,7 +37,9 @@ public class SinglePlayConfigOperate : MonoBehaviour
     LongSentence
   }
 
-  // Start is called before the first frame update
+  /// <summary>
+  /// 初期化処理
+  /// </summary>
   void Awake()
   {
     ConfigScript.LoadConfig();
@@ -48,7 +50,9 @@ public class SinglePlayConfigOperate : MonoBehaviour
     SetPreviousSettings();
   }
 
-  // Update is called once per frame
+  /// <summary>
+  /// フレームごとの処理
+  /// </summary>
   void Update()
   {
     ChangeConfigPanel();
@@ -59,6 +63,7 @@ public class SinglePlayConfigOperate : MonoBehaviour
   /// </summary>
   private void LoadWordsetMetadata()
   {
+    // ドロップダウンの初期化
     UIDataSetName.ClearOptions();
     UILongDataSetName.ClearOptions();
     var wordsetListShort = new List<string>();
@@ -174,20 +179,11 @@ public class SinglePlayConfigOperate : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Space == kc)
-    {
-      BeforeStartPractice();
-    }
+    if (KeyCode.Space == kc) { BeforeStartPractice(); }
     else if (KeyCode.Escape == kc)
     {
-      if (DetailSettingsPanel.activeSelf)
-      {
-        DetailSettingsClose();
-      }
-      else
-      {
-        ReturnModeSelectScene();
-      }
+      if (DetailSettingsPanel.activeSelf) { DetailSettingsClose(); }
+      else { ReturnModeSelectScene(); }
     }
   }
 
@@ -199,14 +195,8 @@ public class SinglePlayConfigOperate : MonoBehaviour
     var selectedMode = UIGameMode.value;
     SetCurrentSettings();
     ConfigScript.SaveConfig();
-    if (selectedMode == (int)GameModeNumber.ShortSentence)
-    {
-      SceneManager.LoadScene("TypingScene");
-    }
-    else if (selectedMode == (int)GameModeNumber.LongSentence)
-    {
-      SceneManager.LoadScene("LongSentenceTypingScene");
-    }
+    if (selectedMode == (int)GameModeNumber.ShortSentence) { SceneManager.LoadScene("TypingScene"); }
+    else if (selectedMode == (int)GameModeNumber.LongSentence) { SceneManager.LoadScene("LongSentenceTypingScene"); }
   }
 
   /// <summary>
