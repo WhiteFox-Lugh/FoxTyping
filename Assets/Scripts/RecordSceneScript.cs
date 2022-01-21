@@ -56,6 +56,10 @@ public class RecordSceneScript : MonoBehaviour
     0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6
   };
   private static int DetailCurrentWordNum = 0;
+  // 0 のとき通常表示、1のときキャプチャ用表示
+  private static int ResultDisplayFlag = 0;
+  private static StringBuilder ResultStringBuilder = new StringBuilder();
+  private static StringBuilder ResultForCaptureStrBuilder = new StringBuilder();
   private static List<Button> WordButtonObjList = new List<Button>();
 
   /// <summary>
@@ -63,6 +67,9 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   void Awake()
   {
+    ResultForCaptureStrBuilder.Clear();
+    ResultStringBuilder.Clear();
+    ResultDisplayFlag = 0;
     if (ScoreInfoPanel != null) { ScoreInfoPanel.SetActive(false); }
     // 最初のワードをチャートに表示
     if (KPSLineChart != null) { SetWordKPSChart(0); }
@@ -87,8 +94,9 @@ public class RecordSceneScript : MonoBehaviour
   {
     KPSLineChart.RemoveData();
     KPSLineChart.AddSerie(SerieType.Line);
+    var perf = TypingSoft.Performance;
     var yVal = TypingSoft.Performance.GetKPSList(wordNum);
-    var typedText = GetTypedSentence(wordNum);
+    var typedText = perf.GetTypedSentence(wordNum);
     KPSLineChart.xAxis0.splitNumber = typedText.Length;
     KPSLineChart.xAxis0.boundaryGap = false;
 
@@ -148,14 +156,39 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void SetWordResult()
   {
-    var sb = new StringBuilder();
-    var perf = TypingSoft.Performance;
-    int len = perf.OriginSentenceList.Count();
-    for (int i = 0; i < len; ++i)
+    if (ResultStringBuilder.Length == 0)
     {
-      if (perf.IsSentenceInfoValid(i)) { sb.Append(perf.ConvertDetailResult(i)); }
+      var perf = TypingSoft.Performance;
+      int len = perf.OriginSentenceList.Count();
+      for (int i = 0; i < len; ++i)
+      {
+        if (perf.IsSentenceInfoValid(i))
+        {
+          ResultStringBuilder.Append(perf.ConvertDetailResult(i));
+        }
+      }
     }
-    UIResultDetailText.text = sb.ToString();
+    UIResultDetailText.text = ResultStringBuilder.ToString();
+  }
+
+  /// <summary>
+  /// 簡易リザルト（圧縮表示）の情報表示処理
+  /// </summary>
+  private void SetWordResultCompressed()
+  {
+    if (ResultForCaptureStrBuilder.Length == 0)
+    {
+      var perf = TypingSoft.Performance;
+      int len = perf.OriginSentenceList.Count();
+      for (int i = 0; i < len; ++i)
+      {
+        if (perf.IsSentenceInfoValid(i))
+        {
+          ResultForCaptureStrBuilder.Append(perf.ConvertCompressedDetailResult(i));
+        }
+      }
+    }
+    UIResultDetailText.text = ResultForCaptureStrBuilder.ToString();
   }
 
   /// <summary>
@@ -195,35 +228,12 @@ public class RecordSceneScript : MonoBehaviour
   public void OnClickWordButton(int number)
   {
     DetailCurrentWordNum = number;
-    var typedText = GetTypedSentence(number);
-    DetailResultWordNumText.text = $"No.{number + 1}";
     var perf = TypingSoft.Performance;
+    var typedText = perf.GetTypedSentence(number);
+    DetailResultWordNumText.text = $"No.{number + 1}";
     DetailResultWordSentenceText.text = perf.OriginSentenceList[number];
     DetailResultWordReplayText.text = typedText;
     SetWordKPSChart(number);
-  }
-
-  /// <summary>
-  /// 指定されたワードの正しいタイプ文字だけを抽出する
-  /// </summary>
-  /// <param name="wordNum">0-indexed のワード番号</param>
-  private string GetTypedSentence(int wordNum)
-  {
-    var perf = TypingSoft.Performance;
-    var typeSentenceList = perf.TypedSentenceList[wordNum];
-    var typeJudgeList = perf.TypeJudgeList[wordNum];
-    var strBuilder = new StringBuilder();
-    if (typeSentenceList.Count() == typeJudgeList.Count())
-    {
-      for (int i = 0; i < typeSentenceList.Count(); ++i)
-      {
-        if (typeJudgeList[i] == 1)
-        {
-          strBuilder.Append(typeSentenceList[i].ToString());
-        }
-      }
-    }
-    return strBuilder.ToString();
   }
 
   /// <summary>
@@ -290,8 +300,59 @@ public class RecordSceneScript : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Escape == kc) { ReturnConfigScene(); }
-    else if (KeyCode.F2 == kc) { Retry(); }
+    // 最優先: スコアとランクの説明パネルが開いている
+    if (ScoreInfoPanel.activeSelf)
+    {
+      if (KeyCode.Escape == kc || KeyCode.H == kc) { OnClickScoreHelpCloseButton(); }
+    }
+    else if (!ConfigScript.IsBeginnerMode)
+    {
+      switch (kc)
+      {
+        case KeyCode.Escape: ReturnConfigScene(); break;
+        case KeyCode.F2: Retry(); break;
+        case KeyCode.H: OnClickScoreHelpButton(); break;
+        case KeyCode.T: OnClickTweetButton(); break;
+        case KeyCode.E:
+          DefaultToggle.isOn = true;
+          DetailToggle.isOn = false;
+          break;
+        case KeyCode.D:
+          DetailToggle.isOn = true;
+          DefaultToggle.isOn = false;
+          break;
+        case KeyCode.C:
+          if (DefaultToggle.isOn) { OnClickChangeDisplayButton(); }
+          break;
+        case KeyCode.R:
+          if (DetailToggle.isOn && ReplayButton.interactable) { OnClickReplayButton(); }
+          break;
+        case KeyCode.K:
+        case KeyCode.UpArrow:
+          if (0 <= DetailCurrentWordNum - 1 && DetailToggle.isOn && ReplayButton.interactable)
+          {
+            DetailCurrentWordNum--;
+            OnClickWordButton(DetailCurrentWordNum);
+          }
+          break;
+        case KeyCode.J:
+        case KeyCode.DownArrow:
+          if (DetailCurrentWordNum + 1 < ConfigScript.Tasks && DetailToggle.isOn && ReplayButton.interactable)
+          {
+            DetailCurrentWordNum++;
+            OnClickWordButton(DetailCurrentWordNum);
+          }
+          break;
+      }
+    }
+    else if (ConfigScript.IsBeginnerMode)
+    {
+      switch (kc)
+      {
+        case KeyCode.Escape: ReturnConfigScene(); break;
+        case KeyCode.F2: Retry(); break;
+      }
+    }
   }
 
   /// <summary>
@@ -310,6 +371,23 @@ public class RecordSceneScript : MonoBehaviour
   {
     if (ConfigScript.IsBeginnerMode) { SceneManager.LoadScene("BeginnerModeScene"); }
     else { SceneManager.LoadScene("SinglePlayConfigScene"); }
+  }
+
+  /// <summary>
+  /// キャプチャ/通常表示切替ボタンを押したときの挙動
+  /// </summary>
+  public void OnClickChangeDisplayButton()
+  {
+    if (ResultDisplayFlag == 0)
+    {
+      SetWordResultCompressed();
+      ResultDisplayFlag = 1;
+    }
+    else if (ResultDisplayFlag == 1)
+    {
+      SetWordResult();
+      ResultDisplayFlag = 0;
+    }
   }
 
   /// <summary>

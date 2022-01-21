@@ -12,7 +12,7 @@ public class GenerateSentence
 {
   // ワードの長さ制限
   private const int MIN_LEN_JP = 1;
-  private const int MAX_LEN_JP = 40;
+  private const int MAX_LEN_JP = 35;
   private const int MIN_LEN_EN = 1;
   private const int MAX_LEN_EN = 70;
   private const string BASE_STR = "__BASE__";

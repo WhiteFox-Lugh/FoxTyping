@@ -11,21 +11,22 @@ public sealed class ConfigScript
 {
   private readonly static ConfigScript instance = new ConfigScript();
   private readonly static string configFileName = $"{Application.persistentDataPath}/foxtyping_config_data.json";
-  // ワード数の最小値、最大値、デフォルトの設定
-  private const int MIN_TASK_NUM = 5;
-  private const int MAX_TASK_NUM = 100;
-  private const int DEFAULT_TASK_NUM = 20;
+  // ワード数の最小値、最大値、変化量、デフォルトの設定
+  public const int MIN_TASK_NUM = 5;
+  public const int MAX_TASK_NUM = 100;
+  public const int TASK_UNIT = 5;
+  public const int DEFAULT_TASK_NUM = 20;
   // 長文での制限時間の最小値、最大値、デフォルト値の設定
-  private const int LONG_MIN_TIME_LIMIT = 1;
-  private const int LONG_MAX_TIME_LIMIT = 600;
-  private const int DEFAULT_LONG_TIME_LIMIT = 300;
+  public const int LONG_MIN_TIME_LIMIT = 1;
+  public const int LONG_MAX_TIME_LIMIT = 600;
+  public const int DEFAULT_LONG_TIME_LIMIT = 300;
   // 短文練習で次のワードを表示するまでの Delay
-  private const int MIN_DELAY_TIME = 0;
-  private const int MAX_DELAY_TIME = 3000;
-  private const int DEFAULT_DELAY_TIME = 500;
+  public const int MIN_DELAY_TIME = 0;
+  public const int MAX_DELAY_TIME = 3000;
+  public const int DEFAULT_DELAY_TIME = 500;
   // カウントダウン時間
-  private const int MIN_COUNTDOWN_SEC = 1;
-  private const int MAX_COUNTDOWN_SEC = 5;
+  public const int MIN_COUNTDOWN_SEC = 1;
+  public const int MAX_COUNTDOWN_SEC = 5;
   private static int gameMode = (int)SingleMode.shortSentence;
   private static int taskNum = DEFAULT_TASK_NUM;
   private static int infoPanel = (int)MiddlePanel.typingPerf;
