@@ -12,7 +12,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   private static Dictionary<string, GameObject> AKKeys = new Dictionary<string, GameObject>();
   // finger_name -> GameObject のマップ
   private static Dictionary<string, GameObject> AFingers = new Dictionary<string, GameObject>();
-  // string -> key_name[]
+  // JIS 配列での文字とキーのマッピング
   private static readonly Dictionary<string, string[]> keyMappingJIS = new Dictionary<string, string[]>() {
     {"0", new string[1] {"Key_0"}},
     {"1", new string[1] {"Key_1"}},
@@ -265,7 +265,7 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"　", new string[1]{"Key_Space"}}
   };
 
-  // string -> key_name[]
+  // キーとフィンガリングのマッピング
   private static Dictionary<string, (int, char)> keyFingering = new Dictionary<string, (int, char)>() {
     {"Key_1", (5, 'L')},
     {"Key_Q", (5, 'L')},
@@ -320,7 +320,7 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_LShift", (5, 'L')}
   };
 
-  // string -> key_name[]
+  // JIS かなでのキートップ名
   private static readonly Dictionary<string, string> jisKanaKeyNameMap = new Dictionary<string, string>() {
     {"Key_1", "ぬ"},
     {"Key_Q", "た"},
@@ -375,7 +375,7 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_LShift", "Shift"}
   };
 
-  // US 配列のキーネームマッピング
+  // US 配列のキートップ名
   private static readonly Dictionary<string, string> USArrayKeyNameMap = new Dictionary<string, string>() {
     {"Key_1", "1"},
     {"Key_Q", "Q"},
@@ -430,6 +430,7 @@ public class AssistKeyboardJIS : MonoBehaviour
     {"Key_LShift", "Shift"}
   };
 
+  // JIS 配列のキートップ名
   private static readonly Dictionary<string, string> JISArrayKeyNameMap = new Dictionary<string, string>() {
     {"Key_1", "1"},
     {"Key_Q", "Q"},
@@ -522,18 +523,21 @@ public class AssistKeyboardJIS : MonoBehaviour
       {
         var obj = keyboardRows.transform.GetChild(j).gameObject;
         var keyName = obj.name;
+        // JIS かなのプリセット
         if (inputType == (int)ConfigScript.InputType.jisKana && jisKanaKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var kanaText = jisKanaKeyNameMap[keyName];
           keyTextObj.text = kanaText;
         }
+        // QwertyJP のプリセット
         else if (arrayType == (int)ConfigScript.KeyArrayType.japanese && JISArrayKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
           var keyText = JISArrayKeyNameMap[keyName];
           keyTextObj.text = keyText;
         }
+        // Qwerty US 配列プリセット
         else if (arrayType == (int)ConfigScript.KeyArrayType.us && USArrayKeyNameMap.ContainsKey(keyName))
         {
           var keyTextObj = obj.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
@@ -613,6 +617,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   private void SetFingerColorHighlight(string keyName)
   {
     var fingering = keyFingering[keyName];
+    // Space キーは両方の親指を変更
     if (fingering.Item2 == 'B')
     {
       var obj = AFingers["L1"].GetComponent<Shape>();
@@ -620,6 +625,7 @@ public class AssistKeyboardJIS : MonoBehaviour
       obj = AFingers["R1"].GetComponent<Shape>();
       obj.settings.fillColor = colorViolet;
     }
+    // スペースキー以外
     else
     {
       var objName = fingering.Item2.ToString() + fingering.Item1.ToString();
@@ -683,6 +689,7 @@ public class AssistKeyboardJIS : MonoBehaviour
   /// </summary>
   public void SetNextHighlight(string nextStr)
   {
+    // 一度指、キーの色をリセットする
     SetAllKeyColorWhite();
     SetAllFingerColorWhite();
     var keyList = new List<string>();

@@ -10,8 +10,11 @@ using UnityEngine.UI;
 
 public class BeginnerModeOperate : MonoBehaviour
 {
-  private static int prevChapterNum = 1; // 前回の練習章
-  private static string lastSelectedButtonName = ""; // Update 負荷対策
+  // ビギナーモードでの練習ワード数
+  private const int WORD_TASK_NUM = 30;
+  // 前回の練習章の保持
+  private static int prevChapterNum = 1;
+  // ショートカットキーと番号のマッピング
   private static readonly Dictionary<KeyCode, int> shortCutKeyCode = new Dictionary<KeyCode, int> {
     {KeyCode.Q, 1},
     {KeyCode.W, 2},
@@ -24,6 +27,7 @@ public class BeginnerModeOperate : MonoBehaviour
     {KeyCode.O, 9},
     {KeyCode.P, 10}
   };
+  // ショートカットキーと章番号のマッピング
   private static readonly Dictionary<KeyCode, int> shortCutKeyCodeChapter = new Dictionary<KeyCode, int> {
     {KeyCode.Alpha1, 1},
     {KeyCode.Alpha2, 2},
@@ -37,35 +41,17 @@ public class BeginnerModeOperate : MonoBehaviour
   // 練習データセット
   // 先頭が章番号、下2桁がナンバリング
   private static readonly Dictionary<int, string> beginnerDatasetFileName = new Dictionary<int, string> {
-    {101, "keyboardMiddle"},
-    {102, "keyboardUpper"},
-    {103, "keyboardLower"},
-    {201, "alphabetLower"},
-    {202, "alphabetUpper"},
-    {203, "numberAndSymbol"},
-    {204, "chapter2All"},
-    {301, "hiragana_a"},
-    {302, "hiragana_k"},
-    {303, "hiragana_s"},
-    {304, "hiragana_t"},
-    {305, "hiragana_n"},
-    {306, "hiragana_h"},
-    {307, "hiragana_m"},
-    {308, "hiragana_y"},
-    {309, "hiragana_r"},
-    {310, "chapter3All"},
-    {401, "hiragana_ky"},
-    {402, "hiragana_sy"},
-    {403, "hiragana_ty"},
-    {404, "hiragana_ny"},
-    {405, "hiragana_hy"},
-    {406, "hiragana_my"},
-    {407, "hiragana_ry"},
-    {408, "hiragana_ltu"},
-    {409, "hiragana_long_vowel"},
-    {410, "hiragana_xn"}
+    {101, "keyboardMiddle"}, {102, "keyboardUpper"}, {103, "keyboardLower"},
+    {201, "alphabetLower"}, {202, "alphabetUpper"}, {203, "numberAndSymbol"}, {204, "chapter2All"},
+    {301, "hiragana_a"}, {302, "hiragana_k"}, {303, "hiragana_s"},
+    {304, "hiragana_t"}, {305, "hiragana_n"}, {306, "hiragana_h"},
+    {307, "hiragana_m"}, {308, "hiragana_y"}, {309, "hiragana_r"}, {310, "chapter3All"},
+    {401, "hiragana_ky"}, {402, "hiragana_sy"}, {403, "hiragana_ty"},
+    {404, "hiragana_ny"}, {405, "hiragana_hy"}, {406, "hiragana_my"},
+    {407, "hiragana_ry"}, {408, "hiragana_ltu"}, {409, "hiragana_long_vowel"}, {410, "hiragana_xn"}
   };
 
+  // 練習内容の説明(QwertyJP)
   private static readonly Dictionary<string, string> practiceDescriptionDict = new Dictionary<string, string> {
     {"B0101", "最初はキーボードの真ん中の段を練習しよう！\nFキーに左手の人差し指、Jキーに右手の人差し指を置いて、\nそのまま横並びに指を置いて、親指はスペースキーに\n置くとホームポジションになるよ。\nどの指で押したらいいかわからなくなったら、練習中に表示されているキーボードと指を見てね。"},
     {"B0102", "次はキーボードの上の段を練習しよう！\nホームポジションのまま、少しだけ指を上に動かしてキーを押そう。"},
@@ -100,6 +86,7 @@ public class BeginnerModeOperate : MonoBehaviour
     {"Chapter4Toggle", "Chapter.4 は拗音・促音・長音などの練習だよ。\n拗音は「きゃ」「しゅ」「ちょ」とかみたいに小さい「ゃ」「ゅ」「ょ」が入るもの、「促音」は「っ」が入るもの、「長音」は伸ばし棒の「ー」が入るもののことを言うよ。あとはローマ字入力では「ん」がちょっと特殊だからそれも練習しよう！"}
   };
 
+  // 練習内容の説明(JISかな)
   private static readonly Dictionary<string, string> practiceJISKanaDescriptionDict = new Dictionary<string, string> {
     {"B0301", "あ行の練習だよ。\nまずはこの5文字をしっかり覚えよう。\nキーボードの左上にかたまってるから、左手をいっぱい使うよ。"},
     {"B0302", "か・が行の練習だよ。\nか行は「け」だけキーボードの右のほうにあるけど、それ以外は真ん中によっているよ。\nJISかな入力で「゛（濁点）」をうつときは「か」＋「゛」という風に分けて打つんだ。「゛」のキーはキーボードの右側の「＠」が書いてあるところだよ。"},
@@ -127,6 +114,7 @@ public class BeginnerModeOperate : MonoBehaviour
     {"Chapter4Toggle", "Chapter.4 は拗音・促音・長音などの練習だよ。\n拗音は「きゃ」「しゅ」「ちょ」とかみたいに小さい「ゃ」「ゅ」「ょ」が入るもの、「促音」は「っ」が入るもの、「長音」は伸ばし棒の「ー」が入るもののことを言うよ。あとはローマ字入力では「ん」がちょっと特殊だからそれも練習しよう！"}
   };
 
+  // QwertyJP の各練習で使うキーをハイライト
   private static readonly Dictionary<string, string[]> practiceKeys = new Dictionary<string, string[]> {
     {"B0101", new string[]{"Key_A", "Key_S", "Key_D", "Key_F", "Key_G", "Key_H", "Key_J", "Key_K", "Key_L"}},
     {"B0102", new string[]{"Key_Q", "Key_W", "Key_E", "Key_R", "Key_T", "Key_Y", "Key_U", "Key_I", "Key_O", "Key_P"}},
@@ -161,6 +149,7 @@ public class BeginnerModeOperate : MonoBehaviour
     {"Chapter4Toggle", new string[]{}}
   };
 
+  // JIS かな練習で使うキーをハイライト
   private static readonly Dictionary<string, string[]> practiceKeysJISKana = new Dictionary<string, string[]> {
     {"B0101", new string[]{}},
     {"B0102", new string[]{}},
@@ -201,6 +190,10 @@ public class BeginnerModeOperate : MonoBehaviour
   [SerializeField] private AssistKeyboardJIS DisplayKeyboard;
   [SerializeField] private TextMeshProUGUI InputModeText;
   [SerializeField] private List<Button> JISKanaDisableButtonList;
+
+  /// <summary>
+  /// 初期化処理
+  /// </summary>
   void Awake()
   {
     InstructionText.text = DefaultInstructionText;
@@ -237,11 +230,13 @@ public class BeginnerModeOperate : MonoBehaviour
   /// <summary>
   /// キーに対応するチャプターのボタンを押したことにする
   /// </summary>
-  /// <param name="kc"></param>
+  /// <param name="kc">押したキーの KeyCode</param>
   private void SelectChapterToggle(KeyCode kc)
   {
     var chapterNum = shortCutKeyCodeChapter[kc] - 1;
     DisplayKeyboard.SetAllKeyColorWhite();
+    // 対応するチャプターの Toggle を ON にしつつ
+    // キーボードや説明も更新する
     for (int idx = 0; idx < ChapterToggleList.Count; ++idx)
     {
       if (idx == chapterNum)
@@ -249,11 +244,14 @@ public class BeginnerModeOperate : MonoBehaviour
         var toggleName = ChapterToggleList[idx].name;
         ChapterToggleList[idx].Select();
         ChapterToggleList[idx].isOn = true;
+
+        // QwertyJP での説明
         if (practiceInputMode == (int)ConfigScript.InputType.roman && practiceKeys.ContainsKey(toggleName))
         {
           InstructionText.text = practiceDescriptionDict[toggleName];
           ChangeKeyboardDisplay(practiceKeys[toggleName]);
         }
+        // JIS かなでの説明
         else if (practiceInputMode == (int)ConfigScript.InputType.jisKana && practiceKeysJISKana.ContainsKey(toggleName))
         {
           InstructionText.text = practiceJISKanaDescriptionDict[toggleName];
@@ -268,7 +266,7 @@ public class BeginnerModeOperate : MonoBehaviour
   }
 
   /// <summary>
-  /// キーに対応する練習ボタンを選択状態にする
+  /// キーに対応する練習ボタンを選択状態にして、説明文等を更新
   /// </summary>
   /// <param name="kc"></param>
   private void SelectPracticeButton(KeyCode kc)
@@ -284,17 +282,23 @@ public class BeginnerModeOperate : MonoBehaviour
       }
     }
     buttonNum += shortCutKeyCode[kc];
+
+    // ボタン番号とデータセットの対応付けをする
     if (beginnerDatasetFileName.ContainsKey(buttonNum))
     {
+      // ボタンを選択状態に
       EventSystem.current.SetSelectedGameObject(null);
       var buttonName = $"B0{buttonNum.ToString()}";
       var selectButton = GameObject.Find(buttonName).GetComponent<Button>();
       selectButton.Select();
+
+      // QwertyJP での説明
       if (practiceInputMode == (int)ConfigScript.InputType.roman && practiceDescriptionDict.ContainsKey(buttonName))
       {
         InstructionText.text = practiceDescriptionDict[buttonName];
         ChangeKeyboardDisplay(practiceKeys[buttonName]);
       }
+      // JIS かなでの説明
       else if (practiceInputMode == (int)ConfigScript.InputType.jisKana && practiceJISKanaDescriptionDict.ContainsKey(buttonName))
       {
         InstructionText.text = practiceJISKanaDescriptionDict[buttonName];
@@ -308,6 +312,7 @@ public class BeginnerModeOperate : MonoBehaviour
   /// </summary>
   private void ChangeInputMode()
   {
+    // QwertyJP から JIS かなへの切り替え
     if (practiceInputMode == (int)ConfigScript.InputType.roman)
     {
       practiceInputMode = (int)ConfigScript.InputType.jisKana;
@@ -317,6 +322,7 @@ public class BeginnerModeOperate : MonoBehaviour
         button.interactable = false;
       }
     }
+    // JIS かなから QwertyJP への切り替え
     else if (practiceInputMode == (int)ConfigScript.InputType.jisKana)
     {
       practiceInputMode = (int)ConfigScript.InputType.roman;
@@ -335,22 +341,10 @@ public class BeginnerModeOperate : MonoBehaviour
   /// </summary>
   private void KeyCheck(KeyCode kc)
   {
-    if (KeyCode.Escape == kc)
-    {
-      ReturnModeSelectScene();
-    }
-    else if (shortCutKeyCode.ContainsKey(kc))
-    {
-      SelectPracticeButton(kc);
-    }
-    else if (shortCutKeyCodeChapter.ContainsKey(kc))
-    {
-      SelectChapterToggle(kc);
-    }
-    else if (KeyCode.J == kc)
-    {
-      ChangeInputMode();
-    }
+    if (KeyCode.Escape == kc) { ReturnModeSelectScene(); }
+    else if (shortCutKeyCode.ContainsKey(kc)) { SelectPracticeButton(kc); }
+    else if (shortCutKeyCodeChapter.ContainsKey(kc)) { SelectChapterToggle(kc); }
+    else if (KeyCode.J == kc) { ChangeInputMode(); }
   }
 
   /// <summary>
@@ -380,15 +374,15 @@ public class BeginnerModeOperate : MonoBehaviour
   /// </summary>
   public void OnClickButton(int buttonNumber)
   {
+    // 設定の反映
     ConfigScript.GameMode = (int)ConfigScript.SingleMode.shortSentence;
     ConfigScript.DataSetName = beginnerDatasetFileName[buttonNumber];
-    ConfigScript.Tasks = 30;
+    ConfigScript.Tasks = WORD_TASK_NUM;
     ConfigScript.IsBeginnerMode = true;
-    // future update: ローマ字入力以外も対応できるようにする
     ConfigScript.InputMode = practiceInputMode;
-    // future update: US 配列にも対応する
     ConfigScript.InputArray = (int)ConfigScript.KeyArrayType.japanese;
     prevChapterNum = buttonNumber / 100;
+    // 練習スタート
     SceneManager.LoadScene("BeginnerTypingScene");
   }
 }

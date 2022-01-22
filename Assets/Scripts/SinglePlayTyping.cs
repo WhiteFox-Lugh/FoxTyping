@@ -14,12 +14,9 @@ public class SinglePlayTyping : MonoBehaviour
     Canceled,
   };
 
-  // Start is called before the first frame update
-  void Awake()
-  {
-  }
-
-  // Update is called once per frame
+  /// <summary>
+  /// フレームごとの処理(コンディション監視)
+  /// </summary>
   void Update()
   {
     if (TypingSoft.CurrentGameCondition == (int)GameCondition.Finished)

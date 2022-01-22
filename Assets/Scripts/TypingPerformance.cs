@@ -21,29 +21,13 @@ public class TypingPerformance
   // SCORE_WEIGHT: スコアの重み
   private readonly double[] SCORE_WEIGHT = { 1.5, 1.25, 1, 0.75, 0.5 };
   // 原文のリスト
-  public List<string> OriginSentenceList
-  {
-    private set;
-    get;
-  }
+  public List<string> OriginSentenceList { private set; get; }
   // 実際に打った文のリスト
-  public List<string> TypedSentenceList
-  {
-    private set;
-    get;
-  }
+  public List<string> TypedSentenceList { private set; get; }
   // 正誤判定
-  public List<List<int>> TypeJudgeList
-  {
-    private set;
-    get;
-  }
+  public List<List<int>> TypeJudgeList { private set; get; }
   // タイプした時刻
-  public List<List<double>> TypeTimeList
-  {
-    private set;
-    get;
-  }
+  public List<List<double>> TypeTimeList { private set; get; }
   // Latency
   public List<double> LatencyList
   {
@@ -217,12 +201,12 @@ public class TypingPerformance
   /// <param name="num">確認したいセンテンス番号(0-index)</param>
   /// <returns>正解数とミスタイプ数を string にしたもの</returns>
   /// </summary>
-  private string GetCorrectAndMistypeNumString(int num)
+  private string GetMistypeNumString(int num)
   {
     var sb = new StringBuilder();
     var typeInfo = GetSentenceCorrectAndMistypeNum(num);
     var missCount = typeInfo.mistypeNum.ToString();
-    sb.Append($"<size=80%>ミスタイプ: {missCount}");
+    sb.Append($"<size=80%>ミス: {missCount}");
     return sb.ToString();
   }
 
@@ -259,6 +243,28 @@ public class TypingPerformance
   }
 
   /// <summary>
+  /// 指定されたワードの正しいタイプ文字だけを抽出する
+  /// </summary>
+  /// <param name="wordNum">0-indexed のワード番号</param>
+  public string GetTypedSentence(int wordNum)
+  {
+    var typeSentenceList = TypedSentenceList[wordNum];
+    var typeJudgeList = TypeJudgeList[wordNum];
+    var strBuilder = new StringBuilder();
+    if (typeSentenceList.Count() == typeJudgeList.Count())
+    {
+      for (int i = 0; i < typeSentenceList.Count(); ++i)
+      {
+        if (typeJudgeList[i] == 1)
+        {
+          strBuilder.Append(typeSentenceList[i].ToString());
+        }
+      }
+    }
+    return strBuilder.ToString();
+  }
+
+  /// <summary>
   /// num 番目のセンテンスに対して、リザルト表示用に整形した string を返す
   /// <param name="num">確認したいセンテンス番号(0-index)</param>
   /// <returns>num 番目のセンテンスのタイピング記録を、リザルト表示用に整形した string</returns>
@@ -269,12 +275,33 @@ public class TypingPerformance
     sb.Append($"<size=100%>{this.OriginSentenceList[num]}\n");
     sb.Append($"<size=100%>{GetColoredTypedSentence(num)}\n");
     sb.Append("<size=50%>-------------------------------------------------------------------------\n");
-    sb.Append($"{GetCorrectAndMistypeNumString(num)} / ");
+    sb.Append($"{GetMistypeNumString(num)} / ");
     if (!ConfigScript.IsBeginnerMode)
     {
       sb.Append($"{GetLatencyInfoString(num)} / ");
     }
     sb.Append($"{GetTimeInfoString(num)}\n\n");
+    return sb.ToString();
+  }
+
+  /// <summary>
+  /// num 番目のセンテンスに対して、リザルト表示用に整形した string を返す
+  /// <param name="num">確認したいセンテンス番号(0-index)</param>
+  /// <returns>num 番目のセンテンスのタイピング記録を、リザルト表示用に整形した string</returns>
+  /// </summary>
+  public string ConvertCompressedDetailResult(int num)
+  {
+    var sb = new StringBuilder();
+    if (GenerateSentence.Lang.Equals("Japanese"))
+    {
+      sb.Append($"<size=80%>{num + 1}:{OriginSentenceList[num]} / ");
+    }
+    else if (GenerateSentence.Lang.Equals("English"))
+    {
+      sb.Append($"<size=80%>{num + 1}:{GetTypedSentence(num)} / ");
+    }
+    sb.Append($"{GetMistypeNumString(num)} / ");
+    sb.Append($"KPM:{GetSentenceKPM(num).ToString("0")}\n");
     return sb.ToString();
   }
 

@@ -13,14 +13,14 @@ public sealed class WordsetDataManager : MonoBehaviour
   private const string ABMetaDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_metadata";
   private const string ABShortWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_short";
   private const string ABLongWordsetDataPath = "https://whitefox-lugh.github.io/FoxTyping/AssetBundleData/wordset_long";
-  [SerializeField] Button TitlePlayButton;
-  [SerializeField] Text NowLoadingText;
   private const string NOW_LOADING = "Now Loading...";
   private const string SUCCESS_TEXT = "Load Complete!";
   private const string FAILED_TEXT = "Failed to load word data";
   public static bool isTryWordsetLoading = false;
-
   private delegate void OnComplete(AssetBundle data);
+  [SerializeField] Button TitlePlayButton;
+  [SerializeField] Text NowLoadingText;
+
   void Awake()
   {
     isTryWordsetLoading = false;
